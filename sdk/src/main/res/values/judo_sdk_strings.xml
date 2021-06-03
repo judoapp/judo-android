@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="judo_sdk_message_unsupported_version">This content is not supported on this version of Android.</string>
+</resources>

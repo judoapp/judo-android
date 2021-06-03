@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">example-app</string>
+    <string name="message_empty_state">EMPTY STATE</string>
+    <string name="message_loading_state">LOADING STATE</string>
+    <string name="message_error_state_network">NETWORK ERROR STATE</string>
+    <string name="message_error_state_server">SERVER ERROR STATE</string>
+    <string name="message_error_state_unknown">UNKNOWN ERROR STATE</string>
+    <string name="label_launch">Launch Experience</string>
+    <string name="label_exit">EXIT</string>
+</resources>
