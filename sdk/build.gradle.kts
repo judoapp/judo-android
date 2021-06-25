@@ -16,6 +16,7 @@ android {
 
     defaultConfig {
         minSdkVersion(19)
+        multiDexEnabled = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -32,6 +33,7 @@ android {
     }
 
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
@@ -65,6 +67,7 @@ dependencies {
     // endregion Google
 
     // region AndroidX
+    implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     implementation("androidx.appcompat:appcompat:1.2.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")
@@ -84,11 +87,15 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-moshi:2.6.3")
     // endregion Square
 
+    // region Sugar
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.5")
+    // endregion Sugar
+
     // region Testing
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.4")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.4.3-native-mt")
-    testImplementation("com.squareup.okhttp3:mockwebserver:4.9.0")
+    testImplementation("com.squareup.okhttp3:mockwebserver:3.12.2")
     testImplementation ("org.mockito:mockito-core:2.23.0")
     testImplementation ("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
     testImplementation("androidx.test:core-ktx:1.3.0")

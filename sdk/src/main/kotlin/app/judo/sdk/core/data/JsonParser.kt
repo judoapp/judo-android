@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2020-present, Rover Labs, Inc. All rights reserved.
+ * You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+ * copy, modify, and distribute this software in source code or binary form for use
+ * in connection with the web services and APIs provided by Rover.
+ *
+ * This copyright notice shall be included in all copies or substantial portions of
+ * the software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package app.judo.sdk.core.data
 
 import app.judo.sdk.api.models.*
@@ -31,10 +48,13 @@ object JsonParser {
             .withSubtype(Spacer::class.java, NodeType.SPACER.code)
             .withSubtype(Carousel::class.java, NodeType.CAROUSEL.code)
             .withSubtype(Collection::class.java, NodeType.COLLECTION.code)
+            .withSubtype(Conditional::class.java, NodeType.CONDITIONAL.code)
             .withSubtype(DataSource::class.java, NodeType.DATA_SOURCE.code)
             .withSubtype(PageControl::class.java, NodeType.PAGE_CONTROL.code)
             .withSubtype(Divider::class.java, NodeType.DIVIDER.code)
-            .withSubtype(NamedIcon::class.java, NodeType.NAMED_ICON.code)
+            .withSubtype(Icon::class.java, NodeType.ICON.code)
+            .withSubtype(AppBar::class.java, NodeType.APP_BAR.code)
+            .withSubtype(MenuItem::class.java, NodeType.MENU_ITEM.code)
             .withDefaultValue(EmptyNode())
 
     private val actionAdapterFactory: PolymorphicJsonAdapterFactory<Action> = PolymorphicJsonAdapterFactory.of(
@@ -69,12 +89,6 @@ object JsonParser {
         .withSubtype(FontResource.Single::class.java, "FontResource")
         .withSubtype(FontResource.Collection::class.java, "FontCollectionResource")
 
-     private val menuItemIconAdapter: PolymorphicJsonAdapterFactory<MenuItemIcon> = PolymorphicJsonAdapterFactory.of(
-        MenuItemIcon::class.java, "__typeName"
-    )
-        .withSubtype(MenuItemIcon.AnImage::class.java, "MenuItemImage")
-        .withSubtype(MenuItemIcon.AnIcon::class.java, "MenuItemIcon")
-
     private val fontWeightAdapter = FontWeightJsonAdapter()
     private val horizontalAlignmentAdapter = HorizontalAlignmentJsonAdapter()
     private val verticalAlignmentAdapter = VerticalAlignmentJsonAdapter()
@@ -94,6 +108,7 @@ object JsonParser {
     private val segueStyleAdapter = SegueStyleAdapter()
     private val menuItemVisibilityAdapter = MenuItemVisibilityJsonAdapter()
     private val appearanceAdapter = AppearanceAdapter()
+    private val predicateJsonAdapter = PredicateJsonAdapter()
 
     val moshi: Moshi = Moshi.Builder()
         .add(fontAdapterFactory)
@@ -120,8 +135,8 @@ object JsonParser {
         .add(segueStyleAdapter)
         .add(statusBarStyleAdapter)
         .add(menuItemVisibilityAdapter)
-        .add(menuItemIconAdapter)
         .add(httpMethodAdapter)
+        .add(predicateJsonAdapter)
         .build()
 
     private val adapter = moshi.adapter(Experience::class.java)

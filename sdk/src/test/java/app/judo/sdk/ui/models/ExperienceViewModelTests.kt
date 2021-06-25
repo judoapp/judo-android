@@ -1,10 +1,28 @@
+/*
+ * Copyright (c) 2020-present, Rover Labs, Inc. All rights reserved.
+ * You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+ * copy, modify, and distribute this software in source code or binary form for use
+ * in connection with the web services and APIs provided by Rover.
+ *
+ * This copyright notice shall be included in all copies or substantial portions of
+ * the software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package app.judo.sdk.ui.models
 
 import app.judo.sdk.api.models.DataSource
 import app.judo.sdk.api.models.Experience
 import app.judo.sdk.api.models.Text
 import app.judo.sdk.core.data.JsonParser
-import app.judo.sdk.api.data.UserDataSupplier
+import app.judo.sdk.api.data.UserInfoSupplier
+import app.judo.sdk.core.data.ExperienceTree
 import app.judo.sdk.core.robots.AbstractRobotTest
 import app.judo.sdk.ui.robots.ExperienceViewModelRobot
 import app.judo.sdk.core.utils.DynamicVisitor
@@ -45,15 +63,15 @@ internal class ExperienceViewModelTests : AbstractRobotTest<ExperienceViewModelR
     }
 
     @Test
-    fun `initializeFromUrl Updates State To Retrieved`() = runBlocking {
+    fun `initializeFromUrl Updates State To RetrievedTree`() = runBlocking {
         // Act
         robot.initializeExperienceFromURL("https://test1.judo.app/testexperience")
 
         // Assert
         robot.assertThatExperienceStateAtPositionEquals(
             position = 2,
-            state = ExperienceState.Retrieved(
-                experience = JsonParser.parseExperience(TestJSON.experience)!!
+            state = ExperienceState.RetrievedTree(
+                experienceTree = ExperienceTree(JsonParser.parseExperience(TestJSON.experience)!!)
             )
         )
     }
@@ -62,6 +80,7 @@ internal class ExperienceViewModelTests : AbstractRobotTest<ExperienceViewModelR
     fun `initializeFromMemory Updates State To Retrieved`() = runBlocking {
         // Arrange
         val experience = JsonParser.parseExperience(TestJSON.experience)!!
+
         robot.loadExperienceIntoMemory(
             experience
         )
@@ -74,8 +93,8 @@ internal class ExperienceViewModelTests : AbstractRobotTest<ExperienceViewModelR
         // Assert
         robot.assertThatExperienceStateAtPositionEquals(
             position = 1,
-            state = ExperienceState.Retrieved(
-                experience = experience
+            state = ExperienceState.RetrievedTree(
+                experienceTree = ExperienceTree(experience)
             )
         )
     }
@@ -90,6 +109,8 @@ internal class ExperienceViewModelTests : AbstractRobotTest<ExperienceViewModelR
             // Act
             robot.initializeExperienceFromURL("https://test1.judo.app/datasourcetestexperience")
 
+            delay(2000)
+
             // Assert
             var actual = 0
             val inspector = DynamicVisitor {
@@ -99,15 +120,14 @@ internal class ExperienceViewModelTests : AbstractRobotTest<ExperienceViewModelR
                 }
 
                 on<DataSource> { node ->
-                    println("DAO: ${node.jsonDAO?.value()}")
-                    if (node.jsonDAO != null) actual++
+                    println("DATA: ${node.data}")
+                    if (node.data != null) actual++
                 }
 
             }
 
             robot.inspectExperienceAt(position = 2, inspector)
             Assert.assertEquals(expected, actual)
-
         }
 
     }
@@ -126,7 +146,7 @@ internal class ExperienceViewModelTests : AbstractRobotTest<ExperienceViewModelR
             experience.id
         )
 
-        delay(500)
+        delay(1000)
 
         // Assert
         var actual = 0
@@ -139,8 +159,8 @@ internal class ExperienceViewModelTests : AbstractRobotTest<ExperienceViewModelR
             }
 
             on<DataSource> { node ->
-                println("DAO: ${node.jsonDAO}")
-                if (node.jsonDAO != null) actual++
+                println("DATA: ${node.data}")
+                if (node.data != null) actual++
             }
 
         }
@@ -156,15 +176,15 @@ internal class ExperienceViewModelTests : AbstractRobotTest<ExperienceViewModelR
         val expected = "Hello, Jane Doe"
         val experience = JsonParser.parseExperience(TestJSON.user_data_experience)!!
 
-        val userDataSupplier = UserDataSupplier {
+        val userInfoSupplier = UserInfoSupplier {
             mapOf(
                 "firstName" to "Jane",
                 "lastName" to "Doe"
             )
         }
 
-        robot.setUserDataSupplierTo(
-            userDataSupplier
+        robot.setUserInfoSupplierTo(
+            userInfoSupplier
         )
 
         robot.loadExperienceIntoMemory(
@@ -205,15 +225,15 @@ internal class ExperienceViewModelTests : AbstractRobotTest<ExperienceViewModelR
         /// Arrange
         val expected = "Hello, Jane Doe"
 
-        val userDataSupplier = UserDataSupplier {
+        val userInfoSupplier = UserInfoSupplier {
             mapOf(
                 "firstName" to "Jane",
                 "lastName" to "Doe"
             )
         }
 
-        robot.setUserDataSupplierTo(
-            userDataSupplier
+        robot.setUserInfoSupplierTo(
+            userInfoSupplier
         )
 
         // Act

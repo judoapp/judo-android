@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2020-present, Rover Labs, Inc. All rights reserved.
+ * You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+ * copy, modify, and distribute this software in source code or binary form for use
+ * in connection with the web services and APIs provided by Rover.
+ *
+ * This copyright notice shall be included in all copies or substantial portions of
+ * the software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package app.judo.example.core.functions
 
 import app.judo.sdk.api.models.*
@@ -20,13 +37,29 @@ fun InMemoryExperience(screen2Id: String? = null): Experience {
                 blue = 0F,
             )
         ),
-       statusBarStyle = StatusBarStyle.DEFAULT
+        androidStatusBarBackgroundColor = ColorVariants(
+            default = Color(
+                0f,
+                red = 0F,
+                green = 0F,
+                blue = 0F,
+            )
+        ),
+       androidStatusBarStyle = StatusBarStyle.DEFAULT
     )
 
     val screen2 = Screen(
         id = screen2Id ?: UUID.randomUUID().toString(),
         name = "Screen 2",
         childIDs = listOf(textId),
+        androidStatusBarBackgroundColor = ColorVariants(
+            default = Color(
+                0f,
+                red = 0F,
+                green = 0F,
+                blue = 0F,
+            )
+        ),
         backgroundColor = ColorVariants(
             default = Color(
                 0f,
@@ -35,7 +68,7 @@ fun InMemoryExperience(screen2Id: String? = null): Experience {
                 blue = 0F,
             )
         ),
-        statusBarStyle = StatusBarStyle.DEFAULT
+        androidStatusBarStyle = StatusBarStyle.DEFAULT
     )
 
     return Experience(

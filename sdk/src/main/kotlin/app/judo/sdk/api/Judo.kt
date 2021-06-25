@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2020-present, Rover Labs, Inc. All rights reserved.
+ * You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+ * copy, modify, and distribute this software in source code or binary form for use
+ * in connection with the web services and APIs provided by Rover.
+ *
+ * This copyright notice shall be included in all copies or substantial portions of
+ * the software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package app.judo.sdk.api
 
 import android.app.Application
@@ -6,7 +23,9 @@ import android.content.Intent
 import android.os.Build
 import androidx.annotation.MainThread
 import app.judo.sdk.api.android.ExperienceFragmentFactory
-import app.judo.sdk.api.data.UserDataSupplier
+import app.judo.sdk.api.events.ActionReceivedCallback
+import app.judo.sdk.api.events.ScreenViewedCallback
+import app.judo.sdk.api.data.UserInfoSupplier
 import app.judo.sdk.api.logs.LogLevel
 import app.judo.sdk.api.models.Experience
 import app.judo.sdk.core.controllers.NoOpSDKController
@@ -74,8 +93,8 @@ object Judo {
         }
     }
 
-    fun setUserDataSupplier(supplier: UserDataSupplier) {
-        controller.setUserDataSupplier(supplier)
+    fun setUserInfoSupplier(supplier: UserInfoSupplier) {
+        controller.setUserInfoSupplier(supplier)
     }
 
     /**
@@ -86,6 +105,14 @@ object Judo {
     @MainThread
     fun setExperienceFragmentFactory(factory: ExperienceFragmentFactory) {
         controller.setExperienceFragmentFactory(factory)
+    }
+
+    fun addScreenViewedCallback(callback: ScreenViewedCallback) {
+        controller.addScreenViewedCallback(callback)
+    }
+
+    fun addActionReceivedCallback(callback: ActionReceivedCallback) {
+        controller.addActionReceivedCallback(callback)
     }
 
     @JvmStatic
@@ -118,6 +145,7 @@ object Judo {
         ignoreCache: Boolean = false,
         activityClass: Class<*> = ExperienceActivity::class.java,
         screenId: String? = null,
+        userInfo: HashMap<String, String>? = null
     ): Intent {
         return try {
             activityClass.asSubclass(activityClass)
@@ -127,6 +155,9 @@ object Judo {
                 putExtra(Environment.Keys.IGNORE_CACHE, ignoreCache)
                 screenId?.let { id ->
                     putExtra(Environment.Keys.SCREEN_ID, id)
+                }
+                userInfo?.let {
+                    putExtra(Environment.Keys.USER_INFO_OVERRIDE, userInfo)
                 }
             }
         } catch (t: Throwable) {
@@ -145,19 +176,21 @@ object Judo {
         experience: Experience,
         activityClass: Class<*> = ExperienceActivity::class.java,
         screenId: String? = null,
+        userInfo: HashMap<String, String>? = null
     ): Intent {
         return try {
             activityClass.asSubclass(activityClass)
 
-            controller.loadExperienceIntoMemory(
-                experience
-            )
+            controller.loadExperienceIntoMemory(experience)
 
             Intent(context, activityClass).apply {
                 putExtra(Environment.Keys.LOAD_FROM_MEMORY, true)
-                putExtra(Environment.Keys.EXPERIENCE_KEY, experience.id.toString())
+                putExtra(Environment.Keys.EXPERIENCE_KEY, experience.id)
                 screenId?.let { id ->
                     putExtra(Environment.Keys.SCREEN_ID, id)
+                }
+                userInfo?.let {
+                    putExtra(Environment.Keys.USER_INFO_OVERRIDE, userInfo)
                 }
             }
         } catch (t: Throwable) {

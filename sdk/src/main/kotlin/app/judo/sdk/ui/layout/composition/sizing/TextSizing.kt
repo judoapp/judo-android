@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2020-present, Rover Labs, Inc. All rights reserved.
+ * You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+ * copy, modify, and distribute this software in source code or binary form for use
+ * in connection with the web services and APIs provided by Rover.
+ *
+ * This copyright notice shall be included in all copies or substantial portions of
+ * the software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package app.judo.sdk.ui.layout.composition.sizing
 
 import android.content.Context
@@ -65,12 +82,16 @@ internal fun Text.computeSize(context: Context, treeNode: TreeNode, parentConstr
 
     // measure text to determine text size
 
-    val fontAttributes = this.font.getSystemFontAttributes(context)
+    val fontAttributes = this.font.getSystemFontAttributes()
     val font = fontAttributes.weight.mapToFont()
     val fontStyle = this.font.getEmphasisStyle() ?: font.style
 
     val typeface = typeface ?: Typeface.create(font.name, fontStyle)
-    val textSize = fontAttributes.size.dp.value * context.resources.displayMetrics.scaledDensity
+    val textSize = if (fontAttributes.isDynamic) {
+        fontAttributes.size.dp.value * context.resources.displayMetrics.scaledDensity
+    } else {
+        fontAttributes.size.dp.value * context.resources.displayMetrics.density
+    }
 
     val text = when (transform) {
         TextTransform.UPPERCASE -> this.interpolatedText.toUpperCase(Locale.ROOT)
@@ -113,7 +134,6 @@ internal fun Text.computeSize(context: Context, treeNode: TreeNode, parentConstr
         .setMaxLines(lineLimit ?: Int.MAX_VALUE)
         .setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_NONE)
         .build()
-
 
     firstBaselineToTopDistance = layout.getLineBaseline(0).toFloat()
 

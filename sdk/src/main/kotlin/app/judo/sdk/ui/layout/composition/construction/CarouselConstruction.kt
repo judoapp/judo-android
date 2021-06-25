@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2020-present, Rover Labs, Inc. All rights reserved.
+ * You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+ * copy, modify, and distribute this software in source code or binary form for use
+ * in connection with the web services and APIs provided by Rover.
+ *
+ * This copyright notice shall be included in all copies or substantial portions of
+ * the software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package app.judo.sdk.ui.layout.composition.construction
 
 import android.content.Context
@@ -8,11 +25,9 @@ import android.widget.FrameLayout
 import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
-import app.judo.sdk.api.models.Audio
-import app.judo.sdk.api.models.Carousel
+import app.judo.sdk.api.models.*
 import app.judo.sdk.api.models.Layer
-import app.judo.sdk.api.models.Padding
-import app.judo.sdk.api.models.Video
+import app.judo.sdk.ui.extensions.*
 import app.judo.sdk.ui.extensions.dp
 import app.judo.sdk.ui.extensions.setMaskPath
 import app.judo.sdk.ui.extensions.setMaskPathFromMask
@@ -22,7 +37,7 @@ import app.judo.sdk.ui.layout.composition.TreeNode
 import app.judo.sdk.ui.layout.composition.getAllLeafNodes
 import app.judo.sdk.ui.layout.composition.toLayout
 import app.judo.sdk.ui.layout.composition.toSingleLayerLayout
-import app.judo.sdk.ui.views.CustomStyledPlayerView
+import app.judo.sdk.ui.views.ExperienceMediaPlayerView
 import java.util.*
 import kotlin.math.roundToInt
 
@@ -50,20 +65,25 @@ internal fun Carousel.construct(
         }
     }
 
-    val leafNodes = treeNode.getAllLeafNodes()
-    val mediaChildIDs = leafNodes.filter { it is Audio && it.autoPlay || it is Video && it.autoPlay }.map { it.id }
+    val positionToMediaChildIDs = treeNode.children.mapIndexed { index, treeNodeChild ->
+        index to treeNodeChild.getAllLeafNodes().filter { it is PlaysMedia }.map { it.id }
+    }
 
     viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
         override fun onPageSelected(position: Int) {
             super.onPageSelected(position)
-            mediaChildIDs.forEach {
-                viewPager.findViewWithTag<CustomStyledPlayerView>(it)?.playIfVisibleOrPauseIfPlaying()
+            positionToMediaChildIDs.forEach { (nodePosition, mediaViewIDs) ->
+                val selectedChild = position == nodePosition
+                mediaViewIDs.forEach { mediaViewID ->
+                    val mediaView = viewPager.findViewWithTag<ExperienceMediaPlayerView>(mediaViewID)
+                    mediaView?.setupIfVisible(selectedChild)
+                }
             }
         }
     })
 
-    val background = this.background?.node?.toSingleLayerLayout(context, treeNode, resolvers)
-    val overlay = this.overlay?.node?.toSingleLayerLayout(context, treeNode, resolvers)
+    val background = this.background?.node?.toSingleLayerLayout(context, treeNode, resolvers, this.maskPath)
+    val overlay = this.overlay?.node?.toSingleLayerLayout(context, treeNode, resolvers, this.maskPath)
 
     return listOfNotNull(background, viewPager, overlay)
 }
@@ -104,6 +124,7 @@ internal class CarouselPagerAdapter(private val context: Context, private val re
     override fun onBindViewHolder(viewHolder: CarouselViewHolder, position: Int) {
         val node = if (loop) nodes[position.rem(nodes.size)] else nodes[position]
         val nodes = node.toLayout(context, resolvers)
+        viewHolder.container.removeAllViews()
         nodes.forEach { viewHolder.container.addView(it) }
     }
     override fun getItemCount() = if (loop) Int.MAX_VALUE else nodes.size

@@ -1,7 +1,23 @@
+/*
+ * Copyright (c) 2020-present, Rover Labs, Inc. All rights reserved.
+ * You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+ * copy, modify, and distribute this software in source code or binary form for use
+ * in connection with the web services and APIs provided by Rover.
+ *
+ * This copyright notice shall be included in all copies or substantial portions of
+ * the software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package app.judo.sdk.ui.layout.composition.construction
 
 import android.content.Context
-import android.graphics.Rect
 import android.os.Build
 import android.view.View
 import android.widget.FrameLayout
@@ -9,23 +25,17 @@ import android.widget.ImageButton
 import app.judo.sdk.R
 import app.judo.sdk.api.models.Audio
 import app.judo.sdk.ui.extensions.calculateDisplayableAreaFromMaskPath
-import app.judo.sdk.ui.extensions.doOnDetach
-import app.judo.sdk.ui.extensions.doOnPreDraw
 import app.judo.sdk.ui.extensions.setMaskPathFromMask
 import app.judo.sdk.ui.layout.Resolvers
 import app.judo.sdk.ui.layout.composition.TreeNode
 import app.judo.sdk.ui.layout.composition.toSingleLayerLayout
-import app.judo.sdk.ui.views.CustomStyledPlayerView
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.SimpleExoPlayer
+import app.judo.sdk.ui.views.ExperienceMediaPlayerView
 import kotlin.math.roundToInt
 
 internal fun Audio.construct(context: Context, treeNode: TreeNode, resolvers: Resolvers): List<View> {
     setMaskPathFromMask(context, mask, treeNode.appearance)
     val maskPath = calculateDisplayableAreaFromMaskPath(context)
-    val player = SimpleExoPlayer.Builder(context).build()
-    val audio = CustomStyledPlayerView(context, maskPath).apply {
+    val audio = ExperienceMediaPlayerView(context, maskPath, looping, autoPlay, interpolatedSourceURL, true, timeoutControls = false).apply {
         id = View.generateViewId()
         tag = this@construct.id
         alpha = (opacity ?: 1f) * (maskPath?.opacity ?: 1f)
@@ -38,37 +48,8 @@ internal fun Audio.construct(context: Context, treeNode: TreeNode, resolvers: Re
         }
     }
 
-    player.repeatMode = when(looping) {
-        true -> Player.REPEAT_MODE_ALL
-        false -> Player.REPEAT_MODE_OFF
-    }
-
-    player.addMediaItem(MediaItem.fromUri(interpolatedSourceURL))
-    player.prepare()
-    audio.controllerShowTimeoutMs = -1
-    audio.player = player
-    audio.useArtwork = false
-
-    audio.findViewById<ImageButton>(R.id.exo_prev).apply {
-        setImageDrawable(null)
-        setOnClickListener(null)
-    }
-    audio.findViewById<ImageButton>(R.id.exo_next).apply {
-        setImageDrawable(null)
-        setOnClickListener(null)
-    }
-
-    audio.doOnPreDraw {
-        if (autoPlay && audio.getGlobalVisibleRect(Rect())) player.play()
-
-        audio.doOnDetach {
-            it.tag = null
-            player.release()
-        }
-    }
-
-    val background = this.background?.node?.toSingleLayerLayout(context, treeNode, resolvers)
-    val overlay = this.overlay?.node?.toSingleLayerLayout(context, treeNode, resolvers)
+    val background = this.background?.node?.toSingleLayerLayout(context, treeNode, resolvers, maskPath)
+    val overlay = this.overlay?.node?.toSingleLayerLayout(context, treeNode, resolvers, maskPath)
 
     return listOfNotNull(background, audio, overlay)
 }

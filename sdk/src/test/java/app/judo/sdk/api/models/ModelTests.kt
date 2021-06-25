@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2020-present, Rover Labs, Inc. All rights reserved.
+ * You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+ * copy, modify, and distribute this software in source code or binary form for use
+ * in connection with the web services and APIs provided by Rover.
+ *
+ * This copyright notice shall be included in all copies or substantial portions of
+ * the software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package app.judo.sdk.api.models
 
 import app.judo.sdk.core.data.JsonParser
@@ -241,23 +258,6 @@ ModelTests {
     }
 
     @Test
-    fun `StatusBarAppearance can be de-serialized`() {
-        // Arrange
-        val adapter = JsonParser.moshi.adapter(StatusBarAppearance::class.java)
-        var obj: Any? = null
-
-        // Act
-        try {
-            obj = adapter.fromJson(TestJSON.statusBarAppearance)
-        } catch (e: ExceptionInInitializerError) {
-            println(e.exception.message)
-        }
-
-        // Assert
-        assertTrue(obj is StatusBarAppearance)
-    }
-
-    @Test
     fun `Carousel can be de-serialized`() {
         // Arrange
         val adapter = JsonParser.moshi.adapter(Carousel::class.java)
@@ -362,48 +362,61 @@ ModelTests {
     }
 
     @Test
+    fun `Conditional can be de-serialized`() {
+        // Arrange
+        val adapter = JsonParser.moshi.adapter(Conditional::class.java)
+        var obj: Any? = null
+
+        // Act
+        try {
+            obj = adapter.fromJson(TestJSON.conditional)
+            println(obj)
+        } catch (e: ExceptionInInitializerError) {
+            println(e.exception.message)
+        }
+
+        // Assert
+        assertTrue(obj is Conditional)
+    }
+
+    @Test
     fun `AppBar can be de-serialized`() {
         // Arrange
         val expected = AppBar(
-                showUpArrow = true,
-                upArrowIconURL = "https://storage.judo.app/up-arrrow",
-                iconColor = ColorVariants(
+                id = "54BDDF49-BD4D-4232-AA87-15FA584D819C",
+                hideUpIcon = false,
+                childIDs = listOf(
+                    "2BE7C25E-FC7D-454A-B611-69FD25202BBF",
+                    "197BD70A-0B99-4BDB-9DD2-FBCA78B441C5"
+                ),
+                buttonColor = ColorVariants(
                         default = Color(
-                                alpha = 0f,
-                                blue = 0f,
-                                green = 0f,
-                                red = 0f
+                                alpha = 1f,
+                                blue = 1f,
+                                green = 1f,
+                                red = 1f
                         )),
-                title = "AppBar!!",
+                title = "Screen",
                 titleFont = Font.Fixed(
-                        weight = FontWeight.Bold,
+                        weight = FontWeight.Medium,
                         size = 20f,
                         isDynamic = false
                 ),
                 titleColor = ColorVariants(
                         default = Color(
-                                alpha = 0f,
-                                blue = 0f,
-                                green = 0f,
-                                red = 0f
+                                alpha = 1f,
+                                blue = 1f,
+                                green = 1f,
+                                red = 1f
                         )),
                 backgroundColor = ColorVariants(
                         default = Color(
-                                alpha = 0f,
-                                blue = 0f,
+                                alpha = 1f,
+                                blue = 0.9f,
                                 green = 0f,
-                                red = 0f
-                        )),
-                menuItems = listOf(MenuItem(
-                        title = "Home",
-                        titleFont = Font.Fixed(weight = FontWeight.Regular, size = 12F, isDynamic = true),
-                        titleColor = ColorVariants(default = Color(1f, 1f, 1f, 1f)),
-                        action = Action.Close(),
-                        menuItemVisibility = MenuItemVisibility.ALWAYS,
-                        icon = MenuItemIcon.AnIcon(Icon("house")),
-                        contentDescription = "Home",
-                        actionDescription = "Go Home"
-                )),
+                                red = 0.3f
+                        )
+                ),
         )
         val adapter = JsonParser.moshi.adapter(AppBar::class.java)
         var actual: Any? = null
@@ -428,6 +441,22 @@ ModelTests {
         // Act
         try {
             obj = JsonParser.parseExperience(TestJSON.experience)
+        } catch (e: ExceptionInInitializerError) {
+            println(e.exception.message)
+        }
+
+        // Assert
+        assertTrue(obj is Experience)
+    }
+
+    @Test
+    fun `Experience with interpolated DataSources can be de-serialized`() {
+        // Arrange
+        var obj: Any? = null
+
+        // Act
+        try {
+            obj = JsonParser.parseExperience(TestJSON.interpolated_data_source_url_expereience)
         } catch (e: ExceptionInInitializerError) {
             println(e.exception.message)
         }

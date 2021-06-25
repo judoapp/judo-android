@@ -1,10 +1,30 @@
+/*
+ * Copyright (c) 2020-present, Rover Labs, Inc. All rights reserved.
+ * You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+ * copy, modify, and distribute this software in source code or binary form for use
+ * in connection with the web services and APIs provided by Rover.
+ *
+ * This copyright notice shall be included in all copies or substantial portions of
+ * the software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package app.judo.sdk.core.controllers
 
 import android.app.Application
 import app.judo.sdk.api.Judo
 import app.judo.sdk.api.android.ExperienceFragmentFactory
-import app.judo.sdk.api.data.UserDataSupplier
+import app.judo.sdk.api.data.UserInfoSupplier
 import app.judo.sdk.api.errors.ExperienceError
+import app.judo.sdk.api.events.ActionReceivedCallback
+import app.judo.sdk.api.events.Event
+import app.judo.sdk.api.events.ScreenViewedCallback
 import app.judo.sdk.api.models.Experience
 import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.environment.MutableEnvironment
@@ -15,6 +35,11 @@ import app.judo.sdk.core.implementations.ProductionLoggerImpl
 import app.judo.sdk.core.implementations.SynchronizerImpl
 import app.judo.sdk.core.log.Logger
 import app.judo.sdk.core.sync.Synchronizer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import java.util.*
 
 /**
@@ -123,13 +148,37 @@ internal class SDKControllerImpl : SDKController {
         }
     }
 
-    override fun setUserDataSupplier(supplier: UserDataSupplier) {
-        (environment as? MutableEnvironment)?.userDataSupplier = supplier
+    override fun setUserInfoSupplier(supplier: UserInfoSupplier) {
+        (environment as? MutableEnvironment)?.userInfoSupplier = supplier
     }
 
     override fun setExperienceFragmentFactory(factory: ExperienceFragmentFactory) {
         if (this::environment.isInitialized) {
-            (environment as MutableEnvironment).experienceFragmentFactory = factory
+            (environment as? MutableEnvironment)?.experienceFragmentFactory = factory
+        }
+    }
+
+    override fun addScreenViewedCallback(callback: ScreenViewedCallback) {
+        if(this::environment.isInitialized) {
+            CoroutineScope(environment.mainDispatcher).launch {
+                environment.eventBus.eventFlow.collect { event ->
+                    if (event is Event.ScreenViewed) {
+                        callback.screenViewed(event)
+                    }
+                }
+            }
+        }
+    }
+
+    override fun addActionReceivedCallback(callback: ActionReceivedCallback) {
+        if(this::environment.isInitialized) {
+            CoroutineScope(environment.mainDispatcher).launch {
+                environment.eventBus.eventFlow.collect { event ->
+                    if (event is Event.ActionReceived) {
+                        callback.actionReceived(event)
+                    }
+                }
+            }
         }
     }
 }

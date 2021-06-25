@@ -1,9 +1,26 @@
+/*
+ * Copyright (c) 2020-present, Rover Labs, Inc. All rights reserved.
+ * You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+ * copy, modify, and distribute this software in source code or binary form for use
+ * in connection with the web services and APIs provided by Rover.
+ *
+ * This copyright notice shall be included in all copies or substantial portions of
+ * the software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package app.judo.sdk.ui
 
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.os.Parcelable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,20 +37,14 @@ import app.judo.sdk.api.errors.ExperienceError
 import app.judo.sdk.api.models.Action
 import app.judo.sdk.api.models.Action.*
 import app.judo.sdk.api.models.Experience
-import app.judo.sdk.api.models.Screen
 import app.judo.sdk.api.models.SegueStyle
 import app.judo.sdk.core.controllers.current
 import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.environment.Environment.Keys.EXPERIENCE_INTENT
-import app.judo.sdk.core.environment.Environment.Keys.EXPERIENCE_KEY
-import app.judo.sdk.core.environment.Environment.Keys.EXPERIENCE_URL
-import app.judo.sdk.core.environment.Environment.Keys.IGNORE_CACHE
-import app.judo.sdk.core.environment.Environment.Keys.LOAD_FROM_MEMORY
-import app.judo.sdk.core.environment.Environment.Keys.SCREEN_ID
 import app.judo.sdk.databinding.JudoSdkExperienceFragmentLayoutBinding
 import app.judo.sdk.databinding.JudoSdkUnsupportedVersionLayoutBinding
 import app.judo.sdk.ui.events.ExperienceRequested
-import app.judo.sdk.ui.extensions.getCustomTabsIntent
+import app.judo.sdk.ui.extensions.toCustomTabsIntent
 import app.judo.sdk.ui.extensions.toUri
 import app.judo.sdk.ui.extensions.viewModels
 import app.judo.sdk.ui.factories.ExperienceViewModelFactory
@@ -41,8 +52,6 @@ import app.judo.sdk.ui.layout.ScreenFragment
 import app.judo.sdk.ui.models.ExperienceState
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filterIsInstance
-import okhttp3.MediaType
-import okhttp3.RequestBody
 
 open class ExperienceFragment : Fragment() {
 
@@ -94,7 +103,7 @@ open class ExperienceFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            hostStatusBarState = captureHostStatusBarState()
+            hostStatusBarState = if (!isEmbeddedFragment()) captureHostStatusBarState() else null
             listenForActions()
             listenForStateChanges()
             requestExperience()
@@ -105,15 +114,15 @@ open class ExperienceFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !isEmbeddedFragment()) {
             restoreHostStatusBarState()
         }
         _unsupportedBinding = null
         _binding = null
     }
 
-    private fun captureHostStatusBarState(): StatusBarState {
-        val window = requireActivity().window
+    private fun captureHostStatusBarState(): StatusBarState? {
+        val window = activity?.window ?: return null
 
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             StatusBarState.RStatusBarState(
@@ -159,11 +168,11 @@ open class ExperienceFragment : Fragment() {
 
             is ExperienceState.Error -> onError(error = state.error)
 
-            is ExperienceState.Retrieved -> {
-                onRetrieved(experience = state.experience)
+            is ExperienceState.RetrievedTree -> {
+                onRetrieved(experience = state.experienceTree.experience)
                 container.removeAllViews()
                 navigate(
-                    destination = state.screenId ?: state.experience.initialScreenID,
+                    destination = state.screenId ?: state.experienceTree.experience.initialScreenID,
                     style = SegueStyle.MODAL,
                     addToBackStack = false
                 )
@@ -180,7 +189,7 @@ open class ExperienceFragment : Fragment() {
     }
 
     private fun restoreHostStatusBarState() {
-        val window = requireActivity().window
+        val window = activity?.window ?: return
         when (val state = hostStatusBarState) {
             is StatusBarState.RStatusBarState -> {
                 state.systemBarAppearance?.let {
@@ -206,7 +215,7 @@ open class ExperienceFragment : Fragment() {
             setMessage("Failed to load Experience")
             setNegativeButton("Cancel") { dialogInterface, _ ->
                 dialogInterface.dismiss()
-                close()
+                onDismiss()
             }
             setPositiveButton("Try Again") { dialogInterface, _ ->
                 dialogInterface.dismiss()
@@ -221,7 +230,7 @@ open class ExperienceFragment : Fragment() {
             setMessage("Something went wrong")
             setNegativeButton("Ok") { dialogInterface, _ ->
                 dialogInterface.dismiss()
-                close()
+                onDismiss()
             }
         }.show()
     }
@@ -229,7 +238,7 @@ open class ExperienceFragment : Fragment() {
     private fun popStackOrFinish() {
         if (roots.isEmpty()) {
             restoreHostStatusBarState()
-            close()
+            onDismiss()
         } else {
             roots.removeFirstOrNull()?.let { id ->
                 childFragmentManager.popBackStack(id, FragmentManager.POP_BACK_STACK_INCLUSIVE)
@@ -291,8 +300,16 @@ open class ExperienceFragment : Fragment() {
     }
 
     private fun initializeScreenFragment(screenID: String): ScreenFragment {
+
         val screens =
-            (model.stateFlow.value as ExperienceState.Retrieved).experience.nodes<Screen>()
+            (model.stateFlow.value as? ExperienceState.RetrievedTree)
+                ?.experienceTree
+                ?.screenNodes
+                ?.values
+                ?.map { screenNode ->
+                    screenNode.screen
+                } ?: emptyList()
+
         val initialScreen = screens.find { node -> node.id == screenID }!!
         return ScreenFragment.newInstance(initialScreen.id)
     }
@@ -308,23 +325,54 @@ open class ExperienceFragment : Fragment() {
             }
 
             is OpenURL -> {
-                if (action.dismissExperience) requireActivity().finish()
-                startActivity(Intent(Intent.ACTION_VIEW, action.url.toUri()))
+                if (action.dismissExperience) onDismiss()
+                try {
+
+                    val uri = action.run {
+                        (interpolator?.interpolate(url) ?: url).toUri()
+                    }
+
+                    startActivity(Intent(Intent.ACTION_VIEW, uri))
+
+                } catch (error: Throwable) {
+                    Environment.current
+                        .logger.e(TAG, "Failed to open URL: ${action.url}", error)
+                }
             }
 
             is PresentWebsite -> {
                 //TODO: enable changing toolbar color
-                startActivity(action.url.toUri().getCustomTabsIntent())
+                try {
+
+                    action.run {
+                        (interpolator?.interpolate(url) ?: url)
+                            .toUri()
+                            .toCustomTabsIntent()
+                            .also(::startActivity)
+                    }
+
+                } catch (error: Throwable) {
+                    Environment.current
+                        .logger.e(TAG, "Failed to present website for URL: ${action.url}", error)
+                }
             }
             is Custom -> {
-                if (action.dismissExperience) requireActivity().finish()
+                if (action.dismissExperience) onDismiss()
             }
         }
 
     }
 
-    open fun close() {
-        requireActivity().finish()
+    /**
+     * Dismisses the experience by finishing the host activity if the host activity is
+     * an [ExperienceActivity] or no-op if not.
+     */
+    open fun onDismiss() {
+        if (isEmbeddedFragment()) {
+            // no-op
+        } else {
+            requireActivity().finish()
+        }
     }
 
     /**
@@ -366,6 +414,7 @@ open class ExperienceFragment : Fragment() {
      * A one button dialog forcing the user to exit the activity.
      */
     open fun onError(error: ExperienceError) {
+        Log.e(TAG, "Problem displaying experience: $error")
         when (error) {
             is ExperienceError.NetworkError -> {
                 showSoftFailureDialog()
@@ -403,4 +452,8 @@ private sealed class StatusBarState {
 
     data class BelowRStatusBarState(@ColorInt val color: Int, val windowSystemVisibility: Int) :
         StatusBarState()
+}
+
+internal fun Fragment.isEmbeddedFragment(): Boolean {
+    return this.activity !is ExperienceActivity
 }

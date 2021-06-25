@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2020-present, Rover Labs, Inc. All rights reserved.
+ * You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+ * copy, modify, and distribute this software in source code or binary form for use
+ * in connection with the web services and APIs provided by Rover.
+ *
+ * This copyright notice shall be included in all copies or substantial portions of
+ * the software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package app.judo.sdk.core.lang
 
 import app.judo.sdk.core.lang.Parser.Result.Success
@@ -20,6 +37,86 @@ class TheHandleBarParser {
 
         val input = ParserContext(
             text = "{{ date data.key1.value   \"YY-mm\" }} other text",
+            state = Unit,
+        )
+
+        val expected = Success(
+            match = Parser.Match(
+                expectedToken,
+                input.copy(
+                    position = expectedToken.value.length
+                )
+            ),
+        )
+
+        val parser = HandleBarParser<Unit>()
+
+        // Act
+        val actual = parser.parse(input)
+
+        val keys = (actual as? Success)?.match?.value?.keys
+
+        println("ACTUAL: $actual")
+        println("KEYS: $keys")
+
+        // Assert
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `Parses the Handle Barred text with the uppercase function name correctly`() {
+        // Arrange
+
+        val expectedToken = Token.HandleBarExpression(
+            value = "{{ uppercase data.key1.value }}",
+            keyword = Keyword.DATA,
+            functionName = FunctionName.UPPERCASE,
+            functionArgument = null,
+            keys = listOf("key1", "value")
+        )
+
+        val input = ParserContext(
+            text = "{{ uppercase data.key1.value }} other text",
+            state = Unit,
+        )
+
+        val expected = Success(
+            match = Parser.Match(
+                expectedToken,
+                input.copy(
+                    position = expectedToken.value.length
+                )
+            ),
+        )
+
+        val parser = HandleBarParser<Unit>()
+
+        // Act
+        val actual = parser.parse(input)
+
+        val keys = (actual as? Success)?.match?.value?.keys
+
+        println("ACTUAL: $actual")
+        println("KEYS: $keys")
+
+        // Assert
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `Parses the Handle Barred text with the lowercase function name correctly`() {
+        // Arrange
+
+        val expectedToken = Token.HandleBarExpression(
+            value = "{{ lowercase data.key1.value }}",
+            keyword = Keyword.DATA,
+            functionName = FunctionName.LOWERCASE,
+            functionArgument = null,
+            keys = listOf("key1", "value")
+        )
+
+        val input = ParserContext(
+            text = "{{ lowercase data.key1.value }} other text",
             state = Unit,
         )
 

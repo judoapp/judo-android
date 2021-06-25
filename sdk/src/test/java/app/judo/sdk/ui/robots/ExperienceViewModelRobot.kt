@@ -1,6 +1,24 @@
+/*
+ * Copyright (c) 2020-present, Rover Labs, Inc. All rights reserved.
+ * You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+ * copy, modify, and distribute this software in source code or binary form for use
+ * in connection with the web services and APIs provided by Rover.
+ *
+ * This copyright notice shall be included in all copies or substantial portions of
+ * the software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package app.judo.sdk.ui.robots
 
 import android.content.Intent
+import app.judo.sdk.api.data.UserInfoSupplier
 import app.judo.sdk.api.models.Experience
 import app.judo.sdk.api.models.Visitor
 import app.judo.sdk.core.environment.Environment.Keys.EXPERIENCE_KEY
@@ -9,7 +27,6 @@ import app.judo.sdk.core.environment.Environment.Keys.IGNORE_CACHE
 import app.judo.sdk.core.environment.Environment.Keys.LOAD_FROM_MEMORY
 import app.judo.sdk.core.environment.Environment.Keys.SCREEN_ID
 import app.judo.sdk.core.implementations.EnvironmentImpl
-import app.judo.sdk.api.data.UserDataSupplier
 import app.judo.sdk.core.robots.AbstractTestRobot
 import app.judo.sdk.ui.ExperienceViewModel
 import app.judo.sdk.ui.events.ExperienceRequested
@@ -21,15 +38,17 @@ import org.junit.Assert
 @ExperimentalCoroutinesApi
 internal class ExperienceViewModelRobot : AbstractTestRobot() {
 
-    private val scope = CoroutineScope(environment.mainDispatcher)
+    private val scope = CoroutineScope(testCoroutineDispatcher)
 
     private val experienceStates = mutableListOf<ExperienceState>()
 
-    private val model = ExperienceViewModel(
-        environment = environment,
-        dispatcher = environment.mainDispatcher,
-        ioDispatcher = environment.ioDispatcher,
-    )
+    private val model by lazy {
+        ExperienceViewModel(
+            environment = environment,
+            dispatcher = environment.mainDispatcher,
+            ioDispatcher = environment.ioDispatcher,
+        )
+    }
 
     private var stateJob: Job? = null
 
@@ -51,11 +70,11 @@ internal class ExperienceViewModelRobot : AbstractTestRobot() {
         position: Int,
         state: ExperienceState,
     ) {
-        if (state is ExperienceState.Retrieved) {
+        if (state is ExperienceState.RetrievedTree) {
             delay(500)
-            val stateInList = experienceStates[position] as? ExperienceState.Retrieved
-            val expected = state.experience.id to state.screenId
-            val actual = stateInList?.experience?.id to stateInList?.screenId
+            val stateInList = experienceStates[position] as? ExperienceState.RetrievedTree
+            val expected = state.experienceTree.experience.id to state.screenId
+            val actual = stateInList?.experienceTree?.experience?.id to stateInList?.screenId
             Assert.assertEquals(expected, actual)
         } else {
             Assert.assertEquals(state, experienceStates[position])
@@ -96,14 +115,15 @@ internal class ExperienceViewModelRobot : AbstractTestRobot() {
     }
 
     suspend fun inspectExperienceAt(position: Int, visitor: Visitor<*>) {
-        delay(1000)
-        (experienceStates[position] as? ExperienceState.Retrieved)
-            ?.experience
-            ?.let(visitor::visit)
+        delay(2000)
+        val experience = (experienceStates[position] as? ExperienceState.RetrievedTree)
+            ?.experienceTree?.experience
+
+        experience?.let(visitor::visit)
     }
 
-    fun setUserDataSupplierTo(supplier: UserDataSupplier) {
-        (environment as? EnvironmentImpl)?.userDataSupplier = supplier
+    fun setUserInfoSupplierTo(supplier: UserInfoSupplier) {
+        (environment as? EnvironmentImpl)?.userInfoSupplier = supplier
     }
 
 }

@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2020-present, Rover Labs, Inc. All rights reserved.
+ * You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+ * copy, modify, and distribute this software in source code or binary form for use
+ * in connection with the web services and APIs provided by Rover.
+ *
+ * This copyright notice shall be included in all copies or substantial portions of
+ * the software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package app.judo.sdk.api.models
 
 import app.judo.sdk.core.lang.Interpolator
@@ -6,26 +23,24 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class MenuItem(
-    /**
-     * A required property and should not be empty.
-     */
+    override val id: String,
+    override val name: String? = null,
+    override val metadata: Metadata? = null,
     val title: String,
-    // TODO: 2021-04-15 - Move this to the parent class
-    val titleFont: Font,
-    // TODO: 2021-04-15 - Move this to the parent class
-    val titleColor: ColorVariants,
-    val action: Action,
-    val menuItemVisibility: MenuItemVisibility,
-    /**
-     * Either and SVG loaded from a URL or an [Icon]
-     */
-    val icon: MenuItemIcon? = null,
+    override var action: Action? = null,
+    val showAsAction: MenuItemVisibility,
+    val iconMaterialName: String,
     val contentDescription: String? = null,
     val actionDescription: String? = null,
-) : Visitable {
+) : Node, Actionable, SupportsTranslation, SupportsInterpolation {
+
+    override val typeName = NodeType.MENU_ITEM.code
 
     @Transient
-    internal var translator: Translator = Translator { it }
+    override var translator: Translator = Translator { it }
+
+    @Transient
+    override var interpolator: Interpolator? = null
 
     internal val translatedTitle: String
         get() = translator.translate(title)
@@ -35,9 +50,6 @@ data class MenuItem(
 
     internal val translatedActionDescription: String?
         get() = actionDescription?.let(translator::translate) ?: actionDescription
-
-    @Transient
-    internal var interpolator: Interpolator? = null
 
     internal val interpolatedTitle: String
         get() {

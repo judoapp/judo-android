@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2020-present, Rover Labs, Inc. All rights reserved.
+ * You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+ * copy, modify, and distribute this software in source code or binary form for use
+ * in connection with the web services and APIs provided by Rover.
+ *
+ * This copyright notice shall be included in all copies or substantial portions of
+ * the software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 @file:Suppress("SpellCheckingInspection")
 
 package app.judo.sdk.utils
@@ -91,7 +108,22 @@ object TestJSON {
   ],
   "modalPresentationStyle": "sheet",
   "__typeName": "Screen",
-  "statusBarStyle": "default"
+  "androidStatusBarStyle": "default",
+  "androidStatusBarBackgroundColor": {
+    "systemName": "systemBackground",
+    "default": {
+      "red": 1,
+      "green": 1,
+      "blue": 1,
+      "alpha": 1
+    },
+    "darkMode": {
+      "red": 0,
+      "green": 0,
+      "blue": 0,
+      "alpha": 1
+    }
+  }
 }"""
 
     const val action_Close = """{
@@ -268,19 +300,6 @@ object TestJSON {
         }
     }"""
 
-    const val statusBarAppearance: String = """{
-    "style": "default",
-    "androidStyle": "default",
-    "backgroundColor": {
-        "default": {
-            "red": 1,
-            "blue": 1,
-            "green": 0,
-            "alpha": 0.1
-        }
-    }
-}"""
-
     const val text: String = """{
     "id": "799AAF28-9ABB-476F-BD9D-1E2BA785FB4B",
     "__typeName": "Text",
@@ -439,10 +458,23 @@ object TestJSON {
                 "53F6CBB6-050C-492C-A854-D01C9F5A1323"
             ],
             "name": "app.judo.sdk.api.models.Collection",
-            "dataKey": "data",
+            "keyPath": "data",
             "filters": [],
             "sortDescriptors": []
         }""".trimMargin()
+
+    val conditional = """{
+  "id": "906e5161-d309-4916-b018-16a198606596",
+  "__typeName": "Conditional",
+  "childIDs": [],
+  "conditions": [
+    {
+      "keyPath": "data.first_name",
+      "predicate": "equals",
+      "value": "George"
+    }
+  ]
+}""".trimMargin()
 
     const val register_response = """{
     "appId": 9,
@@ -451,71 +483,49 @@ object TestJSON {
 }"""
 
     const val app_bar = """{
-  "showUpArrow": true,
-  "upArrowIconURL": "https://storage.judo.app/up-arrrow",
-  "iconColor": {
-    "default": {
-      "alpha": 0.0,
-      "blue": 0.0,
-      "green": 0.0,
-      "red": 0.0
-    }
-  },
-  "title": "AppBar!!",
-  "titleFont": {
-    "__typeName": "FixedFont",
-    "weight": "bold",
-    "size": 20.0,
-    "isDynamic": false
-  },
-  "titleColor": {
-    "default": {
-      "alpha": 0.0,
-      "blue": 0.0,
-      "green": 0.0,
-      "red": 0.0
-    }
-  },
-  "backgroundColor": {
-    "default": {
-      "alpha": 0.0,
-      "blue": 0.0,
-      "green": 0.0,
-      "red": 0.0
-    }
-  },
-  "menuItems": [
-    {
-      "title": "Home",
-      "titleFont": {
-    "__typeName": "FixedFont",
-    "weight": "regular",
-    "size": 12.0,
-    "isDynamic": true
-  },
-  "titleColor": {
-    "default": {
-      "alpha": 1.0,
-      "blue": 1.0,
-      "green": 1.0,
-      "red": 1.0
-    }
-  },
-      "action": {
-        "__typeName": "CloseAction"
-      },
-      "menuItemVisibility": "always",
-      "icon": {
-        "__typeName": "MenuItemIcon",
-        "icon": {
-          "materialName": "house"
-        }
-      },
-      "contentDescription": "Home",
-      "actionDescription": "Go Home"
-    }
-  ]
-}"""
+            "id": "54BDDF49-BD4D-4232-AA87-15FA584D819C",
+            "__typeName": "AppBar",
+            "childIDs": [
+                "2BE7C25E-FC7D-454A-B611-69FD25202BBF",
+                "197BD70A-0B99-4BDB-9DD2-FBCA78B441C5"
+            ],
+            "title": "Screen",
+            "hideUpIcon": false,
+            "buttonColor": {
+                "systemName": "white",
+                "default": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                }
+            },
+            "titleFont": {
+                "__typeName": "FixedFont",
+                "size": 20,
+                "weight": "medium",
+                "isDynamic": false
+            },
+            "titleColor": {
+                "systemName": "white",
+                "default": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                }
+            },
+            "backgroundColor": {
+                "id": "A4ACD49C-796E-4AC4-9A12-4103A73C05D5",
+                "default": {
+                    "red": 0.3,
+                    "alpha": 1,
+                    "blue": 0.9,
+                    "green": 0
+                },
+            "name": "App Bar Background"
+            }
+        }"""
 
     private const val dummyBlurHash = "UQF5\${'$'}|xu9#Sh~7xsJ=NHW9jDoeI^OHWA\$eIp"
     val experience = """{
@@ -558,7 +568,22 @@ object TestJSON {
       ],
       "modalPresentationStyle": "sheet",
       "__typeName": "Screen",
-      "statusBarStyle": "default"
+      "androidStatusBarStyle": "default",
+      "androidStatusBarBackgroundColor": {
+        "systemName": "systemBackground",
+        "default": {
+          "red": 1,
+          "green": 1,
+          "blue": 1,
+          "alpha": 1
+        },
+        "darkMode": {
+          "red": 0,
+          "green": 0,
+          "blue": 0,
+          "alpha": 1
+        }
+      }
     },
     {
       "id": "7DEADBAB-15B8-4333-BC68-6156F74E5A26",
@@ -2187,6 +2212,22 @@ object TestJSON {
       "childIDs": [
         "998F250C-B9D3-4CFD-B452-286558FB150D"
       ],
+      "androidStatusBarStyle": "default",
+      "androidStatusBarBackgroundColor": {
+            "systemName": "systemBackground",
+            "default": {
+                "red": 1,
+                "green": 1,
+                "blue": 1,
+                "alpha": 1
+            },
+            "darkMode": {
+                "red": 0,
+                "green": 0,
+                "blue": 0,
+                "alpha": 1
+            }
+      },
       "navBarAppearance": {
         "largeTitleConfiguration": {
           "backgroundBlur": true,
@@ -2371,27 +2412,22 @@ object TestJSON {
             }
           },
           "statusBarStyle": "dark",
-          "titleColor": {
-            "systemName": "label",
-            "default": {
-              "red": 0,
-              "green": 0,
-              "blue": 0,
-              "alpha": 1
-            },
-            "darkMode": {
-              "red": 1,
-              "green": 1,
-              "blue": 1,
-              "alpha": 1
+          "androidStatusBarStyle": "default",
+            "androidStatusBarBackgroundColor": {
+                "systemName": "systemBackground",
+                "default": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
+                }
             }
-          },
-          "titleFont": {
-            "__typeName": "DynamicFont",
-            "textStyle": "body",
-            "isDynamic": true,
-            "emphases": []
-          }
         }
       },
       "modalPresentationStyle": "fullScreen",
@@ -2613,7 +2649,22 @@ object TestJSON {
                     "alpha": 1
                 }
             },
-            "statusBarStyle": "default"
+            "androidStatusBarStyle": "default",
+            "androidStatusBarBackgroundColor": {
+                "systemName": "systemBackground",
+                "default": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
+                }
+            }
         },
         {
             "id": "67976388-B142-4B21-AF39-9480FE12E5BC",
@@ -2712,7 +2763,22 @@ object TestJSON {
                     "alpha": 1
                 }
             },
-            "statusBarStyle": "default"
+            "androidStatusBarStyle": "default",
+            "androidStatusBarBackgroundColor": {
+                "systemName": "systemBackground",
+                "default": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
+                }
+            }
         },
         {
             "id": "E41D818D-3AA2-455D-A09C-7D7F6B3A62D1",
@@ -2811,7 +2877,22 @@ object TestJSON {
                     "alpha": 1
                 }
             },
-            "statusBarStyle": "default"
+            "androidStatusBarStyle": "default",
+            "androidStatusBarBackgroundColor": {
+                "systemName": "systemBackground",
+                "default": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
+                }
+            }
         },
         {
             "id": "483925C5-C6BE-4C26-AD36-BAB560B9BC16",
@@ -2910,7 +2991,22 @@ object TestJSON {
                     "alpha": 1
                 }
             },
-            "statusBarStyle": "default"
+            "androidStatusBarStyle": "default",
+            "androidStatusBarBackgroundColor": {
+                "systemName": "systemBackground",
+                "default": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
+                }
+            }
         },
         {
             "id": "BDECE627-D2F1-465A-A9ED-42DA18295D6A",
@@ -3009,7 +3105,22 @@ object TestJSON {
                     "alpha": 1
                 }
             },
-            "statusBarStyle": "default"
+            "androidStatusBarStyle": "default",
+            "androidStatusBarBackgroundColor": {
+                "systemName": "systemBackground",
+                "default": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
+                }
+            }
         },
         {
             "id": "C2E19CB8-D62C-44AF-BB98-B6D30815B19B",
@@ -3108,7 +3219,22 @@ object TestJSON {
                     "alpha": 1
                 }
             },
-            "statusBarStyle": "default"
+            "androidStatusBarStyle": "default",
+            "androidStatusBarBackgroundColor": {
+                "systemName": "systemBackground",
+                "default": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
+                }
+            }
         },
         {
             "id": "9123591A-467D-46F9-A93B-EA663964A241",
@@ -3207,7 +3333,22 @@ object TestJSON {
                     "alpha": 1
                 }
             },
-            "statusBarStyle": "default"
+            "androidStatusBarStyle": "default",
+            "androidStatusBarBackgroundColor": {
+                "systemName": "systemBackground",
+                "default": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
+                }
+            }
         },
         {
             "id": "0847239E-01D2-4C1B-AEFA-9F96769C3E5B",
@@ -3306,7 +3447,22 @@ object TestJSON {
                     "alpha": 1
                 }
             },
-            "statusBarStyle": "default"
+            "androidStatusBarStyle": "default",
+            "androidStatusBarBackgroundColor": {
+                "systemName": "systemBackground",
+                "default": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
+                }
+            }
         },
         {
             "id": "B36BD7C4-E982-415A-94DC-2108510DB54E",
@@ -3400,7 +3556,22 @@ object TestJSON {
                     "alpha": 1
                 }
             },
-            "statusBarStyle": "default"
+            "androidStatusBarStyle": "default",
+            "androidStatusBarBackgroundColor": {
+                "systemName": "systemBackground",
+                "default": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
+                }
+            }
         },
         {
             "id": "0C7DC340-A92B-4483-9437-657A35AF3805",
@@ -3524,12 +3695,19 @@ object TestJSON {
             },
             "statusBarStyle": "default",
             "androidStatusBarStyle": "default",
-            "statusBarBackgroundColor": {
+            "androidStatusBarBackgroundColor": {
+                "systemName": "systemBackground",
                 "default": {
-                    "red": 0.21568627450980393,
-                    "alpha": 1,
-                    "blue": 0.7019607843137254,
-                    "green": 0
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
                 }
             }
         },
@@ -3570,7 +3748,7 @@ object TestJSON {
                 "53F6CBB6-050C-492C-A854-D01C9F5A1323"
             ],
             "name": "Collection",
-            "dataKey": "data",
+            "keyPath": "data",
             "filters": [],
             "sortDescriptors": []
         },
@@ -3617,21 +3795,23 @@ object TestJSON {
 }""".trimMargin()
 
     val data_source_experience_single_screen = """{
-    "id": "265",
-    "name": "DataSources Test",
+    "id": "245",
+    "name": "Interpolated DataSources Test",
     "version": 1,
-    "revisionID": "257",
+    "revisionID": "381",
     "nodes": [
         {
-            "id": "DF5409B8-01F6-4803-8063-09B7013D73AA",
+            "id": "6E4A3EAE-B4CF-43BA-A1E9-6D747D00B726",
             "__typeName": "Screen",
             "childIDs": [
-                "1758EDF6-4C8F-4039-9C3A-0612AE0DE096"
+                "75BD2D0F-C4E9-46AB-AA06-F6D6C1D99584",
+                "0AB55608-CFD8-4680-B663-8DD197FD139A",
+                "1BB20847-3034-4DF4-AA0E-0EB95B664A14"
             ],
             "name": "Screen",
             "backButtonStyle": {
                 "__typeName": "DefaultBackButtonStyle",
-                "title": "Screen 2"
+                "title": "Screen"
             },
             "backgroundColor": {
                 "systemName": "systemBackground",
@@ -3650,222 +3830,311 @@ object TestJSON {
             },
             "statusBarStyle": "default",
             "androidStatusBarStyle": "default",
-            "statusBarBackgroundColor": {
+            "androidStatusBarBackgroundColor": {
+                "systemName": "systemBackground",
                 "default": {
-                    "red": 0.21568627450980393,
-                    "alpha": 1,
-                    "blue": 0.7019607843137254,
-                    "green": 0
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
                 }
             }
         },
         {
-            "id": "1758EDF6-4C8F-4039-9C3A-0612AE0DE096",
+            "id": "75BD2D0F-C4E9-46AB-AA06-F6D6C1D99584",
+            "__typeName": "NavBar",
+            "childIDs": [],
+            "title": "Screen",
+            "titleDisplayMode": "inline",
+            "hidesBackButton": false,
+            "titleFont": {
+                "__typeName": "DynamicFont",
+                "textStyle": "body",
+                "isDynamic": true,
+                "emphases": []
+            },
+            "largeTitleFont": {
+                "__typeName": "DynamicFont",
+                "textStyle": "largeTitle",
+                "isDynamic": true,
+                "emphases": []
+            },
+            "buttonFont": {
+                "__typeName": "DynamicFont",
+                "textStyle": "body",
+                "isDynamic": true,
+                "emphases": []
+            },
+            "appearance": {
+                "titleColor": {
+                    "systemName": "label",
+                    "default": {
+                        "red": 0,
+                        "green": 0,
+                        "blue": 0,
+                        "alpha": 1
+                    },
+                    "darkMode": {
+                        "red": 1,
+                        "green": 1,
+                        "blue": 1,
+                        "alpha": 1
+                    }
+                },
+                "buttonColor": {
+                    "systemName": "systemBlue",
+                    "default": {
+                        "red": 0,
+                        "green": 0.47843137254901963,
+                        "blue": 1,
+                        "alpha": 1
+                    },
+                    "darkMode": {
+                        "red": 0.0392156862745098,
+                        "green": 0.5176470588235295,
+                        "blue": 1,
+                        "alpha": 1
+                    },
+                    "highContrast": {
+                        "red": 0,
+                        "green": 0.25098039215686274,
+                        "blue": 0.8666666666666667,
+                        "alpha": 1
+                    },
+                    "darkModeHighContrast": {
+                        "red": 0.25098039215686274,
+                        "green": 0.611764705882353,
+                        "blue": 1,
+                        "alpha": 1
+                    }
+                },
+                "background": {
+                    "fillColor": {
+                        "systemName": "clear",
+                        "default": {
+                            "red": 1,
+                            "green": 1,
+                            "blue": 1,
+                            "alpha": 0
+                        },
+                        "darkMode": {
+                            "red": 1,
+                            "green": 1,
+                            "blue": 1,
+                            "alpha": 0
+                        },
+                        "highContrast": {
+                            "red": 1,
+                            "green": 1,
+                            "blue": 1,
+                            "alpha": 0
+                        },
+                        "darkModeHighContrast": {
+                            "red": 1,
+                            "green": 1,
+                            "blue": 1,
+                            "alpha": 0
+                        }
+                    },
+                    "shadowColor": {
+                        "default": {
+                            "red": 0,
+                            "alpha": 0.3,
+                            "blue": 0,
+                            "green": 0
+                        }
+                    },
+                    "blurEffect": true
+                }
+            }
+        },
+        {
+            "id": "0AB55608-CFD8-4680-B663-8DD197FD139A",
+            "__typeName": "AppBar",
+            "childIDs": [
+                "25542110-B694-4115-A283-A488670BFFEB"
+            ],
+            "title": "Users",
+            "hideUpIcon": true,
+            "buttonColor": {
+                "systemName": "white",
+                "default": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "highContrast": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "darkModeHighContrast": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                }
+            },
+            "titleFont": {
+                "__typeName": "FixedFont",
+                "size": 20,
+                "weight": "medium",
+                "isDynamic": false
+            },
+            "titleColor": {
+                "systemName": "white",
+                "default": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "highContrast": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "darkModeHighContrast": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                }
+            },
+            "backgroundColor": {
+                "id": "5CABBBB8-F6F6-49B9-8532-49C89A65CA26",
+                "default": {
+                    "red": 0.3843137254901961,
+                    "alpha": 1,
+                    "blue": 0.9333333333333333,
+                    "green": 0
+                },
+                "darkMode": {
+                    "red": 0.7333333333333333,
+                    "alpha": 1,
+                    "blue": 0.9882352941176471,
+                    "green": 0.5254901960784314
+                },
+                "name": "App Bar Background"
+            }
+        },
+        {
+            "id": "25542110-B694-4115-A283-A488670BFFEB",
+            "__typeName": "AppBarMenuItem",
+            "childIDs": [],
+            "action": {
+                "__typeName": "CloseAction"
+            },
+            "title": "Exit",
+            "showAsAction": "always",
+            "iconMaterialName": "exit_to_app"
+        },
+        {
+            "id": "1BB20847-3034-4DF4-AA0E-0EB95B664A14",
             "__typeName": "ScrollContainer",
             "childIDs": [
-                "62CC412B-179B-4112-B96F-4E7B2BCF73BB"
+                "7EEC4F2F-503D-4FB4-A437-D435CAD6175B"
             ],
-            "name": "Scroll Container",
             "axis": "vertical",
             "disableScrollBar": false
         },
         {
-            "id": "62CC412B-179B-4112-B96F-4E7B2BCF73BB",
+            "id": "7EEC4F2F-503D-4FB4-A437-D435CAD6175B",
             "__typeName": "DataSource",
             "childIDs": [
-                "210F73CC-672B-4543-AF12-7BCF766626E8",
-                "C64FF06C-69B2-44DB-A369-768ECC9C652A",
-                "8FFD5E5A-A1FF-420D-B585-F4074D0158F3"
+                "F662A03E-096E-40CA-AFCF-544C877BD49C",
+                "4484E3A0-5B60-4D24-85B8-DC3E2DCBEAFA",
+                "32B423FD-5DB5-4BD4-B8A2-234335CDEBA0",
+                "E2990191-BCC8-4E77-8AAA-FD6C0A18576B"
             ],
-            "name": "Dummy Users",
-            "headers": [
-                {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                },
-                {
-                    "key": "app-id",
-                    "value": "609561d4e8fed0600a0a26b8"
-                }
-            ],
+            "headers": [],
             "httpMethod": "GET",
-            "url": "https://dummyapi.io/data/api/user?limit=10"
+            "url": "https://reqres.in/api/users"
         },
         {
-            "id": "210F73CC-672B-4543-AF12-7BCF766626E8",
-            "__typeName": "Text",
-            "childIDs": [],
-            "text": "USER COUNT: {{data.limit}}",
-            "font": {
-                "__typeName": "DynamicFont",
-                "textStyle": "body",
-                "isDynamic": true,
-                "emphases": []
-            },
-            "textColor": {
-                "systemName": "label",
-                "default": {
-                    "red": 0,
-                    "green": 0,
-                    "blue": 0,
-                    "alpha": 1
-                },
-                "darkMode": {
-                    "red": 1,
-                    "green": 1,
-                    "blue": 1,
-                    "alpha": 1
-                }
-            },
-            "textAlignment": "leading"
-        },
-        {
-            "id": "C64FF06C-69B2-44DB-A369-768ECC9C652A",
-            "__typeName": "Collection",
-            "childIDs": [
-                "8D9A9AB3-800D-4891-93D9-7E9CD52963EC"
-            ],
-            "name": "Collection",
-            "dataKey": "data",
-            "filters": [],
-            "sortDescriptors": []
-        },
-        {
-            "id": "8D9A9AB3-800D-4891-93D9-7E9CD52963EC",
+            "id": "F662A03E-096E-40CA-AFCF-544C877BD49C",
             "__typeName": "VStack",
             "childIDs": [
-                "1A1531E8-1276-44D9-86B7-D5C441843596",
-                "F55CA332-6753-4E1F-AC07-208116BFB2B1"
+                "C6BCB0D2-0C14-494D-B4C9-DBD9AB73C3B6"
             ],
-            "alignment": "leading",
-            "spacing": 1
-        },
-        {
-            "id": "1A1531E8-1276-44D9-86B7-D5C441843596",
-            "__typeName": "HStack",
-            "childIDs": [
-                "F1CC884C-F5AD-4124-88F5-E2421CC0C2C8",
-                "6B5BCE96-8B93-44D2-9DFE-A5BA94987D80",
-                "55C95A98-CDBA-4C4E-917C-58D610F976F0",
-                "18D5D662-3E39-43D2-86C0-D79B887D149D"
-            ],
-            "name": "HStack",
-            "padding": {
-                "trailing": 0,
-                "top": 0,
-                "leading": 20,
-                "bottom": 0
-            },
             "alignment": "center",
-            "spacing": 0
+            "spacing": 8
         },
         {
-            "id": "F1CC884C-F5AD-4124-88F5-E2421CC0C2C8",
-            "__typeName": "Text",
-            "childIDs": [],
-            "name": " Hello,",
-            "text": "Hello, ",
-            "font": {
-                "__typeName": "DynamicFont",
-                "textStyle": "body",
-                "isDynamic": true,
-                "emphases": []
-            },
-            "textColor": {
-                "systemName": "label",
-                "default": {
-                    "red": 0,
-                    "green": 0,
-                    "blue": 0,
-                    "alpha": 1
-                },
-                "darkMode": {
-                    "red": 1,
-                    "green": 1,
-                    "blue": 1,
-                    "alpha": 1
-                }
-            },
-            "textAlignment": "leading"
-        },
-        {
-            "id": "6B5BCE96-8B93-44D2-9DFE-A5BA94987D80",
-            "__typeName": "Text",
-            "childIDs": [],
-            "name": "First Name",
-            "text": "{{data.firstName}} ",
-            "font": {
-                "__typeName": "DynamicFont",
-                "textStyle": "body",
-                "isDynamic": true,
-                "emphases": []
-            },
-            "textColor": {
-                "systemName": "label",
-                "default": {
-                    "red": 0,
-                    "green": 0,
-                    "blue": 0,
-                    "alpha": 1
-                },
-                "darkMode": {
-                    "red": 1,
-                    "green": 1,
-                    "blue": 1,
-                    "alpha": 1
-                }
-            },
-            "textAlignment": "leading"
-        },
-        {
-            "id": "55C95A98-CDBA-4C4E-917C-58D610F976F0",
-            "__typeName": "Text",
-            "childIDs": [],
-            "name": "Last Name",
-            "text": "{{data.lastName}}",
-            "font": {
-                "__typeName": "DynamicFont",
-                "textStyle": "body",
-                "isDynamic": true,
-                "emphases": []
-            },
-            "textColor": {
-                "systemName": "label",
-                "default": {
-                    "red": 0,
-                    "green": 0,
-                    "blue": 0,
-                    "alpha": 1
-                },
-                "darkMode": {
-                    "red": 1,
-                    "green": 1,
-                    "blue": 1,
-                    "alpha": 1
-                }
-            },
-            "textAlignment": "leading"
-        },
-        {
-            "id": "18D5D662-3E39-43D2-86C0-D79B887D149D",
+            "id": "C6BCB0D2-0C14-494D-B4C9-DBD9AB73C3B6",
             "__typeName": "Spacer",
             "childIDs": []
         },
         {
-            "id": "F55CA332-6753-4E1F-AC07-208116BFB2B1",
-            "__typeName": "Spacer",
-            "childIDs": [],
-            "frame": {
-                "alignment": "center",
-                "height": 0
-            }
+            "id": "4484E3A0-5B60-4D24-85B8-DC3E2DCBEAFA",
+            "__typeName": "VStack",
+            "childIDs": [
+                "5998001F-C05C-47ED-94B6-F88BDBA48D80",
+                "7200CF23-41BD-4996-9F5C-21E91A7DC4AA"
+            ],
+            "alignment": "center",
+            "spacing": 8
         },
         {
-            "id": "8FFD5E5A-A1FF-420D-B585-F4074D0158F3",
+            "id": "5998001F-C05C-47ED-94B6-F88BDBA48D80",
+            "__typeName": "Text",
+            "childIDs": [],
+            "name": " Page:",
+            "text": "Page: {{data.page}}",
+            "font": {
+                "__typeName": "DynamicFont",
+                "textStyle": "body",
+                "isDynamic": true,
+                "emphases": []
+            },
+            "textColor": {
+                "systemName": "label",
+                "default": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                }
+            },
+            "textAlignment": "leading"
+        },
+        {
+            "id": "7200CF23-41BD-4996-9F5C-21E91A7DC4AA",
+            "__typeName": "Spacer",
+            "childIDs": []
+        },
+        {
+            "id": "32B423FD-5DB5-4BD4-B8A2-234335CDEBA0",
             "__typeName": "DataSource",
             "childIDs": [
-                "48C41C65-623F-4B88-9374-F2A17312A7D0",
-                "A8312ABE-B99F-40B6-ACD2-453BEC598408"
+                "8BF93C31-53C7-4965-8F80-B15212435D5E"
             ],
             "name": "Data Source",
             "headers": [],
@@ -3873,61 +4142,45 @@ object TestJSON {
             "url": "https://reqres.in/api/users"
         },
         {
-            "id": "48C41C65-623F-4B88-9374-F2A17312A7D0",
-            "__typeName": "Rectangle",
-            "childIDs": [],
-            "name": "Rectangle",
-            "frame": {
-                "alignment": "center",
-                "height": 4
-            },
-            "cornerRadius": 0,
-            "fill": {
-                "__typeName": "FlatFill",
-                "color": {
-                    "systemName": "systemFill",
-                    "default": {
-                        "red": 0.47058823529411764,
-                        "green": 0.47058823529411764,
-                        "blue": 0.5019607843137255,
-                        "alpha": 0.2
-                    },
-                    "darkMode": {
-                        "red": 0.47058823529411764,
-                        "green": 0.47058823529411764,
-                        "blue": 0.5019607843137255,
-                        "alpha": 0.36
-                    }
-                }
-            }
-        },
-        {
-            "id": "A8312ABE-B99F-40B6-ACD2-453BEC598408",
-            "__typeName": "VStack",
+            "id": "8BF93C31-53C7-4965-8F80-B15212435D5E",
+            "__typeName": "HStack",
             "childIDs": [
-                "2794D179-4D10-4014-B3C8-2C91C8BFB70F",
-                "7ADE52D3-2481-407A-B00E-611A9CF7C0A3"
+                "116783D6-5636-4BA1-BC14-DF12661C5BEC",
+                "719D8612-0629-417F-BD32-9FAC27FE4819"
             ],
             "alignment": "center",
             "spacing": 8
         },
         {
-            "id": "2794D179-4D10-4014-B3C8-2C91C8BFB70F",
-            "__typeName": "Collection",
+            "id": "116783D6-5636-4BA1-BC14-DF12661C5BEC",
+            "__typeName": "VStack",
             "childIDs": [
-                "A90B03B5-4EEF-455A-9B71-EA7F44768276"
+                "E65E29A2-6E60-4D3F-9277-D2F1D0231B86"
             ],
-            "name": "Collection",
-            "dataKey": "data",
-            "filters": [],
-            "sortDescriptors": []
+            "name": "VStack",
+            "alignment": "leading",
+            "spacing": 8
         },
         {
-            "id": "A90B03B5-4EEF-455A-9B71-EA7F44768276",
+            "id": "E65E29A2-6E60-4D3F-9277-D2F1D0231B86",
+            "__typeName": "Collection",
+            "childIDs": [
+                "C2BC82E6-3ED0-469C-84A0-50C2811025E0"
+            ],
+            "keyPath": "data.data",
+            "filters": [],
+            "sortDescriptors": [
+                {
+                    "keyPath": "data.id",
+                    "ascending": false
+                }
+            ]
+        },
+        {
+            "id": "C2BC82E6-3ED0-469C-84A0-50C2811025E0",
             "__typeName": "Text",
             "childIDs": [],
-            "name": " Hello,",
-            "text": "Hello, {{data.last_name}}",
+            "text": "{{data.first_name}}",
             "font": {
                 "__typeName": "DynamicFont",
                 "textStyle": "body",
@@ -3935,50 +4188,52 @@ object TestJSON {
                 "emphases": []
             },
             "textColor": {
-                "systemName": "systemPink",
+                "systemName": "label",
                 "default": {
-                    "red": 1,
-                    "green": 0.17647058823529413,
-                    "blue": 0.3333333333333333,
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
                     "alpha": 1
                 },
                 "darkMode": {
                     "red": 1,
-                    "green": 0.21568627450980393,
-                    "blue": 0.37254901960784315,
-                    "alpha": 1
-                },
-                "highContrast": {
-                    "red": 0.8274509803921568,
-                    "green": 0.058823529411764705,
-                    "blue": 0.27058823529411763,
-                    "alpha": 1
-                },
-                "darkModeHighContrast": {
-                    "red": 1,
-                    "green": 0.39215686274509803,
-                    "blue": 0.5098039215686274,
+                    "green": 1,
+                    "blue": 1,
                     "alpha": 1
                 }
             },
             "textAlignment": "leading"
         },
         {
-            "id": "7ADE52D3-2481-407A-B00E-611A9CF7C0A3",
-            "__typeName": "Collection",
+            "id": "719D8612-0629-417F-BD32-9FAC27FE4819",
+            "__typeName": "VStack",
             "childIDs": [
-                "BF0AC99B-31C0-4794-BE63-D09E30ADCAEA"
+                "B5B64448-B7AE-4FBE-9E5E-E8044B0E3386"
             ],
-            "dataKey": "data",
-            "filters": [],
-            "sortDescriptors": []
+            "name": "VStack",
+            "alignment": "leading",
+            "spacing": 8
         },
         {
-            "id": "BF0AC99B-31C0-4794-BE63-D09E30ADCAEA",
+            "id": "B5B64448-B7AE-4FBE-9E5E-E8044B0E3386",
+            "__typeName": "Collection",
+            "childIDs": [
+                "4623F318-1C1C-43B9-8934-8CD40946AC6B"
+            ],
+            "keyPath": "data.data",
+            "filters": [],
+            "sortDescriptors": [
+                {
+                    "keyPath": "data.id",
+                    "ascending": false
+                }
+            ]
+        },
+        {
+            "id": "4623F318-1C1C-43B9-8934-8CD40946AC6B",
             "__typeName": "Text",
             "childIDs": [],
-            "name": " Hello,",
-            "text": "Hello, {{data.last_name}}",
+            "text": "{{data.last_name}}",
             "font": {
                 "__typeName": "DynamicFont",
                 "textStyle": "body",
@@ -3986,28 +4241,246 @@ object TestJSON {
                 "emphases": []
             },
             "textColor": {
-                "systemName": "systemBlue",
+                "systemName": "label",
                 "default": {
                     "red": 0,
-                    "green": 0.47843137254901963,
-                    "blue": 1,
+                    "green": 0,
+                    "blue": 0,
                     "alpha": 1
                 },
                 "darkMode": {
-                    "red": 0.0392156862745098,
-                    "green": 0.5176470588235295,
+                    "red": 1,
+                    "green": 1,
                     "blue": 1,
                     "alpha": 1
+                }
+            },
+            "textAlignment": "leading"
+        },
+        {
+            "id": "E2990191-BCC8-4E77-8AAA-FD6C0A18576B",
+            "__typeName": "DataSource",
+            "childIDs": [
+                "B812F7EE-F84B-4E21-B7D3-79B95C1BF805",
+                "9442403B-F30D-4C29-8172-A2DB261AC03F"
+            ],
+            "name": "Data Source",
+            "headers": [],
+            "httpMethod": "GET",
+            "url": "https://reqres.in/api/users?page={{data.total_pages}}"
+        },
+        {
+            "id": "B812F7EE-F84B-4E21-B7D3-79B95C1BF805",
+            "__typeName": "VStack",
+            "childIDs": [
+                "83920C42-E402-436A-B2A6-E5286EAC3079",
+                "49F862B3-522A-437B-92D5-9A093278C077",
+                "B8DEE5D4-2F15-4D1F-9BAD-467245EBF302",
+                "0FC480B6-DDF5-4DB4-A398-B2050B3389E5"
+            ],
+            "alignment": "center",
+            "spacing": 8
+        },
+        {
+            "id": "83920C42-E402-436A-B2A6-E5286EAC3079",
+            "__typeName": "Spacer",
+            "childIDs": [],
+            "name": "Spacer"
+        },
+        {
+            "id": "49F862B3-522A-437B-92D5-9A093278C077",
+            "__typeName": "Divider",
+            "childIDs": [],
+            "backgroundColor": {
+                "systemName": "separator",
+                "default": {
+                    "red": 0.23529411764705882,
+                    "green": 0.23529411764705882,
+                    "blue": 0.2627450980392157,
+                    "alpha": 0.29
                 },
-                "highContrast": {
+                "darkMode": {
+                    "red": 0.32941176470588235,
+                    "green": 0.32941176470588235,
+                    "blue": 0.34509803921568627,
+                    "alpha": 0.6
+                }
+            }
+        },
+        {
+            "id": "B8DEE5D4-2F15-4D1F-9BAD-467245EBF302",
+            "__typeName": "Text",
+            "childIDs": [],
+            "text": "Page: {{data.page}}",
+            "font": {
+                "__typeName": "DynamicFont",
+                "textStyle": "body",
+                "isDynamic": true,
+                "emphases": []
+            },
+            "textColor": {
+                "systemName": "label",
+                "default": {
                     "red": 0,
-                    "green": 0.25098039215686274,
-                    "blue": 0.8666666666666667,
+                    "green": 0,
+                    "blue": 0,
                     "alpha": 1
                 },
-                "darkModeHighContrast": {
-                    "red": 0.25098039215686274,
-                    "green": 0.611764705882353,
+                "darkMode": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                }
+            },
+            "textAlignment": "leading"
+        },
+        {
+            "id": "0FC480B6-DDF5-4DB4-A398-B2050B3389E5",
+            "__typeName": "Spacer",
+            "childIDs": []
+        },
+        {
+            "id": "9442403B-F30D-4C29-8172-A2DB261AC03F",
+            "__typeName": "HStack",
+            "childIDs": [
+                "1D461377-53BF-49CC-AA7B-4891C1A50CEE",
+                "BA08F025-DDD5-4C75-BEE2-97E036138855"
+            ],
+            "alignment": "center",
+            "spacing": 8
+        },
+        {
+            "id": "1D461377-53BF-49CC-AA7B-4891C1A50CEE",
+            "__typeName": "VStack",
+            "childIDs": [
+                "098E63D8-5D2E-4098-8187-C6783A8D135F"
+            ],
+            "alignment": "leading",
+            "spacing": 8
+        },
+        {
+            "id": "098E63D8-5D2E-4098-8187-C6783A8D135F",
+            "__typeName": "Collection",
+            "childIDs": [
+                "4CB6E19E-7A20-4777-80BA-45F1BC07997F"
+            ],
+            "keyPath": "data.data",
+            "filters": [
+                {
+                    "keyPath": "data.first_name",
+                    "value": "George",
+                    "predicate": "doesNotEqual"
+                },
+                {
+                    "keyPath": "data.last_name",
+                    "value": "Lawson",
+                    "predicate": "doesNotEqual"
+                }
+            ],
+            "sortDescriptors": [
+                {
+                    "keyPath": "data.id",
+                    "ascending": false
+                }
+            ],
+            "limit": {
+                "show": 3,
+                "startAt": 1
+            }
+        },
+        {
+            "id": "4CB6E19E-7A20-4777-80BA-45F1BC07997F",
+            "__typeName": "Text",
+            "childIDs": [],
+            "name": "First Name",
+            "text": "{{data.first_name}}",
+            "font": {
+                "__typeName": "DynamicFont",
+                "textStyle": "body",
+                "isDynamic": true,
+                "emphases": []
+            },
+            "textColor": {
+                "systemName": "label",
+                "default": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                }
+            },
+            "textAlignment": "leading"
+        },
+        {
+            "id": "BA08F025-DDD5-4C75-BEE2-97E036138855",
+            "__typeName": "VStack",
+            "childIDs": [
+                "19A89BF2-82D3-43C7-A648-341045AD9A74"
+            ],
+            "alignment": "leading",
+            "spacing": 8
+        },
+        {
+            "id": "19A89BF2-82D3-43C7-A648-341045AD9A74",
+            "__typeName": "Collection",
+            "childIDs": [
+                "BAEC6D95-8A46-4285-995A-3F0478AC3C88"
+            ],
+            "name": "Collection",
+            "keyPath": "data.data",
+            "filters": [
+                {
+                    "keyPath": "data.first_name",
+                    "value": "George",
+                    "predicate": "doesNotEqual"
+                },
+                {
+                    "keyPath": "data.last_name",
+                    "value": "Lawson",
+                    "predicate": "doesNotEqual"
+                }
+            ],
+            "sortDescriptors": [
+                {
+                    "keyPath": "data.id",
+                    "ascending": false
+                }
+            ],
+            "limit": {
+                "show": 3,
+                "startAt": 1
+            }
+        },
+        {
+            "id": "BAEC6D95-8A46-4285-995A-3F0478AC3C88",
+            "__typeName": "Text",
+            "childIDs": [],
+            "name": "Last Name",
+            "text": "{{data.last_name}}",
+            "font": {
+                "__typeName": "DynamicFont",
+                "textStyle": "body",
+                "isDynamic": true,
+                "emphases": []
+            },
+            "textColor": {
+                "systemName": "label",
+                "default": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 1,
+                    "green": 1,
                     "blue": 1,
                     "alpha": 1
                 }
@@ -4016,16 +4489,13 @@ object TestJSON {
         }
     ],
     "screenIDs": [
-        "DF5409B8-01F6-4803-8063-09B7013D73AA"
+        "6E4A3EAE-B4CF-43BA-A1E9-6D747D00B726"
     ],
-    "initialScreenID": "DF5409B8-01F6-4803-8063-09B7013D73AA",
+    "initialScreenID": "6E4A3EAE-B4CF-43BA-A1E9-6D747D00B726",
     "fonts": [],
-    "localization": {
-        "fr": {
-            "Hello, {{data.firstName}}": "Bonjour, {{data.firstName}}"
-        }
-    },
-    "appearance": "auto"
+    "localization": {},
+    "appearance": "auto",
+    "prefetchImages": "none"
 }""".trimMargin()
 
     val dummy_api_response: String = """{
@@ -4206,12 +4676,19 @@ object TestJSON {
             },
             "statusBarStyle": "default",
             "androidStatusBarStyle": "default",
-            "statusBarBackgroundColor": {
+            "androidStatusBarBackgroundColor": {
+                "systemName": "systemBackground",
                 "default": {
-                    "red": 0.21568627450980393,
-                    "alpha": 1,
-                    "blue": 0.7019607843137254,
-                    "green": 0
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
                 }
             }
         },
@@ -4248,6 +4725,836 @@ object TestJSON {
         "7AEF5C98-4A6B-41B3-ADB9-358DC13D441F"
     ],
     "initialScreenID": "7AEF5C98-4A6B-41B3-ADB9-358DC13D441F",
+    "fonts": [],
+    "localization": {},
+    "appearance": "auto",
+    "prefetchImages": "none"
+}""".trimMargin()
+
+    val interpolated_data_source_url_expereience = """{
+    "id": "245",
+    "name": "Interpolated DataSources Test",
+    "version": 1,
+    "revisionID": "378",
+    "nodes": [
+        {
+            "id": "6E4A3EAE-B4CF-43BA-A1E9-6D747D00B726",
+            "__typeName": "Screen",
+            "childIDs": [
+                "75BD2D0F-C4E9-46AB-AA06-F6D6C1D99584",
+                "0AB55608-CFD8-4680-B663-8DD197FD139A",
+                "1BB20847-3034-4DF4-AA0E-0EB95B664A14"
+            ],
+            "name": "Screen",
+            "backButtonStyle": {
+                "__typeName": "DefaultBackButtonStyle",
+                "title": "Screen"
+            },
+            "backgroundColor": {
+                "systemName": "systemBackground",
+                "default": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
+                }
+            },
+            "statusBarStyle": "default",
+            "androidStatusBarStyle": "default",
+            "androidStatusBarBackgroundColor": {
+                "default": {
+                    "red": 0.21568627450980393,
+                    "alpha": 1,
+                    "blue": 0.7019607843137254,
+                    "green": 0
+                }
+            }
+        },
+        {
+            "id": "75BD2D0F-C4E9-46AB-AA06-F6D6C1D99584",
+            "__typeName": "NavBar",
+            "childIDs": [],
+            "title": "Screen",
+            "titleDisplayMode": "inline",
+            "hidesBackButton": false,
+            "titleFont": {
+                "__typeName": "DynamicFont",
+                "textStyle": "body",
+                "isDynamic": true,
+                "emphases": []
+            },
+            "largeTitleFont": {
+                "__typeName": "DynamicFont",
+                "textStyle": "largeTitle",
+                "isDynamic": true,
+                "emphases": []
+            },
+            "buttonFont": {
+                "__typeName": "DynamicFont",
+                "textStyle": "body",
+                "isDynamic": true,
+                "emphases": []
+            },
+            "appearance": {
+                "titleColor": {
+                    "systemName": "label",
+                    "default": {
+                        "red": 0,
+                        "green": 0,
+                        "blue": 0,
+                        "alpha": 1
+                    },
+                    "darkMode": {
+                        "red": 1,
+                        "green": 1,
+                        "blue": 1,
+                        "alpha": 1
+                    }
+                },
+                "buttonColor": {
+                    "systemName": "systemBlue",
+                    "default": {
+                        "red": 0,
+                        "green": 0.47843137254901963,
+                        "blue": 1,
+                        "alpha": 1
+                    },
+                    "darkMode": {
+                        "red": 0.0392156862745098,
+                        "green": 0.5176470588235295,
+                        "blue": 1,
+                        "alpha": 1
+                    },
+                    "highContrast": {
+                        "red": 0,
+                        "green": 0.25098039215686274,
+                        "blue": 0.8666666666666667,
+                        "alpha": 1
+                    },
+                    "darkModeHighContrast": {
+                        "red": 0.25098039215686274,
+                        "green": 0.611764705882353,
+                        "blue": 1,
+                        "alpha": 1
+                    }
+                },
+                "background": {
+                    "fillColor": {
+                        "systemName": "clear",
+                        "default": {
+                            "red": 1,
+                            "green": 1,
+                            "blue": 1,
+                            "alpha": 0
+                        },
+                        "darkMode": {
+                            "red": 1,
+                            "green": 1,
+                            "blue": 1,
+                            "alpha": 0
+                        },
+                        "highContrast": {
+                            "red": 1,
+                            "green": 1,
+                            "blue": 1,
+                            "alpha": 0
+                        },
+                        "darkModeHighContrast": {
+                            "red": 1,
+                            "green": 1,
+                            "blue": 1,
+                            "alpha": 0
+                        }
+                    },
+                    "shadowColor": {
+                        "default": {
+                            "red": 0,
+                            "alpha": 0.3,
+                            "blue": 0,
+                            "green": 0
+                        }
+                    },
+                    "blurEffect": true
+                }
+            }
+        },
+        {
+            "id": "0AB55608-CFD8-4680-B663-8DD197FD139A",
+            "__typeName": "AppBar",
+            "childIDs": [
+                "25542110-B694-4115-A283-A488670BFFEB"
+            ],
+            "title": "Users",
+            "hideUpIcon": true,
+            "buttonColor": {
+                "systemName": "white",
+                "default": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "highContrast": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "darkModeHighContrast": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                }
+            },
+            "titleFont": {
+                "__typeName": "FixedFont",
+                "size": 20,
+                "weight": "medium",
+                "isDynamic": false
+            },
+            "titleColor": {
+                "systemName": "white",
+                "default": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "highContrast": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "darkModeHighContrast": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                }
+            },
+            "backgroundColor": {
+                "id": "5CABBBB8-F6F6-49B9-8532-49C89A65CA26",
+                "default": {
+                    "red": 0.3843137254901961,
+                    "alpha": 1,
+                    "blue": 0.9333333333333333,
+                    "green": 0
+                },
+                "darkMode": {
+                    "red": 0.7333333333333333,
+                    "alpha": 1,
+                    "blue": 0.9882352941176471,
+                    "green": 0.5254901960784314
+                },
+                "name": "App Bar Background"
+            }
+        },
+        {
+            "id": "25542110-B694-4115-A283-A488670BFFEB",
+            "__typeName": "AppBarMenuItem",
+            "childIDs": [],
+            "action": {
+                "__typeName": "CloseAction"
+            },
+            "title": "Exit",
+            "showAsAction": "always",
+            "iconMaterialName": "exit_to_app"
+        },
+        {
+            "id": "1BB20847-3034-4DF4-AA0E-0EB95B664A14",
+            "__typeName": "ScrollContainer",
+            "childIDs": [
+                "7EEC4F2F-503D-4FB4-A437-D435CAD6175B"
+            ],
+            "axis": "vertical",
+            "disableScrollBar": false
+        },
+        {
+            "id": "7EEC4F2F-503D-4FB4-A437-D435CAD6175B",
+            "__typeName": "DataSource",
+            "childIDs": [
+                "F662A03E-096E-40CA-AFCF-544C877BD49C",
+                "4484E3A0-5B60-4D24-85B8-DC3E2DCBEAFA",
+                "32B423FD-5DB5-4BD4-B8A2-234335CDEBA0",
+                "E2990191-BCC8-4E77-8AAA-FD6C0A18576B"
+            ],
+            "headers": [],
+            "httpMethod": "GET",
+            "url": "https://reqres.in/api/users"
+        },
+        {
+            "id": "F662A03E-096E-40CA-AFCF-544C877BD49C",
+            "__typeName": "VStack",
+            "childIDs": [
+                "C6BCB0D2-0C14-494D-B4C9-DBD9AB73C3B6"
+            ],
+            "alignment": "center",
+            "spacing": 8
+        },
+        {
+            "id": "C6BCB0D2-0C14-494D-B4C9-DBD9AB73C3B6",
+            "__typeName": "Spacer",
+            "childIDs": []
+        },
+        {
+            "id": "4484E3A0-5B60-4D24-85B8-DC3E2DCBEAFA",
+            "__typeName": "VStack",
+            "childIDs": [
+                "5998001F-C05C-47ED-94B6-F88BDBA48D80",
+                "7200CF23-41BD-4996-9F5C-21E91A7DC4AA"
+            ],
+            "alignment": "center",
+            "spacing": 8
+        },
+        {
+            "id": "5998001F-C05C-47ED-94B6-F88BDBA48D80",
+            "__typeName": "Text",
+            "childIDs": [],
+            "name": " Page:",
+            "text": "Page: {{data.page}}",
+            "font": {
+                "__typeName": "DynamicFont",
+                "textStyle": "body",
+                "isDynamic": true,
+                "emphases": []
+            },
+            "textColor": {
+                "systemName": "label",
+                "default": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                }
+            },
+            "textAlignment": "leading"
+        },
+        {
+            "id": "7200CF23-41BD-4996-9F5C-21E91A7DC4AA",
+            "__typeName": "Spacer",
+            "childIDs": []
+        },
+        {
+            "id": "32B423FD-5DB5-4BD4-B8A2-234335CDEBA0",
+            "__typeName": "DataSource",
+            "childIDs": [
+                "8BF93C31-53C7-4965-8F80-B15212435D5E"
+            ],
+            "name": "Data Source",
+            "headers": [],
+            "httpMethod": "GET",
+            "url": "https://reqres.in/api/users"
+        },
+        {
+            "id": "8BF93C31-53C7-4965-8F80-B15212435D5E",
+            "__typeName": "HStack",
+            "childIDs": [
+                "116783D6-5636-4BA1-BC14-DF12661C5BEC",
+                "719D8612-0629-417F-BD32-9FAC27FE4819"
+            ],
+            "alignment": "center",
+            "spacing": 8
+        },
+        {
+            "id": "116783D6-5636-4BA1-BC14-DF12661C5BEC",
+            "__typeName": "VStack",
+            "childIDs": [
+                "E65E29A2-6E60-4D3F-9277-D2F1D0231B86"
+            ],
+            "name": "VStack",
+            "alignment": "leading",
+            "spacing": 8
+        },
+        {
+            "id": "E65E29A2-6E60-4D3F-9277-D2F1D0231B86",
+            "__typeName": "Collection",
+            "childIDs": [
+                "C2BC82E6-3ED0-469C-84A0-50C2811025E0"
+            ],
+            "keyPath": "data.data",
+            "filters": [],
+            "sortDescriptors": []
+        },
+        {
+            "id": "C2BC82E6-3ED0-469C-84A0-50C2811025E0",
+            "__typeName": "Text",
+            "childIDs": [],
+            "text": "{{data.first_name}}",
+            "font": {
+                "__typeName": "DynamicFont",
+                "textStyle": "body",
+                "isDynamic": true,
+                "emphases": []
+            },
+            "textColor": {
+                "systemName": "label",
+                "default": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                }
+            },
+            "textAlignment": "leading"
+        },
+        {
+            "id": "719D8612-0629-417F-BD32-9FAC27FE4819",
+            "__typeName": "VStack",
+            "childIDs": [
+                "B5B64448-B7AE-4FBE-9E5E-E8044B0E3386"
+            ],
+            "name": "VStack",
+            "alignment": "leading",
+            "spacing": 8
+        },
+        {
+            "id": "B5B64448-B7AE-4FBE-9E5E-E8044B0E3386",
+            "__typeName": "Collection",
+            "childIDs": [
+                "4623F318-1C1C-43B9-8934-8CD40946AC6B"
+            ],
+            "keyPath": "data.data",
+            "filters": [],
+            "sortDescriptors": []
+        },
+        {
+            "id": "4623F318-1C1C-43B9-8934-8CD40946AC6B",
+            "__typeName": "Text",
+            "childIDs": [],
+            "text": "{{data.last_name}}",
+            "font": {
+                "__typeName": "DynamicFont",
+                "textStyle": "body",
+                "isDynamic": true,
+                "emphases": []
+            },
+            "textColor": {
+                "systemName": "label",
+                "default": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                }
+            },
+            "textAlignment": "leading"
+        },
+        {
+            "id": "E2990191-BCC8-4E77-8AAA-FD6C0A18576B",
+            "__typeName": "DataSource",
+            "childIDs": [
+                "B812F7EE-F84B-4E21-B7D3-79B95C1BF805",
+                "9442403B-F30D-4C29-8172-A2DB261AC03F"
+            ],
+            "name": "Data Source",
+            "headers": [],
+            "httpMethod": "GET",
+            "url": "https://reqres.in/api/users?page={{data.total_pages}}"
+        },
+        {
+            "id": "B812F7EE-F84B-4E21-B7D3-79B95C1BF805",
+            "__typeName": "VStack",
+            "childIDs": [
+                "83920C42-E402-436A-B2A6-E5286EAC3079",
+                "49F862B3-522A-437B-92D5-9A093278C077",
+                "B8DEE5D4-2F15-4D1F-9BAD-467245EBF302",
+                "0FC480B6-DDF5-4DB4-A398-B2050B3389E5"
+            ],
+            "alignment": "center",
+            "spacing": 8
+        },
+        {
+            "id": "83920C42-E402-436A-B2A6-E5286EAC3079",
+            "__typeName": "Spacer",
+            "childIDs": [],
+            "name": "Spacer"
+        },
+        {
+            "id": "49F862B3-522A-437B-92D5-9A093278C077",
+            "__typeName": "Divider",
+            "childIDs": [],
+            "backgroundColor": {
+                "systemName": "separator",
+                "default": {
+                    "red": 0.23529411764705882,
+                    "green": 0.23529411764705882,
+                    "blue": 0.2627450980392157,
+                    "alpha": 0.29
+                },
+                "darkMode": {
+                    "red": 0.32941176470588235,
+                    "green": 0.32941176470588235,
+                    "blue": 0.34509803921568627,
+                    "alpha": 0.6
+                }
+            }
+        },
+        {
+            "id": "B8DEE5D4-2F15-4D1F-9BAD-467245EBF302",
+            "__typeName": "Text",
+            "childIDs": [],
+            "text": "Page: {{data.page}}",
+            "font": {
+                "__typeName": "DynamicFont",
+                "textStyle": "body",
+                "isDynamic": true,
+                "emphases": []
+            },
+            "textColor": {
+                "systemName": "label",
+                "default": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                }
+            },
+            "textAlignment": "leading"
+        },
+        {
+            "id": "0FC480B6-DDF5-4DB4-A398-B2050B3389E5",
+            "__typeName": "Spacer",
+            "childIDs": []
+        },
+        {
+            "id": "9442403B-F30D-4C29-8172-A2DB261AC03F",
+            "__typeName": "HStack",
+            "childIDs": [
+                "1D461377-53BF-49CC-AA7B-4891C1A50CEE",
+                "BA08F025-DDD5-4C75-BEE2-97E036138855"
+            ],
+            "alignment": "center",
+            "spacing": 8
+        },
+        {
+            "id": "1D461377-53BF-49CC-AA7B-4891C1A50CEE",
+            "__typeName": "VStack",
+            "childIDs": [
+                "098E63D8-5D2E-4098-8187-C6783A8D135F"
+            ],
+            "alignment": "leading",
+            "spacing": 8
+        },
+        {
+            "id": "098E63D8-5D2E-4098-8187-C6783A8D135F",
+            "__typeName": "Collection",
+            "childIDs": [
+                "4CB6E19E-7A20-4777-80BA-45F1BC07997F"
+            ],
+            "keyPath": "data.data",
+            "filters": [
+                {
+                    "keyPath": "data.first_name",
+                    "value": "George",
+                    "predicate": "doesNotEqual"
+                },
+                {
+                    "keyPath": "data.last_name",
+                    "value": "Lawson",
+                    "predicate": "doesNotEqual"
+                }
+            ],
+            "sortDescriptors": [
+                {
+                    "keyPath": "data.last_name",
+                    "ascending": false
+                }
+            ],
+            "limit": {
+                "show": 3,
+                "startAt": 1
+            }
+        },
+        {
+            "id": "4CB6E19E-7A20-4777-80BA-45F1BC07997F",
+            "__typeName": "Text",
+            "childIDs": [],
+            "name": "First Name",
+            "text": "{{data.first_name}}",
+            "font": {
+                "__typeName": "DynamicFont",
+                "textStyle": "body",
+                "isDynamic": true,
+                "emphases": []
+            },
+            "textColor": {
+                "systemName": "label",
+                "default": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                }
+            },
+            "textAlignment": "leading"
+        },
+        {
+            "id": "BA08F025-DDD5-4C75-BEE2-97E036138855",
+            "__typeName": "VStack",
+            "childIDs": [
+                "19A89BF2-82D3-43C7-A648-341045AD9A74"
+            ],
+            "alignment": "leading",
+            "spacing": 8
+        },
+        {
+            "id": "19A89BF2-82D3-43C7-A648-341045AD9A74",
+            "__typeName": "Collection",
+            "childIDs": [
+                "BAEC6D95-8A46-4285-995A-3F0478AC3C88"
+            ],
+            "name": "Collection",
+            "keyPath": "data.data",
+            "filters": [
+                {
+                    "keyPath": "data.first_name",
+                    "value": "George",
+                    "predicate": "doesNotEqual"
+                },
+                {
+                    "keyPath": "data.last_name",
+                    "value": "Lawson",
+                    "predicate": "doesNotEqual"
+                }
+            ],
+            "sortDescriptors": [
+                {
+                    "keyPath": "data.last_name",
+                    "ascending": false
+                }
+            ],
+            "limit": {
+                "show": 3,
+                "startAt": 1
+            }
+        },
+        {
+            "id": "BAEC6D95-8A46-4285-995A-3F0478AC3C88",
+            "__typeName": "Text",
+            "childIDs": [],
+            "name": "Last Name",
+            "text": "{{data.last_name}}",
+            "font": {
+                "__typeName": "DynamicFont",
+                "textStyle": "body",
+                "isDynamic": true,
+                "emphases": []
+            },
+            "textColor": {
+                "systemName": "label",
+                "default": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                }
+            },
+            "textAlignment": "leading"
+        }
+    ],
+    "screenIDs": [
+        "6E4A3EAE-B4CF-43BA-A1E9-6D747D00B726"
+    ],
+    "initialScreenID": "6E4A3EAE-B4CF-43BA-A1E9-6D747D00B726",
+    "fonts": [],
+    "localization": {},
+    "appearance": "auto",
+    "prefetchImages": "none"
+}""".trimMargin()
+
+    val conditional_test_experience = """{
+    "id": "308",
+    "name": "Conditional Tests",
+    "version": 1,
+    "revisionID": "433",
+    "nodes": [
+        {
+            "id": "3A94DCC9-A6CD-4BAF-BB1C-F5E5B57B3CE7",
+            "__typeName": "Screen",
+            "childIDs": [
+                "54492613-E891-4D2A-88B8-88942065F5C1",
+                "A2B22655-308F-4BCC-9A45-5287B6EAE985"
+            ],
+            "name": "Screen",
+            "backButtonStyle": {
+                "__typeName": "DefaultBackButtonStyle",
+                "title": "Screen"
+            },
+            "backgroundColor": {
+                "systemName": "systemBackground",
+                "default": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
+                }
+            },
+            "statusBarStyle": "default",
+            "androidStatusBarStyle": "light",
+            "androidStatusBarBackgroundColor": {
+                "default": {
+                    "red": 0.21568627450980393,
+                    "alpha": 1,
+                    "blue": 0.7019607843137254,
+                    "green": 0
+                }
+            }
+        },
+        {
+            "id": "54492613-E891-4D2A-88B8-88942065F5C1",
+            "__typeName": "Conditional",
+            "childIDs": [
+                "39DC761E-C780-4CDE-B3F3-6ACAF769E194"
+            ],
+            "name": "Conditional",
+            "conditions": [
+                {
+                    "keyPath": "user.isPremium",
+                    "value": "false",
+                    "predicate": "isFalse"
+                }
+            ]
+        },
+        {
+            "id": "39DC761E-C780-4CDE-B3F3-6ACAF769E194",
+            "__typeName": "Text",
+            "childIDs": [],
+            "name": "Non Premium Text",
+            "text": "Hello User!",
+            "font": {
+                "__typeName": "DynamicFont",
+                "textStyle": "body",
+                "isDynamic": true,
+                "emphases": []
+            },
+            "textColor": {
+                "systemName": "label",
+                "default": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                }
+            },
+            "textAlignment": "leading"
+        },
+        {
+            "id": "A2B22655-308F-4BCC-9A45-5287B6EAE985",
+            "__typeName": "Conditional",
+            "childIDs": [
+                "8EF32E38-FD3A-4063-8C77-406FA3E42C72"
+            ],
+            "name": "Is Premium",
+            "conditions": [
+                {
+                    "keyPath": "user.isPremium",
+                    "value": "true",
+                    "predicate": "isTrue"
+                }
+            ]
+        },
+        {
+            "id": "8EF32E38-FD3A-4063-8C77-406FA3E42C72",
+            "__typeName": "Text",
+            "childIDs": [],
+            "name": "Premium Text",
+            "text": "Hello Premium User!",
+            "font": {
+                "__typeName": "DynamicFont",
+                "textStyle": "body",
+                "isDynamic": true,
+                "emphases": []
+            },
+            "textColor": {
+                "systemName": "label",
+                "default": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0,
+                    "alpha": 1
+                },
+                "darkMode": {
+                    "red": 1,
+                    "green": 1,
+                    "blue": 1,
+                    "alpha": 1
+                }
+            },
+            "textAlignment": "leading"
+        }
+    ],
+    "screenIDs": [
+        "3A94DCC9-A6CD-4BAF-BB1C-F5E5B57B3CE7"
+    ],
+    "initialScreenID": "3A94DCC9-A6CD-4BAF-BB1C-F5E5B57B3CE7",
     "fonts": [],
     "localization": {},
     "appearance": "auto",

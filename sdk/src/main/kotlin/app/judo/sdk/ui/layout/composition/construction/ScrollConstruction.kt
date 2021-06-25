@@ -1,14 +1,28 @@
+/*
+ * Copyright (c) 2020-present, Rover Labs, Inc. All rights reserved.
+ * You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+ * copy, modify, and distribute this software in source code or binary form for use
+ * in connection with the web services and APIs provided by Rover.
+ *
+ * This copyright notice shall be included in all copies or substantial portions of
+ * the software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package app.judo.sdk.ui.layout.composition.construction
 
 import android.content.Context
 import android.os.Build
 import android.view.View
 import android.widget.FrameLayout
-import app.judo.sdk.api.models.Audio
-import app.judo.sdk.api.models.Axis
+import app.judo.sdk.api.models.*
 import app.judo.sdk.api.models.Layer
-import app.judo.sdk.api.models.ScrollContainer
-import app.judo.sdk.api.models.Video
 import app.judo.sdk.ui.extensions.dp
 import app.judo.sdk.ui.extensions.setMaskPath
 import app.judo.sdk.ui.extensions.setMaskPathFromMask
@@ -18,10 +32,11 @@ import app.judo.sdk.ui.layout.composition.TreeNode
 import app.judo.sdk.ui.layout.composition.getAllLeafNodes
 import app.judo.sdk.ui.layout.composition.toLayout
 import app.judo.sdk.ui.layout.composition.toSingleLayerLayout
+import app.judo.sdk.ui.views.ExperienceMediaPlayerView
 import app.judo.sdk.ui.views.ExperienceScrollView
-import app.judo.sdk.ui.views.CustomStyledPlayerView
 import app.judo.sdk.ui.views.HorizontalExperienceScrollView
 import java.util.UUID
+import kotlin.math.roundToInt
 
 internal fun ScrollContainer.construct(
     context: Context,
@@ -31,7 +46,7 @@ internal fun ScrollContainer.construct(
     setMaskPathFromMask(context, mask, treeNode.appearance)
 
     val leafNodes = treeNode.getAllLeafNodes()
-    val mediaChildIDs = leafNodes.filter { it is Audio && it.autoPlay || it is Video && it.autoPlay }.map { it.id }
+    val mediaChildIDs = leafNodes.filter { it is PlaysMedia }.map { it.id }
 
     val scrollViewInnerFrame = FrameLayout(context).apply {
         id = View.generateViewId()
@@ -56,10 +71,10 @@ internal fun ScrollContainer.construct(
             isVerticalScrollBarEnabled = !this@construct.disableScrollBar
             isHorizontalScrollBarEnabled = !this@construct.disableScrollBar
             layoutParams = FrameLayout.LayoutParams(
-                this@construct.sizeAndCoordinates.width.toInt(),
-                this@construct.sizeAndCoordinates.height.toInt()
+                this@construct.sizeAndCoordinates.width.roundToInt(),
+                this@construct.sizeAndCoordinates.height.roundToInt()
             ).apply {
-                setMargins(sizeAndCoordinates.x.toInt(), sizeAndCoordinates.y.toInt(), 0, 0)
+                setMargins(sizeAndCoordinates.x.roundToInt(), sizeAndCoordinates.y.roundToInt(), 0, 0)
                 setPadding(0, 0, 0, padding?.bottom?.dp?.toIntPx(context) ?: 0)
             }
         }
@@ -77,7 +92,7 @@ internal fun ScrollContainer.construct(
                 this@construct.sizeAndCoordinates.width.toInt(),
                 this@construct.sizeAndCoordinates.height.toInt()
             ).apply {
-                setMargins(sizeAndCoordinates.x.toInt(), sizeAndCoordinates.y.toInt(), 0, 0)
+                setMargins(sizeAndCoordinates.x.roundToInt(), sizeAndCoordinates.y.roundToInt(), 0, 0)
                 setPadding(0, 0, padding?.trailing?.dp?.toIntPx(context) ?: 0, 0)
             }
         }
@@ -85,7 +100,7 @@ internal fun ScrollContainer.construct(
 
     scrollView.setOnScrollChangeListener { _, _, _, _, _ ->
         mediaChildIDs.forEach {
-            scrollView.findViewWithTag<CustomStyledPlayerView>(it)?.playIfVisibleOrPause()
+            scrollView.findViewWithTag<ExperienceMediaPlayerView>(it)?.setupIfVisible()
         }
     }
 
@@ -107,8 +122,8 @@ internal fun ScrollContainer.construct(
 
     scrollView.addView(scrollViewInnerFrame)
 
-    val background = this.background?.node?.toSingleLayerLayout(context, treeNode, resolvers)
-    val overlay = this.overlay?.node?.toSingleLayerLayout(context, treeNode, resolvers)
+    val background = this.background?.node?.toSingleLayerLayout(context, treeNode, resolvers, this.maskPath)
+    val overlay = this.overlay?.node?.toSingleLayerLayout(context, treeNode, resolvers, this.maskPath)
 
     return listOfNotNull(background, scrollView, overlay)
 }

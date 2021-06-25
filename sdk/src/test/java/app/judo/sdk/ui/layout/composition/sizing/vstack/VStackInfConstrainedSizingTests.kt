@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2020-present, Rover Labs, Inc. All rights reserved.
+ * You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+ * copy, modify, and distribute this software in source code or binary form for use
+ * in connection with the web services and APIs provided by Rover.
+ *
+ * This copyright notice shall be included in all copies or substantial portions of
+ * the software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package app.judo.sdk.ui.layout.composition.sizing.vstack
 
 import android.content.Context
@@ -12,6 +29,7 @@ import app.judo.sdk.ui.layout.composition.sizing.computeSize
 import app.judo.sdk.utils.shouldEqual
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
+import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
 
 class VStackInfConstrainedSizingTests {
@@ -1196,11 +1214,11 @@ class VStackInfConstrainedSizingTests {
     @Test
     fun `given inf constraints vstack-various-child with spacer sizing 2 is correct`() {
         // Arrange
-        val expectedHeight = 100f
+        val expectedHeight = 110f
 
         val expectedImage1Height = 100f
         val expectedRectangle1Height = 0f
-        val expectedSpacer1Height = 0f
+        val expectedSpacer1Height = 10f
 
         val rectangle1 = createRectangleWithFrame()
         val spacer1 = createSpacerWithFrame()
@@ -1232,11 +1250,11 @@ class VStackInfConstrainedSizingTests {
     @Test
     fun `given inf constraints vstack-various-child with spacer sizing 3 is correct`() {
         // Arrange
-        val expectedHeight = 200f
+        val expectedHeight = 210f
 
         val expectedImage1Height = 100f
         val expectedRectangle1Height = 100f
-        val expectedSpacer1Height = 0f
+        val expectedSpacer1Height = 10f
 
         val rectangle1 = createRectangleWithFrame(frame = Frame(100f, height = 100f, alignment = Alignment.CENTER))
         val spacer1 = createSpacerWithFrame()
@@ -1304,11 +1322,11 @@ class VStackInfConstrainedSizingTests {
     @Test
     fun `given inf constraints vstack-various-child with spacer sizing 5 is correct`() {
         // Arrange
-        val expectedHeight = 100f
+        val expectedHeight = 110f
 
         val expectedImage1Height = 100f
         val expectedRectangle1Height = 0f
-        val expectedSpacer1Height = 0f
+        val expectedSpacer1Height = 10f
 
         val rectangle1 = createRectangleWithFrame()
         val spacer1 = createSpacerWithFrame(frame = Frame(maxHeight = MaxHeight.Finite(100f), alignment = Alignment.CENTER))
@@ -1340,11 +1358,11 @@ class VStackInfConstrainedSizingTests {
     @Test
     fun `given inf constraints vstack-various-child with spacer sizing 6 is correct`() {
         // Arrange
-        val expectedHeight = 100f
+        val expectedHeight = 110f
 
         val expectedImage1Height = 100f
         val expectedRectangle1Height = 0f
-        val expectedSpacer1Height = 0f
+        val expectedSpacer1Height = 10f
 
         val rectangle1 = createRectangleWithFrame()
         val spacer1 = createSpacerWithFrame(frame = Frame(maxHeight = MaxHeight.Infinite(), alignment = Alignment.CENTER))

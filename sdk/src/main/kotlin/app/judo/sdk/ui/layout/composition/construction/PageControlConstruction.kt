@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2020-present, Rover Labs, Inc. All rights reserved.
+ * You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+ * copy, modify, and distribute this software in source code or binary form for use
+ * in connection with the web services and APIs provided by Rover.
+ *
+ * This copyright notice shall be included in all copies or substantial portions of
+ * the software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package app.judo.sdk.ui.layout.composition.construction
 
 import android.content.Context
@@ -77,9 +94,12 @@ internal fun PageControl.construct(
     val pageControl = PageControlView(context, maskPath, imageIndicators = style is PageControlStyle.ImagePageControlStyle).apply {
         id = View.generateViewId()
         alpha = (opacity ?: 1f) * (maskPath?.opacity ?: 1f)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) { forceHasOverlappingRendering(false) }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            forceHasOverlappingRendering(false)
+        }
         layoutParams = FrameLayout.LayoutParams(
-            sizeAndCoordinates.contentWidth.roundToInt(), sizeAndCoordinates.contentHeight.roundToInt()
+            sizeAndCoordinates.contentWidth.roundToInt(),
+            sizeAndCoordinates.contentHeight.roundToInt()
         ).apply {
             setMargins(sizeAndCoordinates.x.toInt(), sizeAndCoordinates.y.toInt(), 0, 0)
         }
@@ -89,10 +109,12 @@ internal fun PageControl.construct(
         this.pageIndicatorColor = pageIndicatorColor
         this.currentPageIndicatorColor = currentPageIndicatorColor
         hidesForSinglePage = this@construct.hidesForSinglePage
-        doOnGlobalLayout {
-            val viewPager = rootView.findViewWithTag<ViewPager2>(UUID.fromString(carouselID))
-            this.indicatorCount = viewPager.getUniqueItemCount()
-            viewPager.registerForChanges(this)
+        carouselID?.let { id ->
+            doOnGlobalLayout {
+                val viewPager = rootView.findViewWithTag<ViewPager2>(UUID.fromString(id))
+                this.indicatorCount = viewPager?.getUniqueItemCount() ?: 0
+                viewPager?.registerForChanges(this)
+            }
         }
     }
 
@@ -125,8 +147,8 @@ internal fun PageControl.construct(
         }
     }
 
-    val background = this.background?.node?.toSingleLayerLayout(context, treeNode, resolvers)
-    val overlay = this.overlay?.node?.toSingleLayerLayout(context, treeNode, resolvers)
+    val background = this.background?.node?.toSingleLayerLayout(context, treeNode, resolvers, this.maskPath)
+    val overlay = this.overlay?.node?.toSingleLayerLayout(context, treeNode, resolvers, this.maskPath)
 
     return listOfNotNull(background, pageControl, overlay)
 }

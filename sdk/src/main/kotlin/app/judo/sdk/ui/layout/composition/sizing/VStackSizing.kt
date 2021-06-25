@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2020-present, Rover Labs, Inc. All rights reserved.
+ * You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+ * copy, modify, and distribute this software in source code or binary form for use
+ * in connection with the web services and APIs provided by Rover.
+ *
+ * This copyright notice shall be included in all copies or substantial portions of
+ * the software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package app.judo.sdk.ui.layout.composition.sizing
 
 import android.content.Context
@@ -289,22 +306,23 @@ internal fun VStack.computeSize(context: Context, treeNode: TreeNode, parentCons
     // fixed constraints, the result of this is that nodes that usually would have a size of 0 (rectangles with inf constraints) receive any
     // extra size not allocated to nodes initially sized with infinite constraints
     //TODO: 2021-02-12 - Only do this when the vstack contains views that require this it's really bad for perf
-   if (parentConstraints.height !is Dimension.Value || parentConstraints.width !is Dimension.Value) {
-       val widthForMeasure = if (parentConstraints.width is Dimension.Inf) {
-           Dimension.Value(nodeWidth)
-       } else {
-           parentConstraints.width as Dimension.Value
-       }
 
-       val heightForMeasure = if (parentConstraints.height is Dimension.Inf) {
-           Dimension.Value(nodeHeight)
-       } else {
-           parentConstraints.height as Dimension.Value
-       }
+    if (parentConstraints.height !is Dimension.Value && vStackShouldRemeasureWithVInf(treeNode)) {
+        val widthForMeasure = if (parentConstraints.width is Dimension.Inf) {
+            Dimension.Value(nodeWidth)
+        } else {
+            parentConstraints.width as Dimension.Value
+        }
 
-       computeSize(context, treeNode, Dimensions(widthForMeasure, heightForMeasure))
-       return
-   }
+        val heightForMeasure = if (parentConstraints.height is Dimension.Inf) {
+            Dimension.Value(nodeHeight)
+        } else {
+            parentConstraints.height as Dimension.Value
+        }
+
+        computeSize(context, treeNode, Dimensions(widthForMeasure, heightForMeasure))
+        return
+    }
 
     // set VStack size, content height/width is size of VStack. height and width are height and width including frame
     this.sizeAndCoordinates = this.sizeAndCoordinates.copy(
@@ -316,4 +334,11 @@ internal fun VStack.computeSize(context: Context, treeNode: TreeNode, parentCons
 
     background?.node?.computeSingleNodeSize(context, treeNode, this.sizeAndCoordinates.width, this.sizeAndCoordinates.height)
     overlay?.node?.computeSingleNodeSize(context, treeNode, this.sizeAndCoordinates.width, this.sizeAndCoordinates.height)
+}
+
+private fun vStackShouldRemeasureWithVInf(treeNode: TreeNode): Boolean {
+    val childWithVerticalExpand = treeNode.children.filter { it.verticalBehavior() == ViewBehavior.EXPAND_FILL }
+    val childrenAffectedByVerticalDoubleMeasure = treeNode.children.filter { it.affectedByVerticalDoubleMeasure() }
+    val bothListsContainValues = childWithVerticalExpand.isNotEmpty() && childrenAffectedByVerticalDoubleMeasure.isNotEmpty()
+    return bothListsContainValues && (childWithVerticalExpand != childrenAffectedByVerticalDoubleMeasure)
 }

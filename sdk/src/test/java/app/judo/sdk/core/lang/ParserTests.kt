@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2020-present, Rover Labs, Inc. All rights reserved.
+ * You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+ * copy, modify, and distribute this software in source code or binary form for use
+ * in connection with the web services and APIs provided by Rover.
+ *
+ * This copyright notice shall be included in all copies or substantial portions of
+ * the software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package app.judo.sdk.core.lang
 
 import app.judo.sdk.core.lang.Parser.Result.Success
@@ -531,6 +548,258 @@ internal class ParserTests {
     }
 
     @Test
+    fun `LongParser produces a Long`() {
+        // Arrange
+        val long: Long = 12345678901
+
+        val expected = Success(
+            Parser.Match(
+                value = long,
+                ParserContext(
+                    text = "12345678901",
+                    state = Unit,
+                    position = 11,
+                )
+            )
+        )
+
+        val input = ParserContext(
+            text = "12345678901",
+            state = Unit,
+        )
+
+        val parser: Parser<Unit, Long> = LongParser()
+
+        // Act
+        val actual = parser.parse(input)
+
+        println("ACTUAL: $actual\n")
+
+        // Assert
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `IntegerParser produces a Int`() {
+        // Arrange
+        val long: Int = 1234567890
+
+        val expected = Success(
+            Parser.Match(
+                value = long,
+                ParserContext(
+                    text = "1234567890",
+                    state = Unit,
+                    position = 10,
+                )
+            )
+        )
+
+        val input = ParserContext(
+            text = "1234567890",
+            state = Unit,
+        )
+
+        val parser: Parser<Unit, Int> = IntegerParser()
+
+        // Act
+        val actual = parser.parse(input)
+
+        println("ACTUAL: $actual\n")
+
+        // Assert
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `IntegerParser handles negative values`() {
+        // Arrange
+        val long: Int = -1234567890
+
+        val expected = Success(
+            Parser.Match(
+                value = long,
+                ParserContext(
+                    text = "-1234567890",
+                    state = Unit,
+                    position = 11,
+                )
+            )
+        )
+
+        val input = ParserContext(
+            text = "-1234567890",
+            state = Unit,
+        )
+
+        val parser: Parser<Unit, Int> = IntegerParser()
+
+        // Act
+        val actual = parser.parse(input)
+
+        println("ACTUAL: $actual\n")
+
+        // Assert
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `IntegerParser does not pars Longs`() {
+        // Arrange
+
+        val expected = Parser.Result.Failure<Unit, Int>(
+            Parser.Error(
+                ParserContext(
+                    text = "-12345678901",
+                    state = Unit,
+                ),
+                message = "java.lang.NumberFormatException: For input string: \"-12345678901\""
+            ),
+        )
+
+        val input = ParserContext(
+            text = "-12345678901",
+            state = Unit,
+        )
+
+        val parser: Parser<Unit, Int> = IntegerParser()
+
+        // Act
+        val actual = parser.parse(input)
+
+        println("ACTUAL: $actual\n")
+
+        // Assert
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `LongParser handles negative values`() {
+        // Arrange
+        val long: Long = -12345678901
+
+        val expected = Success(
+            Parser.Match(
+                value = long,
+                ParserContext(
+                    text = "-12345678901",
+                    state = Unit,
+                    position = 12,
+                )
+            )
+        )
+
+        val input = ParserContext(
+            text = "-12345678901",
+            state = Unit,
+        )
+
+        val parser: Parser<Unit, Long> = LongParser()
+
+        // Act
+        val actual = parser.parse(input)
+
+        println("ACTUAL: $actual\n")
+
+        // Assert
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `LongParser catches NumberFormatExceptions`() {
+        // Arrange
+        val expected = Parser.Result.Failure<Unit, Long>(
+            Parser.Error(
+                ParserContext(
+                    text = "12345678901345238347349834864386438",
+                    state = Unit,
+                ),
+                "java.lang.NumberFormatException: For input string: \"12345678901345238347349834864386438\""
+            )
+        )
+
+        val input = ParserContext(
+            text = "12345678901345238347349834864386438",
+            state = Unit,
+        )
+
+        val parser: Parser<Unit, Long> = LongParser()
+
+        // Act
+        val actual = parser.parse(input)
+
+        println("ACTUAL: $actual\n")
+
+        // Assert
+        assertEquals(expected, actual)
+
+    }
+
+    @Test
+    fun `DoubleParser produces a Double`() {
+        // Arrange
+        val long: Double = 0.01242342
+
+        val expected = Success(
+            Parser.Match(
+                value = long,
+                ParserContext(
+                    text = "0.01242342",
+                    state = Unit,
+                    position = 10,
+                )
+            )
+        )
+
+        val input = ParserContext(
+            text = "0.01242342",
+            state = Unit,
+        )
+
+        val parser: Parser<Unit, Double> = DoubleParser()
+
+        // Act
+        val actual = parser.parse(input)
+
+        println("ACTUAL: $actual\n")
+
+        // Assert
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `DoubleParser produces handles negative values`() {
+        // Arrange
+        val long: Double = -0.01242342
+
+        val expected = Success(
+            Parser.Match(
+                value = long,
+                ParserContext(
+                    text = "-0.01242342",
+                    state = Unit,
+                    position = 11,
+                )
+            )
+        )
+
+        val input = ParserContext(
+            text = "-0.01242342",
+            state = Unit,
+        )
+
+        val parser: Parser<Unit, Double> = DoubleParser()
+
+        // Act
+        val actual = parser.parse(input)
+
+        println("ACTUAL: $actual\n")
+
+        // Assert
+        assertEquals(expected, actual)
+    }
+
+    @Test
     fun `ManyParser produces a List of T even if there is no matches`() {
 
         // Arrange
@@ -885,6 +1154,167 @@ internal class ParserTests {
         // Assert
         assertEquals(expected, actual)
         assertEquals(expected2, actual2)
+    }
+
+    @Test
+    fun `BooleanParser parses true or false`() {
+        // Arrange
+        val expected1 = Success(
+            Parser.Match(
+                value = true,
+                ParserContext(
+                    text = "true",
+                    state = Unit,
+                    position = 4,
+                )
+            )
+        )
+
+
+        val expected2 = Success(
+            Parser.Match(
+                value = false,
+                ParserContext(
+                    text = "false",
+                    state = Unit,
+                    position = 5,
+                )
+            )
+        )
+
+        val input = ParserContext(
+            text = "true",
+            state = Unit,
+        )
+
+        val input2 = ParserContext(
+            text = "false",
+            state = Unit,
+        )
+
+        val parser = BooleanParser<Unit>()
+
+        // Act
+        val actual = parser.parse(input = input)
+        val actual2 = parser.parse(input = input2)
+
+        // Assert
+        assertEquals(expected1, actual)
+        assertEquals(expected2, actual2)
+    }
+
+    @Test
+    fun `BooleanParser can ignore casing`() {
+        // Arrange
+        val expected1 = Success(
+            Parser.Match(
+                value = true,
+                ParserContext(
+                    text = "tRuE",
+                    state = Unit,
+                    position = 4,
+                )
+            )
+        )
+
+
+        val expected2 = Success(
+            Parser.Match(
+                value = false,
+                ParserContext(
+                    text = "fAlSe",
+                    state = Unit,
+                    position = 5,
+                )
+            )
+        )
+
+        val input = ParserContext(
+            text = "tRuE",
+            state = Unit,
+        )
+
+        val input2 = ParserContext(
+            text = "fAlSe",
+            state = Unit,
+        )
+
+        val parser = BooleanParser<Unit>(ignoreCase = true)
+
+        // Act
+        val actual = parser.parse(input = input)
+        val actual2 = parser.parse(input = input2)
+
+        // Assert
+        assertEquals(expected1, actual)
+        assertEquals(expected2, actual2)
+    }
+
+    @Test
+    fun `AnyOfParser matches any parsers given to it`() {
+        // Arrange
+        val expected1 = Success(
+            Parser.Match(
+                value = 'a',
+                ParserContext(
+                    text = "a,b",
+                    state = Unit,
+                    position = 1,
+                )
+            )
+        )
+
+        val expected2 = Success(
+            Parser.Match(
+                value = 'b',
+                ParserContext(
+                    text = "b,a",
+                    state = Unit,
+                    position = 1,
+                )
+            )
+        )
+
+        val expected3 = Parser.Result.Failure<Unit, Char>(
+            Parser.Error(
+                ParserContext(
+                    text = "b,a",
+                    state = Unit,
+                ),
+                message = "Can not match an empty list of parsers."
+            )
+        )
+
+        val input = ParserContext(
+            text = "a,b",
+            state = Unit,
+        )
+
+        val input2 = ParserContext(
+            text = "b,a",
+            state = Unit,
+        )
+
+        val a = PredicateParser<Unit> {
+            it == 'a'
+        }
+
+        val b = PredicateParser<Unit> {
+            it == 'b'
+        }
+
+        val parser = AnyOfParser(a, b)
+        val parser2 = AnyOfParser<Unit, Char>(emptyList())
+
+        // Act
+        val actual = parser.parse(input = input)
+        val actual2 = parser.parse(input = input2)
+        val actual3 = parser2.parse(input = input2)
+
+        // Assert
+        assertEquals(expected1, actual)
+        assertEquals(expected2, actual2)
+        assertEquals(expected3, actual3)
     }
 
 }

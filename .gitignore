@@ -30,3 +30,5 @@ example/google-services.json
 example/release/
 
 .idea/codeStyles/Project.xml
+
+.idea/deploymentTargetDropDown.xml

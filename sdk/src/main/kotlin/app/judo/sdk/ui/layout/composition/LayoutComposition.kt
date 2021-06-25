@@ -1,8 +1,23 @@
+/*
+ * Copyright (c) 2020-present, Rover Labs, Inc. All rights reserved.
+ * You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+ * copy, modify, and distribute this software in source code or binary form for use
+ * in connection with the web services and APIs provided by Rover.
+ *
+ * This copyright notice shall be included in all copies or substantial portions of
+ * the software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package app.judo.sdk.ui.layout.composition
 
 import android.content.Context
-import android.os.Parcelable
-import android.text.StaticLayout
 import android.view.View
 import app.judo.sdk.api.models.*
 import app.judo.sdk.ui.extensions.*
@@ -37,7 +52,7 @@ internal fun TreeNode.toLayout(
         is Audio -> layer.construct(context, this, resolvers)
         is Video -> layer.construct(context, this, resolvers)
         is Text -> layer.construct(context, this, resolvers)
-        is NamedIcon -> layer.construct(context, this, resolvers)
+        is Icon -> layer.construct(context, this, resolvers)
         is Spacer -> listOf(View(context))
         else -> throw IllegalStateException()
     }
@@ -63,7 +78,7 @@ internal fun TreeNode.computeSize(context: Context, dimensions: Dimensions) {
         is Spacer -> layer.computeSize(context, this, dimensions)
         is Audio -> layer.computeSize(context, this, dimensions)
         is Video -> layer.computeSize(context, this, dimensions)
-        is NamedIcon -> layer.computeSize(context, dimensions)
+        is Icon -> layer.computeSize(context, dimensions)
         else -> throw IllegalStateException()
     }
 }
@@ -143,7 +158,7 @@ internal fun TreeNode.clearPositioning() {
             layer.background?.node?.singleNodeClearPositioning()
             layer.overlay?.node?.singleNodeClearPositioning()
         }
-        is NamedIcon -> {
+        is Icon -> {
             layer.sizeAndCoordinates = layer.sizeAndCoordinates.copy(x = 0f, y = 0f)
         }
         else -> throw IllegalStateException()
@@ -235,7 +250,7 @@ internal fun TreeNode.clearSizeAndPositioning() {
             layer.background?.node?.singleNodeClearSizeAndPositioning()
             layer.overlay?.node?.singleNodeClearSizeAndPositioning()
         }
-        is NamedIcon -> {
+        is Icon -> {
             layer.sizeAndCoordinates = SizeAndCoordinates()
         }
         else -> throw IllegalStateException()
@@ -271,7 +286,7 @@ internal fun Layer.computePosition(context: Context, treeNode: TreeNode, point: 
         is Audio -> computePosition(context, point)
         is Video -> computePosition(context, point)
         is Spacer -> computePosition()
-        is NamedIcon -> computePosition(context, point)
+        is Icon -> computePosition(context, point)
     }
 }
 
@@ -281,12 +296,22 @@ internal fun Layer.computePosition(context: Context, treeNode: TreeNode, point: 
 internal fun Node.toSingleLayerLayout(
     context: Context,
     treeNode: TreeNode,
-    resolvers: Resolvers
+    resolvers: Resolvers,
+    maskPath: MaskPath?
 ): View {
     return when (val layer = this as Layer) {
-         is Rectangle -> layer.construct(context, treeNode, resolvers).first()
-         is Text -> layer.construct(context, treeNode, resolvers).first()
-         is Image -> layer.construct(context, treeNode, resolvers).first()
+         is Rectangle -> {
+             layer.setMaskPath(maskPath)
+             layer.construct(context, treeNode, resolvers).first()
+         }
+         is Text -> {
+             layer.setMaskPath(maskPath)
+             layer.construct(context, treeNode, resolvers).first()
+         }
+         is Image -> {
+             layer.setMaskPath(maskPath)
+             layer.construct(context, treeNode, resolvers).first()
+         }
         else -> throw IllegalStateException()
     }.apply {
         isClickable = false
@@ -301,7 +326,14 @@ data class SizeAndCoordinates(
     val y: Float = 0f,
     val contentWidth: Float = 0f,
     val contentHeight: Float = 0f
-)
+) {
+    fun intersects(x: Float, y: Float, width: Float, height: Float): Boolean {
+        val xIntersect = (this.x <= x + width && this.x + this.width >= x)
+        val yIntersect = (this.y <= y + height && this.y + this.height >= y)
+
+        return xIntersect && yIntersect
+    }
+}
 
 
 data class Dimensions(val width: Dimension, val height: Dimension)
@@ -386,25 +418,31 @@ internal fun Node.computeSingleNodeRelativePosition(
 internal fun Node.computeSingleNodeCoordinates(context: Context, anchorPoint: FloatPoint) {
     when (val layer = this as Layer) {
         is Rectangle -> {
+            setFrameAlignment()
             val xOffset = layer.offset?.x?.dp?.toPx(context) ?: 0f
             val yOffset = layer.offset?.y?.dp?.toPx(context) ?: 0f
 
             layer.setX(anchorPoint.x + layer.getX() + xOffset)
             layer.setY(anchorPoint.y + layer.getY() + yOffset)
+            adjustPositionForPadding(context, layer.padding)
         }
         is Text -> {
+            setFrameAlignment()
             val xOffset = layer.offset?.x?.dp?.toPx(context) ?: 0f
             val yOffset = layer.offset?.y?.dp?.toPx(context) ?: 0f
 
             layer.setX(anchorPoint.x + layer.getX() + xOffset)
             layer.setY(anchorPoint.y + layer.getY() + yOffset)
+            adjustPositionForPadding(context, layer.padding)
         }
         is Image -> {
+            setFrameAlignment()
             val xOffset = layer.offset?.x?.dp?.toPx(context) ?: 0f
             val yOffset = layer.offset?.y?.dp?.toPx(context) ?: 0f
 
             layer.setX(anchorPoint.x + layer.getX() + xOffset)
             layer.setY(anchorPoint.y + layer.getY() + yOffset)
+            adjustPositionForPadding(context, layer.padding)
         }
     }
 }
@@ -493,7 +531,7 @@ internal fun TreeNode.horizontalBehavior(): ViewBehavior {
                 else -> ViewBehavior.EXPAND_FILL
             }
         }
-        is NamedIcon -> {
+        is Icon -> {
             when (layer.frame?.maxWidth) {
                 null -> ViewBehavior.WRAP
                 else -> ViewBehavior.EXPAND_FILL
@@ -608,7 +646,7 @@ internal fun TreeNode.verticalBehavior(): ViewBehavior {
                 else -> ViewBehavior.EXPAND_FILL
             }
         }
-        is NamedIcon -> {
+        is Icon -> {
             when (layer.frame?.maxHeight) {
                 null -> ViewBehavior.WRAP
                 else -> ViewBehavior.EXPAND_FILL
@@ -720,7 +758,7 @@ internal fun TreeNode.getFixedWidth(context: Context): Float {
         }
         is Video -> layer.frame?.width ?: layer.frame?.minWidth ?: 0f
         is Audio -> layer.frame?.width ?: layer.frame?.minWidth ?: 0f
-        is NamedIcon -> {
+        is Icon -> {
             when {
                 layer.frame?.width != null -> layer.frame.width
                 layer.frame?.minWidth != null -> layer.frame.minWidth
@@ -794,7 +832,7 @@ private fun TreeNode.getFixedHeight(context: Context): Float {
         is Rectangle -> layer.frame?.height ?: layer.frame?.minHeight ?: 0f
         is Video -> layer.frame?.height ?: layer.frame?.minHeight ?: 0f
         is Audio -> layer.frame?.height ?: layer.frame?.minHeight ?: 0f
-        is NamedIcon -> {
+        is Icon -> {
             when {
                 layer.frame?.height != null -> layer.frame.height
                 layer.frame?.minHeight != null -> layer.frame.minHeight
@@ -807,9 +845,9 @@ private fun TreeNode.getFixedHeight(context: Context): Float {
                 layer.frame?.minHeight != null -> layer.frame.minHeight
                 layer.resizingMode == ResizingMode.ORIGINAL -> {
                     if (context.isDarkMode(appearance)) {
-                        (layer.darkModeImageHeight?.toFloat() ?: layer.imageHeight?.toFloat() ?: 0f) / layer.resolution
+                        ( (layer.darkModeImageHeight?.toFloat() ?: layer.imageHeight?.toFloat() ?: 0f) / layer.resolution)
                     } else {
-                        (layer.imageHeight?.toFloat() ?: 0f) / layer.resolution
+                        ((layer.imageHeight?.toFloat() ?: 0f) / layer.resolution)
                     }
                 }
                 else -> 0f
@@ -864,6 +902,64 @@ private fun TreeNode.getFixedHeight(context: Context): Float {
     }
 }
 
+internal fun TreeNode.affectedByVerticalDoubleMeasure(): Boolean {
+    return when (val layer = this.value) {
+        is Rectangle -> {
+            when {
+                layer.frame?.height == null && layer.aspectRatio != null -> true
+                else -> false
+            }
+        }
+        is Image -> {
+            when {
+                layer.resizingMode == ResizingMode.SCALE_TO_FIT && layer.frame?.height == null -> true
+                layer.resizingMode == ResizingMode.STRETCH && layer.frame?.height == null -> true
+                else -> false
+            }
+        }
+        is Video -> {
+            when {
+                layer.frame?.height == null && layer.aspectRatio != null -> true
+                else -> false
+            }
+        }
+        is WebView -> {
+            when {
+                layer.frame?.height == null && layer.aspectRatio != null -> true
+                else -> false
+            }
+        }
+        is Carousel -> {
+            when {
+                layer.frame?.height == null && layer.aspectRatio != null -> true
+                else -> false
+            }
+        }
+        is ZStack -> {
+            when {
+                layer.frame?.height != null -> false
+                this.children.any { it.affectedByVerticalDoubleMeasure() } -> true
+                else -> false
+            }
+        }
+        is VStack -> {
+            when {
+                layer.frame?.height != null -> false
+                this.children.any { it.affectedByVerticalDoubleMeasure() } -> true
+                else -> false
+            }
+        }
+        is HStack -> {
+            when {
+                layer.frame?.height != null -> false
+                this.children.any { it.affectedByVerticalDoubleMeasure() } -> true
+                else -> false
+            }
+        }
+        else -> false
+    }
+}
+
 internal fun TreeNode.containsTextThatRequiresHorizontalSpace(): Boolean {
     return when (val layer = this.value) {
         is Rectangle -> false
@@ -907,6 +1003,14 @@ internal data class TreeNode(
         node.parent = this
     }
 
+    fun removeChild(id: String): TreeNode? {
+        val child = children.find { it.value.id == id }
+        children.remove(child)
+        child?.parentId = null
+        child?.parent = null
+        return child
+    }
+
     fun getFixedNodeWidth(context: Context): Float {
         if (fixedWidth == null) {
             fixedWidth = getFixedWidth(context).dp.toPx(context)
@@ -945,6 +1049,26 @@ private fun TreeNode.rootNode(): TreeNode {
 
 internal fun TreeNode.findNodeWithID(id: String): TreeNode? {
     return rootNode().findDescendantWithID(id)
+}
+
+internal inline fun <reified T> TreeNode.findNearestAncestorID(): String? {
+    var parent = this.parent
+
+    while (parent != null && parent.value !is T) {
+        parent = parent.parent
+    }
+
+    return parent?.value?.id
+}
+
+internal inline fun <reified T> TreeNode.findNearestAncestor(): T? {
+    var parent = this.parent
+
+    while (parent != null && parent.value !is T) {
+        parent = parent.parent
+    }
+
+    return parent?.value as? T
 }
 
 internal fun TreeNode.getAllLeafNodes(): List<Node> {

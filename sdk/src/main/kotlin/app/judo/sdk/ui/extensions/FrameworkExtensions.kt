@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2020-present, Rover Labs, Inc. All rights reserved.
+ * You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+ * copy, modify, and distribute this software in source code or binary form for use
+ * in connection with the web services and APIs provided by Rover.
+ *
+ * This copyright notice shall be included in all copies or substantial portions of
+ * the software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package app.judo.sdk.ui.extensions
 
 import android.content.Context
@@ -26,7 +43,7 @@ import app.judo.sdk.ui.extensions.createViewModelLazy
 import java.io.Serializable
 import kotlin.reflect.KClass
 
-fun Window.setStatusBarIconTint(statusBarStyle: StatusBarStyle, appearance: Appearance) {
+internal fun Window.setStatusBarIconTint(statusBarStyle: StatusBarStyle, appearance: Appearance) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         decorView.windowInsetsController?.systemBarsAppearance
         val barAppearance = if (statusBarStyle.isDarkIconTint(context, appearance)) APPEARANCE_LIGHT_STATUS_BARS else 0
@@ -37,7 +54,7 @@ fun Window.setStatusBarIconTint(statusBarStyle: StatusBarStyle, appearance: Appe
     }
 }
 
-fun StatusBarStyle.isDarkIconTint(context: Context, appearance: Appearance): Boolean {
+internal fun StatusBarStyle.isDarkIconTint(context: Context, appearance: Appearance): Boolean {
     return when (this) {
         StatusBarStyle.DEFAULT -> context.isLightMode(appearance)
         StatusBarStyle.LIGHT -> false
@@ -46,7 +63,7 @@ fun StatusBarStyle.isDarkIconTint(context: Context, appearance: Appearance): Boo
     }
 }
 
-fun Context.isDarkMode(appearance: Appearance): Boolean {
+internal fun Context.isDarkMode(appearance: Appearance): Boolean {
     return when (appearance) {
         Appearance.DARK -> true
         Appearance.LIGHT -> false
@@ -54,10 +71,13 @@ fun Context.isDarkMode(appearance: Appearance): Boolean {
     }
 }
 
+internal fun Context.isLightMode(appearance: Appearance) = !isDarkMode(appearance)
 
-fun Context.isLightMode(appearance: Appearance) = !isDarkMode(appearance)
+internal fun Context.getMaterialIconID(iconName: String): Int {
+    return resources.getIdentifier("judo_sdk_${iconName}", "drawable", this.packageName)
+}
 
-fun Uri.getCustomTabsIntent(@ColorInt toolbarColor: Int = Color.BLACK): Intent {
+internal fun Uri.toCustomTabsIntent(@ColorInt toolbarColor: Int = Color.BLACK): Intent {
     val customTabsIntentHolder = CustomTabsIntent.Builder()
         .setToolbarColor(toolbarColor)
         .build()
