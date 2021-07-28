@@ -22,11 +22,15 @@ import app.judo.sdk.core.data.Resource
 import app.judo.sdk.core.data.SyncResponse
 import app.judo.sdk.core.repositories.SyncRepository
 import app.judo.sdk.core.services.SyncService
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 internal class SyncRepositoryImpl(
+    private val ioDispatcherSupplier: () -> CoroutineDispatcher,
     private val syncServiceSupplier: () -> SyncService,
     private val keyValueCacheSupplier: () -> KeyValueCache,
 ) : SyncRepository {
@@ -42,21 +46,33 @@ internal class SyncRepositoryImpl(
             val response = service.getSync(nextLink)
             val body = response.body()
 
-            if (response.isSuccessful && body != null) {
-                cache.putString(aURL to body.nextLink)
-                emit(
-                    Resource.Success(
-                        body
+            if (response.isSuccessful) {
+                if (body == null) {
+                    emit(
+                        Resource.Error(
+                            Throwable(message = "Empty response body")
+                        )
                     )
-                )
+                } else {
+                    cache.putString(aURL to body.nextLink)
+                    emit(
+                        Resource.Success(
+                            body
+                        )
+                    )
+                }
             } else {
+                val errorMessage = withContext(ioDispatcherSupplier()) {
+                    @Suppress("BlockingMethodInNonBlockingContext")
+                    response.errorBody()?.string()
+                }
+
                 emit(
                     Resource.Error(
-                        Throwable(message = response.message())
+                        Throwable(message = "Failed, status code ${response.code()}: $errorMessage")
                     )
                 )
             }
-
         }.catch { exception ->
             emit(Resource.Error(exception))
         }

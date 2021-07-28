@@ -19,7 +19,10 @@ package app.judo.sdk.core.web
 
 import app.judo.sdk.core.log.Logger
 import okhttp3.Interceptor
+import okhttp3.Protocol
 import okhttp3.Response
+import okhttp3.ResponseBody
+import java.io.IOException
 
 internal class BaseCallInterceptor(
     private val accessTokenSupplier: () -> String,
@@ -31,11 +34,12 @@ internal class BaseCallInterceptor(
         private const val TAG = "BaseCallInterceptor"
     }
 
+
     override fun intercept(chain: Interceptor.Chain): Response {
         val logger = loggerSupplier()
         val original = chain.request()
 
-        logger.d(TAG, "Request intercepted:\n\t$original")
+        logger.v(TAG, "Request intercepted:\n\t$original")
 
         val newRequest = original.newBuilder().apply {
             addHeader("Accept", "application/json")
@@ -43,11 +47,20 @@ internal class BaseCallInterceptor(
             addHeader("Judo-Device-ID", deviceIdSupplier())
         }.build()
 
-        logger.d(TAG, "Request changed to:\n\t$newRequest")
+        logger.v(TAG, "Request changed to:\n\t$newRequest")
 
-        val response = chain.proceed(newRequest)
+        val response = try { chain.proceed(newRequest)} catch (e: Throwable) {
+            logger.e(TAG, null, e)
+            Response.Builder().apply {
+                code(400)
+                request(original)
+                protocol(Protocol.HTTP_2)
+                body(ResponseBody.create(null, ""))
+                this.message(e.message ?: "Network Error")
+            }.build()
+        }
 
-        logger.d(
+        logger.v(
             TAG,
             """
                 |Response received:

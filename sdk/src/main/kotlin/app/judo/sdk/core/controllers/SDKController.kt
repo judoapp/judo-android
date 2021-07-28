@@ -19,10 +19,9 @@ package app.judo.sdk.core.controllers
 
 import android.app.Application
 import androidx.annotation.MainThread
+import app.judo.sdk.api.Judo
 import app.judo.sdk.api.android.ExperienceFragmentFactory
-import app.judo.sdk.api.events.ActionReceivedCallback
 import app.judo.sdk.api.events.ScreenViewedCallback
-import app.judo.sdk.api.data.UserInfoSupplier
 import app.judo.sdk.api.models.Experience
 import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.log.Logger
@@ -40,26 +39,25 @@ internal interface SDKController {
 
     fun initialize(
         application: Application,
-        accessToken: String,
-        experienceCacheSize: Long = Environment.Sizes.EXPERIENCE_CACHE_SIZE,
-        imageCacheSize: Long = Environment.Sizes.IMAGE_CACHE_SIZE,
-        vararg domains: String,
+        configuration: Judo.Configuration
     )
 
     suspend fun performSync(prefetchAssets: Boolean = false, onComplete: () -> Unit = {})
 
     suspend fun onFirebaseRemoteMessageReceived(data: Map<String, String>)
 
-    suspend fun setPushToken(fcmToken: String)
+    fun setPushToken(fcmToken: String)
 
     fun loadExperienceIntoMemory(experience: Experience)
 
-    fun setUserInfoSupplier(supplier: UserInfoSupplier)
+    fun identify(userId: String?, traits: Map<String, Any>)
+
+    fun reset()
+
+    val anonymousId: String
 
     @MainThread
     fun setExperienceFragmentFactory(factory: ExperienceFragmentFactory)
 
     fun addScreenViewedCallback(callback: ScreenViewedCallback)
-
-    fun addActionReceivedCallback(callback: ActionReceivedCallback)
 }

@@ -9,7 +9,7 @@ plugins {
 
 val judoGroupId = "app.judo"
 val judoArtifactId = "judo-sdk"
-val judoVersion = "1.0.0"
+val judoVersion = "1.2.0"
 
 android {
     compileSdkVersion(30)
@@ -71,6 +71,7 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.2.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")
+    implementation("androidx.lifecycle:lifecycle-process:2.3.1")
     implementation("androidx.browser:browser:1.2.0")
     implementation("androidx.viewpager2:viewpager2:1.0.0")
     // endregion AndroidX

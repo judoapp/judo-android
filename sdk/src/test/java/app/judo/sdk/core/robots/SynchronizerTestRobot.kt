@@ -30,8 +30,8 @@ internal class SynchronizerTestRobot : AbstractTestRobot() {
     override fun onSetUp() {
         super.onSetUp()
 
-        backingEnvironment.domainNames = setOf("test1.judo.app")
-
+        backingEnvironment.configuration = backingEnvironment.configuration.copy(domain = "test1.judo.app")
+        
         synchronizer = SynchronizerImpl(
             backingEnvironment
         )

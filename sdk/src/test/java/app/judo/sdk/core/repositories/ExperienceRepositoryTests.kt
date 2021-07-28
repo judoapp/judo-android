@@ -137,8 +137,9 @@ internal class ExperienceRepositoryTests : AbstractRobotTest<ExperienceRepositor
 
         val input = Experience(
             id = "1",
+            name = "Test",
             version = 1,
-            revisionID = 1,
+            revisionID = "1",
             nodes = listOf(
                 Screen(
                     id = screenID,
@@ -197,8 +198,9 @@ internal class ExperienceRepositoryTests : AbstractRobotTest<ExperienceRepositor
 
         val expected = Experience(
             id = "1",
+            name = "Test",
             version = 1,
-            revisionID = 1,
+            revisionID = "1",
             nodes = listOf(
                 Screen(
                     id = screenID,

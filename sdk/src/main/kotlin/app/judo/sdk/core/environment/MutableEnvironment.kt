@@ -17,25 +17,20 @@
 
 package app.judo.sdk.core.environment
 
+import app.judo.sdk.api.Judo
 import app.judo.sdk.api.android.ExperienceFragmentFactory
 import app.judo.sdk.core.cache.KeyValueCache
 import app.judo.sdk.core.events.EventBus
-import app.judo.sdk.api.data.UserInfoSupplier
 import app.judo.sdk.core.log.Logger
 import app.judo.sdk.core.repositories.ExperienceRepository
 import app.judo.sdk.core.repositories.ExperienceTreeRepository
 import app.judo.sdk.core.repositories.SyncRepository
 import app.judo.sdk.core.services.*
-import app.judo.sdk.core.services.ExperienceService
-import app.judo.sdk.core.services.DevicesService
-import app.judo.sdk.core.services.SyncService
 import kotlinx.coroutines.CoroutineDispatcher
 
 internal interface MutableEnvironment: Environment {
 
-    override var accessToken: String
-
-    override var domainNames: Set<String>
+    override var configuration: Judo.Configuration
 
     override var baseURL: String?
 
@@ -49,7 +44,7 @@ internal interface MutableEnvironment: Environment {
 
     override var eventBus: EventBus
 
-    override var userInfoSupplier: UserInfoSupplier
+    override var profileService: ProfileService
 
     override var keyValueCache: KeyValueCache
 
@@ -61,9 +56,11 @@ internal interface MutableEnvironment: Environment {
 
     override var syncService: SyncService
 
-    override var devicesService: DevicesService
+    override var pushTokenService: PushTokenService
 
     override var dataSourceService: DataSourceService
+
+    override var ingestService: IngestService
 
     override var experienceRepository: ExperienceRepository
 
@@ -72,6 +69,8 @@ internal interface MutableEnvironment: Environment {
     override var syncRepository: SyncRepository
 
     override var experienceFragmentFactory: ExperienceFragmentFactory
+
+    override var eventQueue: AnalyticsServiceScope
 
     override var ioDispatcher: CoroutineDispatcher
 

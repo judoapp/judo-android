@@ -18,8 +18,9 @@
 package app.judo.sdk.core.implementations
 
 import android.content.Context
+import androidx.lifecycle.ProcessLifecycleOwner
+import app.judo.sdk.api.Judo
 import app.judo.sdk.api.android.ExperienceFragmentFactory
-import app.judo.sdk.api.data.UserInfoSupplier
 import app.judo.sdk.core.cache.KeyValueCache
 import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.environment.MutableEnvironment
@@ -42,9 +43,10 @@ internal class EnvironmentImpl(
     context: Context
 ) : MutableEnvironment {
 
-    override var accessToken: String = "TODO"
-
-    override var domainNames: Set<String> = emptySet()
+    override var configuration: Judo.Configuration = Judo.Configuration(
+        "TODO",
+        "TODO"
+    )
 
     override var baseURL: String? = null
 
@@ -58,9 +60,7 @@ internal class EnvironmentImpl(
 
     override var eventBus: EventBus = EventBusImpl()
 
-    override var userInfoSupplier: UserInfoSupplier = UserInfoSupplier {
-        emptyMap()
-    }
+    override var profileService: ProfileService = ProfileServiceImpl(this)
 
     override var keyValueCache: KeyValueCache = KeyValueCacheImpl(
         context = context
@@ -69,7 +69,7 @@ internal class EnvironmentImpl(
     override var tokenizer: Tokenizer = TokenizerImpl()
 
     var baseClient = Http.coreClient(
-        accessTokenSupplier = { accessToken },
+        accessTokenSupplier = { configuration.accessToken },
         deviceIdSupplier = { keyValueCache.retrieveString(Environment.Keys.DEVICE_ID) ?: "TODO" },
         loggerSupplier = { logger },
         cookieJarSupplier = {
@@ -98,9 +98,11 @@ internal class EnvironmentImpl(
         cacheSizeSupplier = { imageCacheSize }
     )
 
-    override var devicesService: DevicesService = DevicesServiceImpl(
+    override var pushTokenService: PushTokenService = PushTokenServiceImpl(
         baseClientSupplier = { baseClient },
-        baseURLSupplier = { baseURL }
+        keyValueCacheSupplier = { keyValueCache },
+        ioDispatcherSupplier = { ioDispatcher },
+        eventBusSupplier = { eventBus }
     )
 
     override var experienceService: ExperienceService = ExperienceServiceImpl(
@@ -127,6 +129,12 @@ internal class EnvironmentImpl(
         loggerSupplier = { logger }
     )
 
+    override var ingestService: IngestService = IngestServiceImpl(
+        baseClientSupplier = { baseClient },
+        loggerSupplier = { logger },
+        ioDispatcherSupplier = { ioDispatcher }
+    )
+
     private val experienceRepositoryImpl = ExperienceRepositoryImpl(
         experienceServiceSupplier = { experienceService },
         fontResourceServiceSupplier = {
@@ -142,12 +150,17 @@ internal class EnvironmentImpl(
 
     override var syncRepository: SyncRepository = SyncRepositoryImpl(
         syncServiceSupplier = { syncService },
-        keyValueCacheSupplier = { keyValueCache }
+        keyValueCacheSupplier = { keyValueCache },
+        ioDispatcherSupplier = { ioDispatcher }
     )
 
     override var experienceFragmentFactory = ExperienceFragmentFactory { intent ->
         ExperienceFragment().applyArguments(intent)
     }
 
-
+    override var eventQueue: AnalyticsServiceScope = AnalyticsServiceImpl(
+        environment = this,
+        deviceIdSupplier = { keyValueCache.retrieveString(Environment.Keys.DEVICE_ID) ?: "TODO" },
+        processLifecycleSupplier = { ProcessLifecycleOwner.get() }
+    )
 }

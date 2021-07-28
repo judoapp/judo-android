@@ -24,9 +24,11 @@ import app.judo.sdk.core.implementations.SyncRepositoryImpl
 import app.judo.sdk.utils.FakeKeyValueCache
 import app.judo.sdk.utils.FakeSyncService
 import app.judo.sdk.utils.shouldEqual
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlinx.coroutines.test.runBlockingTest
 import okhttp3.MediaType
 import okhttp3.ResponseBody
@@ -43,6 +45,8 @@ internal class SyncRepositoryTests {
 
     private lateinit var keyValueCache: KeyValueCache
 
+    private lateinit var ioDispatcher: CoroutineDispatcher
+
     @Before
     fun setUp() {
 
@@ -50,11 +54,13 @@ internal class SyncRepositoryTests {
 
         keyValueCache = FakeKeyValueCache()
 
+        ioDispatcher = TestCoroutineDispatcher()
+
         repository = SyncRepositoryImpl(
             syncServiceSupplier = { service },
-            keyValueCacheSupplier = { keyValueCache }
+            keyValueCacheSupplier = { keyValueCache },
+            ioDispatcherSupplier = { ioDispatcher }
         )
-
     }
 
     @Test
@@ -110,11 +116,7 @@ internal class SyncRepositoryTests {
         // Arrange
         service.responseCode = 500
 
-        val expected = Throwable(
-            Response.error<SyncResponse>(
-                500, ResponseBody.create(MediaType.parse("application/json"), "")
-            ).message()
-        ).message
+        val expected = "Failed, status code 500: "
 
         // Act
         var actual: String? = null
@@ -132,7 +134,7 @@ internal class SyncRepositoryTests {
         // Arrange
         service.responseCode = 201
 
-        val expected = "OK"
+        val expected = "Empty response body"
 
         // Act
         var actual: String? = null

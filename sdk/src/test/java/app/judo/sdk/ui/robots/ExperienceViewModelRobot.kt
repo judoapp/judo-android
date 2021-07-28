@@ -18,7 +18,6 @@
 package app.judo.sdk.ui.robots
 
 import android.content.Intent
-import app.judo.sdk.api.data.UserInfoSupplier
 import app.judo.sdk.api.models.Experience
 import app.judo.sdk.api.models.Visitor
 import app.judo.sdk.core.environment.Environment.Keys.EXPERIENCE_KEY
@@ -27,6 +26,7 @@ import app.judo.sdk.core.environment.Environment.Keys.IGNORE_CACHE
 import app.judo.sdk.core.environment.Environment.Keys.LOAD_FROM_MEMORY
 import app.judo.sdk.core.environment.Environment.Keys.SCREEN_ID
 import app.judo.sdk.core.implementations.EnvironmentImpl
+import app.judo.sdk.core.implementations.TheProfileService
 import app.judo.sdk.core.robots.AbstractTestRobot
 import app.judo.sdk.ui.ExperienceViewModel
 import app.judo.sdk.ui.events.ExperienceRequested
@@ -59,6 +59,7 @@ internal class ExperienceViewModelRobot : AbstractTestRobot() {
                 experienceStates += judoState
             }
         }
+        setUserInfoTraits(mapOf())
     }
 
     override fun onTearDown() {
@@ -122,8 +123,9 @@ internal class ExperienceViewModelRobot : AbstractTestRobot() {
         experience?.let(visitor::visit)
     }
 
-    fun setUserInfoSupplierTo(supplier: UserInfoSupplier) {
-        (environment as? EnvironmentImpl)?.userInfoSupplier = supplier
+    fun setUserInfoTraits(traits: Map<String, Any>) {
+        (environment as? EnvironmentImpl)?.profileService = TheProfileService().apply {
+            userInfo = traits
+        }
     }
-
 }

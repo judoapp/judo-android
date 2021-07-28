@@ -29,19 +29,40 @@ class ExampleMainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityExampleMainBinding
     private lateinit var launchButton: Button
+    private lateinit var identifyButton: Button
+    private lateinit var resetButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityExampleMainBinding.inflate(layoutInflater)
         launchButton = binding.launchButton
+        identifyButton = binding.identifyButton
+        resetButton = binding.resetButton
+
         setContentView(binding.root)
 
         launchButton.setOnClickListener {
             // try using any of the three sample show*() methods given below!
             showStockExperienceActivityFromURL(
                 // Change the experience URL below
-                "https://brand1.judo.app/myExperience"
+                "<JUDO-EXPERIENCE-URL>"
             )
+        }
+
+        identifyButton.setOnClickListener {
+            Judo.identify(
+                userId = "john@example.com",
+                traits = hashMapOf(
+                    "premiumTier" to true,
+                    "name" to "John Doe",
+                    "tags" to listOf("foo", "bar", "baz"),
+                    "pointsBalance" to "50000"
+                )
+            )
+        }
+
+        resetButton.setOnClickListener {
+            Judo.reset()
         }
     }
 
@@ -51,17 +72,10 @@ class ExampleMainActivity : AppCompatActivity() {
      * Shows how to launch Experiences programmatically using an Intent.
      */
     private fun showStockExperienceActivityFromURL(url: String) {
-
-        val userInfo = hashMapOf(
-            "firstName" to "John",
-            "lastName" to "Doe",
-        )
-
         Judo.makeIntent(
             context = this,
             url = url,
-            ignoreCache = true,
-            userInfo = userInfo
+            ignoreCache = true
         ).run { startActivity(this) }
     }
 
@@ -70,18 +84,11 @@ class ExampleMainActivity : AppCompatActivity() {
      * perhaps, to integrate with certain Analytics solutions).
      */
     private fun showCustomExperienceActivityWithAURL(url: String) {
-
-        val userInfo = hashMapOf(
-            "firstName" to "John",
-            "lastName" to "Doe",
-        )
-
         Judo.makeIntent(
             context = this,
             url = url,
             activityClass = ExampleCustomExperienceActivity::class.java,
-            ignoreCache = true,
-            userInfo = userInfo
+            ignoreCache = true
         ).run { startActivity(this) }
     }
 

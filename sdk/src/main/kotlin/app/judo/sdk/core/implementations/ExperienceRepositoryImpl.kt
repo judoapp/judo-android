@@ -136,6 +136,10 @@ internal class ExperienceRepositoryImpl(
         return inMemoryExperiences.put(key ?: experience.id, experience)
     }
 
+    override fun remove(key: String) {
+        inMemoryExperiences.remove(key)
+    }
+
     override fun retrieveById(key: String): Experience? {
         return inMemoryExperiences[key]
     }

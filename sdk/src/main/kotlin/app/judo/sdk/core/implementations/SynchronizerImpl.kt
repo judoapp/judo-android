@@ -45,29 +45,25 @@ internal class SynchronizerImpl(
 
     override suspend fun performSync(prefetchAssets: Boolean, onComplete: () -> Unit) {
         try {
-            environment.domainNames.map { domainName ->
-                environment.syncRepository.retrieveSync(
-                    domainName
-                )
-            }.forEach { responseFlow: Flow<Resource<SyncResponse, Throwable>> ->
-                responseFlow.collect { resource ->
-                    when (resource) {
-                        is Resource.Loading -> {
-                            environment.logger.v(
-                                tag = TAG,
-                                data = "Loading Sync Data"
-                            )
-                        }
-                        is Resource.Success -> {
-                            handleSyncResponse(resource.data, prefetchAssets)
-                        }
-                        is Resource.Error -> {
-                            environment.logger.e(
-                                tag = TAG,
-                                message = "Error Synchronizing:\n${resource.error.message}",
-                                error = resource.error
-                            )
-                        }
+            environment.syncRepository.retrieveSync(
+                environment.configuration.domain
+            ).collect { resource ->
+                when (resource) {
+                    is Resource.Loading -> {
+                        environment.logger.v(
+                            tag = TAG,
+                            data = "Loading Sync Data"
+                        )
+                    }
+                    is Resource.Success -> {
+                        handleSyncResponse(resource.data, prefetchAssets)
+                    }
+                    is Resource.Error -> {
+                        environment.logger.e(
+                            tag = TAG,
+                            message = "Error Synchronizing:\n${resource.error.message}",
+                            error = resource.error
+                        )
                     }
                 }
             }

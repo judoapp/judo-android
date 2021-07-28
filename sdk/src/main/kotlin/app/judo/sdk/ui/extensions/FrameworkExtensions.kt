@@ -74,7 +74,11 @@ internal fun Context.isDarkMode(appearance: Appearance): Boolean {
 internal fun Context.isLightMode(appearance: Appearance) = !isDarkMode(appearance)
 
 internal fun Context.getMaterialIconID(iconName: String): Int {
-    return resources.getIdentifier("judo_sdk_${iconName}", "drawable", this.packageName)
+    return if (iconName.endsWith(".fill")) {
+        resources.getIdentifier("judo_sdk_baseline_${iconName.substringBeforeLast(".fill")}", "drawable", this.packageName)
+    } else {
+        resources.getIdentifier("judo_sdk_${iconName}", "drawable", this.packageName)
+    }
 }
 
 internal fun Uri.toCustomTabsIntent(@ColorInt toolbarColor: Int = Color.BLACK): Intent {

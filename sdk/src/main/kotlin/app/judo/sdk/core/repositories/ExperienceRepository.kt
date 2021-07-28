@@ -42,5 +42,7 @@ internal interface ExperienceRepository {
      */
     fun retrieveById(key: String): Experience?
 
+    fun remove(key: String)
+
 }
 

@@ -74,7 +74,7 @@ fun InMemoryExperience(screen2Id: String? = null): Experience {
     return Experience(
         id = "1",
         version = 1,
-        revisionID = 1,
+        revisionID = "1",
         nodes = listOf(
             screen1,
             screen2,

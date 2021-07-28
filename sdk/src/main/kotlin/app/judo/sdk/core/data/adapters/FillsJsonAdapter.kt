@@ -42,7 +42,7 @@ internal class FillsJsonAdapter {
                 val gradient = gradientAdapter.fromJsonValue(jsonValue["gradient"])!!
                 Fill.GradientFill(gradient = gradient)
             }
-            else -> throw JsonDataException()
+            else -> throw JsonDataException("Unsupported fill type appeared in JSON: $fillType")
         }
     }
 

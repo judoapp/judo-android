@@ -88,8 +88,9 @@ fun TestExperience(screen2Id: String? = null): Experience {
 
     return Experience(
         id = "1",
+        name = "Test",
         version = 1,
-        revisionID = 1,
+        revisionID = "1",
         nodes = listOf(
             screen1,
             screen2,

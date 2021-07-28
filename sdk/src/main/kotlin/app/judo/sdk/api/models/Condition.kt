@@ -23,5 +23,5 @@ import com.squareup.moshi.JsonClass
 data class Condition(
     val keyPath: String,
     val predicate: Predicate,
-    val value : Any
+    val value : Any?
 )

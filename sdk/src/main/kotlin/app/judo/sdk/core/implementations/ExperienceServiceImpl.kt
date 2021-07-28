@@ -65,7 +65,6 @@ internal class ExperienceServiceImpl(
     }
 
     private val api: ExperienceAPI by lazy {
-
         val base: String =
             this@ExperienceServiceImpl.baseURLSupplier()?.takeIf { it.isNotBlank() } ?: url
 
@@ -80,7 +79,6 @@ internal class ExperienceServiceImpl(
         aURL: String,
         skipCache: Boolean,
     ): Response<Experience> {
-
         val sanitizedURL = baseURLSupplier()?.let { baseURL ->
             aURL.replaceFirst(Regex("""^(https://|http://)""", RegexOption.IGNORE_CASE), baseURL)
         } ?: aURL
@@ -89,6 +87,4 @@ internal class ExperienceServiceImpl(
 
         return api.getExperience(sanitizedURL, cacheControlHeader)
     }
-
 }
-

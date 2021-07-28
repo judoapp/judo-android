@@ -356,35 +356,6 @@ internal fun HStack.computeSize(context: Context, treeNode: TreeNode, parentCons
         else -> (heightConstraint as Dimension.Value).value
     }
 
-    // judo stacks have a behaviour where with infinite parent constraints they initially measure then remeasure with
-    // fixed constraints, the result of this is that nodes that usually would have a size of 0 (rectangles with inf constraints) receive any
-    // extra size not allocated to nodes initially sized with infinite constraints
-
-    //TODO: 2021-02-12 - Only do this when the hstack contains views that require this it's really bad for perf
-   if (parentConstraints.height !is Dimension.Value) {
-       val widthForMeasure = if (parentConstraints.width is Dimension.Inf) {
-           Dimension.Inf
-       } else {
-           parentConstraints.width as Dimension.Value
-       }
-
-       val heightForMeasure = if (parentConstraints.height is Dimension.Inf) {
-           Dimension.Value(nodeHeight)
-       } else {
-           parentConstraints.height as Dimension.Value
-       }
-
-       val childWithVerticalExpand = treeNode.children.filter { it.verticalBehavior() == ViewBehavior.EXPAND_FILL }
-       val childWithVertExpandMaxHeight = childWithVerticalExpand.all { it.getHeight() == maxChildHeight }
-
-       if (parentConstraints.height is Dimension.Inf && parentConstraints.width is Dimension.Value && childWithVertExpandMaxHeight) {
-           // dont remeasure
-       } else {
-           computeSize(context, treeNode, Dimensions(widthForMeasure, heightForMeasure))
-           return
-       }
-   }
-
     // set HStack size, content height/width is size of VStack. height and width are height and width including frame
     this.sizeAndCoordinates = this.sizeAndCoordinates.copy(
         width = nodeWidth,

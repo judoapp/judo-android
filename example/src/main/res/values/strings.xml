@@ -6,5 +6,7 @@
     <string name="message_error_state_server">SERVER ERROR STATE</string>
     <string name="message_error_state_unknown">UNKNOWN ERROR STATE</string>
     <string name="label_launch">Launch Experience</string>
+    <string name="label_identify">Identify</string>
+    <string name="label_reset">Reset</string>
     <string name="label_exit">EXIT</string>
 </resources>

@@ -18,10 +18,9 @@
 package app.judo.sdk.core.controllers
 
 import android.app.Application
+import app.judo.sdk.api.Judo
 import app.judo.sdk.api.android.ExperienceFragmentFactory
-import app.judo.sdk.api.events.ActionReceivedCallback
 import app.judo.sdk.api.events.ScreenViewedCallback
-import app.judo.sdk.api.data.UserInfoSupplier
 import app.judo.sdk.api.models.Experience
 import app.judo.sdk.core.implementations.ProductionLoggerImpl
 import app.judo.sdk.core.log.Logger
@@ -32,10 +31,7 @@ internal class NoOpSDKController : SDKController {
 
     override fun initialize(
         application: Application,
-        accessToken: String,
-        experienceCacheSize: Long,
-        imageCacheSize: Long,
-        vararg domains: String
+        configuration: Judo.Configuration
     ) {
         /* no-op */
     }
@@ -48,7 +44,7 @@ internal class NoOpSDKController : SDKController {
         /* no-op */
     }
 
-    override suspend fun setPushToken(fcmToken: String) {
+    override fun setPushToken(fcmToken: String) {
         /* no-op */
     }
 
@@ -56,15 +52,18 @@ internal class NoOpSDKController : SDKController {
         /* no-op */
     }
 
-    override fun setUserInfoSupplier(supplier: UserInfoSupplier) {
+    override fun identify(userId: String?, traits: Map<String, Any>) {
         /* no-op */
     }
+
+    override fun reset() {
+        /* no-op */
+    }
+
+    override val anonymousId: String
+        get() = "no-op"
 
     override fun setExperienceFragmentFactory(factory: ExperienceFragmentFactory) {
-        /* no-op */
-    }
-
-    override fun addActionReceivedCallback(callback: ActionReceivedCallback) {
         /* no-op */
     }
 

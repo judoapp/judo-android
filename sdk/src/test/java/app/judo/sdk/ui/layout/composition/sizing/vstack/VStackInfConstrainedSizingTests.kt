@@ -783,15 +783,15 @@ class VStackInfConstrainedSizingTests {
     @Test
     fun `given inf constraints vstack-various-child height sizing is correct`() {
         // Arrange
-        val expectedHeight = 200f
+        val expectedHeight = 300f
 
-        val expectedRectangle1Height = 50f
+        val expectedRectangle1Height = 100f
         val expectedImage1Height = 100f
-        val expectedImage2Height = 50f
+        val expectedImage2Height = 100f
 
-        val rectangle1 = createRectangleWithFrame()
+        val rectangle1 = createRectangleWithFrame(frame = Frame(100f, minHeight = 100f, alignment = Alignment.CENTER))
         val image1 = createImageWithFrame(resizingMode = ResizingMode.ORIGINAL)
-        val image2 = createImageWithFrame(resizingMode = ResizingMode.STRETCH)
+        val image2 = createImageWithFrame(resizingMode = ResizingMode.STRETCH, frame = Frame(100f, minHeight = 100f, alignment = Alignment.CENTER))
         val vStack = createVStackWithFrame()
         val treeNode = TreeNode(vStack).apply {
             addChild(TreeNode(rectangle1))
@@ -854,13 +854,13 @@ class VStackInfConstrainedSizingTests {
     @Test
     fun `given inf constraints vstack-image-child scale sizing is correct`() {
         // Arrange
-        val expectedHeight = 151f
+        val expectedHeight = 160f
 
-        val expectedImage1Height = 50.500004f
-        val expectedImage2Height = 50.500004f
+        val expectedImage1Height = 10f
+        val expectedImage2Height = 100f
         val expectedImage3Height = 50f
 
-        val image1 = createImageWithFrame(resizingMode = ResizingMode.SCALE_TO_FILL)
+        val image1 = createImageWithFrame(resizingMode = ResizingMode.SCALE_TO_FILL, frame = Frame(100f, minHeight = 10f, alignment = Alignment.CENTER))
         val image2 = createImageWithFrame(resizingMode = ResizingMode.STRETCH)
         val image3 = createImageWithFrame(resizingMode = ResizingMode.SCALE_TO_FIT)
 
@@ -890,19 +890,16 @@ class VStackInfConstrainedSizingTests {
     @Test
     fun `given inf constraints vstack-image-child 2 scale sizing is correct`() {
         // Arrange
-        val expectedHeight = 401f
+        val expectedHeight = 400f
 
-        val expectedImage1Height = 133.66667f
-        val expectedImage2Height = 133.66667f
-        val expectedImage3Height = 133.66667f
+        val expectedImage2Height = 100f
+        val expectedImage3Height = 300f
 
-        val image1 = createImageWithFrame(resizingMode = ResizingMode.SCALE_TO_FILL)
         val image2 = createImageWithFrame(resizingMode = ResizingMode.STRETCH)
         val image3 = createImageWithFrame(resizingMode = ResizingMode.SCALE_TO_FIT)
 
         val vStack = createVStackWithFrame()
         val treeNode = TreeNode(vStack).apply {
-            addChild(TreeNode(image1))
             addChild(TreeNode(image2))
             addChild(TreeNode(image3))
         }
@@ -913,27 +910,25 @@ class VStackInfConstrainedSizingTests {
         val actualHeight = vStack.sizeAndCoordinates.height
 
         val actualImage3Height = image3.sizeAndCoordinates.height
-        val actualImage1Height = image1.sizeAndCoordinates.height
         val actualImage2Height = image2.sizeAndCoordinates.height
 
         // Assert
         expectedHeight shouldEqual actualHeight
         expectedImage3Height shouldEqual actualImage3Height
-        expectedImage1Height shouldEqual actualImage1Height
         expectedImage2Height shouldEqual actualImage2Height
     }
 
     @Test
     fun `given inf constraints vstack-image-child 3 scale sizing is correct`() {
         // Arrange
-        val expectedHeight = 77f
+        val expectedHeight = 95f
 
-        val expectedImage1Height = 25.666666f
-        val expectedImage2Height = 25.666666f
-        val expectedImage3Height = 25.666666f
+        val expectedImage1Height = 10f
+        val expectedImage2Height = 10f
+        val expectedImage3Height = 75f
 
-        val image1 = createImageWithFrame(resizingMode = ResizingMode.SCALE_TO_FILL)
-        val image2 = createImageWithFrame(resizingMode = ResizingMode.TILE)
+        val image1 = createImageWithFrame(resizingMode = ResizingMode.SCALE_TO_FILL, frame = Frame(100f, minHeight = 10f, alignment = Alignment.CENTER))
+        val image2 = createImageWithFrame(resizingMode = ResizingMode.TILE, frame = Frame(100f, minHeight = 10f, alignment = Alignment.CENTER))
         val image3 = createImageWithFrame(resizingMode = ResizingMode.SCALE_TO_FIT)
 
         val vStack = createVStackWithFrame()
@@ -1072,8 +1067,8 @@ class VStackInfConstrainedSizingTests {
         // Arrange
         val expectedHeight = 450f
 
-        val expectedImage1Height = 175f
-        val expectedRectangle1Height = 175f
+        val expectedImage1Height = 300f
+        val expectedRectangle1Height = 50f
         val expectedDivider1Height = 100f
 
         val divider1 = createDividerWithFrame(Frame(100f, minHeight = 100f, alignment = Alignment.CENTER))
@@ -1144,8 +1139,8 @@ class VStackInfConstrainedSizingTests {
         // Arrange
         val expectedHeight = 200f
 
-        val expectedImage1Height = 50f
-        val expectedRectangle1Height = 50f
+        val expectedImage1Height = 100f
+        val expectedRectangle1Height = 0f
         val expectedDivider1Height = 100f
 
         val divider1 = createDividerWithFrame(Frame(100f, height = 100f, alignment = Alignment.CENTER))
@@ -1396,10 +1391,10 @@ class VStackInfConstrainedSizingTests {
         // Arrange
         val expectedHeight = 250f
 
-        val expectedImage1Height = 125f
-        val expectedRectangle1Height = 125f
+        val expectedImage1Height = 100f
+        val expectedRectangle1Height = 150f
 
-        val rectangle1 = createRectangleWithFrame(aspectRatio = 2f)
+        val rectangle1 = createRectangleWithFrame(aspectRatio = 2f, frame = Frame(100f, 150f, alignment = Alignment.CENTER))
         val image1 = createImageWithFrame(resizingMode = ResizingMode.ORIGINAL, frame = Frame(100f, maxHeight = MaxHeight.Finite(150f), alignment = Alignment.CENTER))
 
         val vStack = createVStackWithFrame()
@@ -1428,8 +1423,8 @@ class VStackInfConstrainedSizingTests {
         val expectedHeight = 150f
 
         val expectedImage1Height = 100f
-        val expectedRectangle1Height = 25f
-        val expectedRectangle2Height = 25f
+        val expectedRectangle1Height = 50f
+        val expectedRectangle2Height = 0f
 
         val rectangle2 = createRectangleWithFrame()
         val rectangle1 = createRectangleWithFrame(aspectRatio = 2f)
@@ -1461,13 +1456,13 @@ class VStackInfConstrainedSizingTests {
     @Test
     fun `given value constraints vstack-various-child scale sizing 9 is correct`() {
         // Arrange
-        val expectedHeight = 150f
+        val expectedHeight = 250f
 
-        val expectedImage1Height = 50f
+        val expectedImage1Height = 100f
         val expectedRectangle1Height = 50f
-        val expectedRectangle2Height = 50f
+        val expectedRectangle2Height = 100f
 
-        val rectangle2 = createRectangleWithFrame()
+        val rectangle2 = createRectangleWithFrame(frame = Frame(100f, 100f, alignment = Alignment.CENTER))
         val rectangle1 = createRectangleWithFrame(aspectRatio = 2f)
         val image1 = createImageWithFrame(resizingMode = ResizingMode.SCALE_TO_FIT)
 

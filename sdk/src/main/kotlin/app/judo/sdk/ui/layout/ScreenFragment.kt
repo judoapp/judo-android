@@ -24,6 +24,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.lifecycleScope
@@ -108,57 +109,7 @@ internal class ScreenFragment : Fragment() {
     }
 
     private fun setupAppBar(appBar: AppBar, menuItems: List<MenuItem>, resolvers: Resolvers) {
-        val colorResolver = resolvers.colorResolver
-        val actionResolver = resolvers.actionResolver
-
-        binding.toolbar.apply {
-            title = appBar.interpolatedTitle
-            val buttonColor = colorResolver.resolveForColorInt(appBar.buttonColor)
-            setTitleTextColor(colorResolver.resolveForColorInt(appBar.titleColor))
-            setBackgroundColor(colorResolver.resolveForColorInt(appBar.backgroundColor))
-
-            // set title
-            val fontAttributes = appBar.titleFont.getSystemFontAttributes()
-            val font = fontAttributes.weight.mapToFont()
-
-            val textView = (this.getChildAt(0) as? AppCompatTextView)
-            textView?.typeface = appBar.typeface ?: Typeface.create(font.name, font.style)
-            textView?.textSize = fontAttributes.size
-
-            overflowIcon?.setTint(buttonColor)
-
-            // set menu items
-            menu.clear()
-            menuItems.forEach { menuItem ->
-                menu.add(menuItem.interpolatedTitle).apply {
-                    val resourceId: Int = context.getMaterialIconID(menuItem.iconMaterialName)
-
-                    menuItem.action?.let { action ->
-                        setOnMenuItemClickListener {
-                            screen?.let { screen -> actionResolver.invoke(action, screen, menuItem) }
-                            true
-                        }
-                    }
-                    setIcon(resourceId)
-                    icon.setTint(buttonColor)
-                    when (menuItem.showAsAction) {
-                        MenuItemVisibility.ALWAYS -> setShowAsAction(AndroidMenuItem.SHOW_AS_ACTION_ALWAYS)
-                        MenuItemVisibility.NEVER -> setShowAsAction(AndroidMenuItem.SHOW_AS_ACTION_NEVER)
-                        MenuItemVisibility.IF_ROOM -> setShowAsAction(AndroidMenuItem.SHOW_AS_ACTION_IF_ROOM)
-                    }
-                }
-            }
-
-            // set up icon
-            if (!appBar.hideUpIcon) {
-                setNavigationIcon(R.drawable.judo_sdk_arrow_back)
-                navigationIcon?.setTint(buttonColor)
-                setNavigationOnClickListener {
-                    requireActivity().onBackPressed()
-                }
-            }
-            visibility = View.VISIBLE
-        }
+        binding.toolbar.setupJudoAppBar(appBar, menuItems, screen, resolvers) { requireActivity().onBackPressed() }
     }
 
     private fun initializeComponent(screenID: String) {
@@ -225,67 +176,8 @@ internal class ScreenFragment : Fragment() {
         resolvers: Resolvers
     ) {
         binding.screenFrame.doOnLayout {
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            val nodes = nodesForScreenInfo.nodes
-            val collectionChildIDs = nodesForScreenInfo.collectionNodeIDs
-
-            val incomingFrame = if (binding.screenFrame.childCount == 0) binding.screenFrame else binding.screenFrame2
-            val outgoingFrame = if (binding.screenFrame.childCount == 0) binding.screenFrame2 else binding.screenFrame
-
-            val screen = nodes.find { it.id == screenID }!!
-
-            withContext(Dispatchers.Default) {
-                val screenNode = TreeNode(screen)
-
-                constructLayerNodeTrees(screenNode, nodes, appearance)
-
-                withContext(Dispatchers.Main) {
-                    screenNode.children.find { it.value is AppBar }?.let {
-                        setupAppBar(
-                            it.value as AppBar,
-                            it.children.map { child -> child.value as MenuItem },
-                            resolvers
-                        )
-                        screenNode.removeChild(it.value.id)
-                    }
-                }
-
-                val mediaNodeIDs = nodes.filter { it is PlaysMedia }.map { it.id }
-
-                // remove nodes that can be lazily loaded and group by their nearest scroll ancestor
-                val scrollIDsToRemovedNodes = nodesToBeLazilyLoaded(nodes, collectionChildIDs, screenNode)
-
-                    val verticalScrollIDsToRemovedNodes =
-                        scrollIDsToRemovedNodes.filter { removedGroup ->
-                            (nodes.find { it.id == removedGroup.first } as? ScrollContainer)?.axis == Axis.VERTICAL
-                        }
-                    val horizontalScrollIDsToRemovedNodes =
-                        scrollIDsToRemovedNodes.filter { removedGroup ->
-                            (nodes.find { it.id == removedGroup.first } as? ScrollContainer)?.axis == Axis.HORIZONTAL
-                        }
-
-                // construct views
-                val views = screenNode.children.reversed().flatMap { it.toLayout(requireContext(), resolvers) }
-
-                // add views when frame laid out and setup scroll views for lazy loading
-                withContext(Dispatchers.Main) {
-                    views.forEach { incomingFrame.addView(it) }
-                    incomingFrame.doOnLayout {
-                        setupVerticalLazyLoading(verticalScrollIDsToRemovedNodes, mediaNodeIDs, incomingFrame, resolvers)
-                        setupHorizontalLazyLoading(horizontalScrollIDsToRemovedNodes, mediaNodeIDs, incomingFrame, resolvers)
-
-                        incomingFrame.visibility = View.VISIBLE
-                        outgoingFrame.visibility = View.INVISIBLE
-                        outgoingFrame.removeAllViews()
-
-                        setSwipeToRefresh(nodesForScreenInfo.swipeToRefresh) {
-                            model.refreshNodes(screenID)
-                            listenForUpdates(screenID, appearance, resolvers)
-                        }
-                    }
-                    currentLifecycleObserver = MediaAwareLifecycleObserver(mediaNodeIDs, incomingFrame)
-                }
-            }
+            viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+                render(screenID, appearance, resolvers, nodesForScreenInfo, true)
             }
         }
     }
@@ -297,96 +189,110 @@ internal class ScreenFragment : Fragment() {
             model.nodesFlowForScreen(screenID)
                 .onEach { binding.swipeToRefresh.isRefreshing = false }
                 .distinctUntilChanged()
-                .collect { (nodes, swipeToRefresh, collectionChildIDs, canCache) ->
+                .collect { nodesForScreenInfo ->
                     binding.screenFrame.doOnLayout {
                         launch {
                             mutex.withLock {
-                                val incomingFrame =
-                                    if (binding.screenFrame.childCount == 0) binding.screenFrame else binding.screenFrame2
-                                val outgoingFrame =
-                                    if (binding.screenFrame.childCount == 0) binding.screenFrame2 else binding.screenFrame
-                                setSwipeToRefresh(swipeToRefresh) {
-                                    model.refreshNodes(screenID)
-                                }
-
-                                val screen = nodes.find { it.id == screenID } ?: return@launch
-                                val screenNode = TreeNode(screen)
-
-
-                                val mediaNodeIDs = nodes.filter { it is PlaysMedia }.map { it.id }
-
-                                withContext(Dispatchers.Default) {
-
-                                    constructLayerNodeTrees(screenNode, nodes, appearance)
-
-                                    val appBar = screenNode.children.find { it.value is AppBar }
-                                    withContext(Dispatchers.Main) {
-                                        appBar?.let {
-                                            setupAppBar(
-                                                it.value as AppBar,
-                                                it.children.map { child -> child.value as MenuItem },
-                                                resolvers
-                                            )
-                                            screenNode.removeChild(it.value.id)
-                                        }
-                                    }
-
-                                    computeSizeAndPositioning(screenNode, appBar != null)
-
-                                    // remove nodes that can be lazily loaded and group by their nearest scroll ancestor
-                                    val scrollIDsToRemovedNodes =
-                                        nodesToBeLazilyLoaded(nodes, collectionChildIDs, screenNode)
-                                    val verticalScrollIDsToRemovedNodes =
-                                        scrollIDsToRemovedNodes.filter { removedGroup ->
-                                            (nodes.find { it.id == removedGroup.first } as? ScrollContainer)?.axis == Axis.VERTICAL
-                                        }
-                                    val horizontalScrollIDsToRemovedNodes =
-                                        scrollIDsToRemovedNodes.filter { removedGroup ->
-                                            (nodes.find { it.id == removedGroup.first } as? ScrollContainer)?.axis == Axis.HORIZONTAL
-                                        }
-
-                                    // construct views
-                                    val views = screenNode.children.reversed()
-                                        .flatMap { it.toLayout(requireContext(), resolvers) }
-                                    val toCache = if (canCache) NodesForScreenInfo(
-                                        nodes,
-                                        swipeToRefresh,
-                                        collectionChildIDs,
-                                        false
-                                    ) else null
-
-
-                                    // capture old vertical scroll state
-                                    val verticalScrollIDsToPosition =
-                                        captureVerticalScrollState(nodes, outgoingFrame)
-                                    val horizontalScrollIDsToPosition =
-                                        captureHorizontalScrollState(nodes, outgoingFrame)
-
-                                    // add views when frame laid out, restore scroll state and setup scroll views for lazy loading
-                                    withContext(Dispatchers.Main) {
-                                        model.readyToUpdate(screenID, toCache)
-                                        views.forEach { incomingFrame.addView(it) }
-                                        incomingFrame.doOnLayout {
-                                            incomingFrame.visibility = View.VISIBLE
-                                            outgoingFrame.visibility = View.INVISIBLE
-                                            outgoingFrame.removeAllViews()
-
-                                            setupVerticalLazyLoading(verticalScrollIDsToRemovedNodes, mediaNodeIDs, incomingFrame, resolvers)
-                                            setupHorizontalLazyLoading(horizontalScrollIDsToRemovedNodes, mediaNodeIDs, incomingFrame, resolvers)
-
-                                            restoreVerticalScrollState(verticalScrollIDsToPosition, incomingFrame)
-                                            restoreHorizontalScrollState(horizontalScrollIDsToPosition, incomingFrame)
-
-
-
-                                            currentLifecycleObserver = MediaAwareLifecycleObserver(mediaNodeIDs, incomingFrame)
-                                        }
-                                    }
-                                }
+                                setSwipeToRefresh(nodesForScreenInfo.swipeToRefresh) { model.refreshNodes(screenID) }
+                                render(screenID, appearance, resolvers, nodesForScreenInfo, false)
                             }
                         }
                     }
                 }
+        }
+    }
+
+    private suspend fun render(
+        screenID: String,
+        appearance: Appearance,
+        resolvers: Resolvers,
+        nodesForScreenInfo: NodesForScreenInfo,
+        fromCache: Boolean
+    ) {
+        val frameChildCount = binding.screenFrame.childCount
+        val (incomingFrame, outgoingFrame) = if (frameChildCount == 0) {
+            binding.screenFrame to binding.screenFrame2
+        } else {
+            binding.screenFrame2 to binding.screenFrame
+        }
+
+        val nodes = nodesForScreenInfo.nodes
+        val swipeToRefresh = nodesForScreenInfo.swipeToRefresh
+        val collectionChildIDs = nodesForScreenInfo.collectionNodeIDs
+        val canCache = nodesForScreenInfo.canCache
+
+        val screen = nodes.find { it.id == screenID } ?: return
+        val screenNode = TreeNode(screen)
+
+        val mediaNodeIDs = nodes.filter { it is PlaysMedia }.map { it.id }
+
+        withContext(Dispatchers.Default) {
+
+            constructLayerNodeTrees(screenNode, nodes, appearance)
+
+            val appBar = screenNode.children.find { it.value is AppBar }
+            withContext(Dispatchers.Main) {
+                appBar?.let {
+                    setupAppBar(
+                        it.value as AppBar,
+                        it.children.map { child -> child.value as MenuItem },
+                        resolvers
+                    )
+                    screenNode.removeChild(it.value.id)
+                }
+            }
+
+            if (!fromCache) computeSizeAndPositioning(screenNode, appBar != null)
+
+            // remove nodes that can be lazily loaded and group by their nearest scroll ancestor
+            val scrollIDsToRemovedNodes = nodesToBeLazilyLoaded(nodes, collectionChildIDs, screenNode)
+            val verticalScrollIDsToRemovedNodes =
+                scrollIDsToRemovedNodes.filter { removedGroup ->
+                    (nodes.find { it.id == removedGroup.first } as? ScrollContainer)?.axis == Axis.VERTICAL
+                }
+            val horizontalScrollIDsToRemovedNodes =
+                scrollIDsToRemovedNodes.filter { removedGroup ->
+                    (nodes.find { it.id == removedGroup.first } as? ScrollContainer)?.axis == Axis.HORIZONTAL
+                }
+
+            // construct views
+            val views = screenNode.children.reversed().flatMap { it.toLayout(requireContext(), resolvers) }
+            val toCache = if (canCache) NodesForScreenInfo(
+                nodes,
+                swipeToRefresh,
+                collectionChildIDs,
+                false
+            ) else null
+
+            // capture old vertical scroll state
+            val verticalScrollIDsToPosition = captureVerticalScrollState(nodes, outgoingFrame)
+            val horizontalScrollIDsToPosition = captureHorizontalScrollState(nodes, outgoingFrame)
+
+            // add views when frame laid out, restore scroll state and setup scroll views for lazy loading
+            withContext(Dispatchers.Main) {
+                if (!fromCache) model.readyToUpdate(screenID, toCache)
+                views.forEach { incomingFrame.addView(it) }
+                incomingFrame.doOnLayout {
+                    incomingFrame.visibility = View.VISIBLE
+                    outgoingFrame.visibility = View.INVISIBLE
+                    outgoingFrame.removeAllViews()
+
+                    setupVerticalLazyLoading(verticalScrollIDsToRemovedNodes, mediaNodeIDs, incomingFrame, resolvers)
+                    setupHorizontalLazyLoading(horizontalScrollIDsToRemovedNodes, mediaNodeIDs, incomingFrame, resolvers)
+
+                    restoreVerticalScrollState(verticalScrollIDsToPosition, incomingFrame)
+                    restoreHorizontalScrollState(horizontalScrollIDsToPosition, incomingFrame)
+
+                    if (fromCache) {
+                        setSwipeToRefresh(nodesForScreenInfo.swipeToRefresh) {
+                            model.refreshNodes(screenID)
+                            listenForUpdates(screenID, appearance, resolvers)
+                        }
+                    }
+
+                    currentLifecycleObserver = MediaAwareLifecycleObserver(mediaNodeIDs, incomingFrame)
+                }
+            }
         }
     }
 
@@ -446,25 +352,24 @@ internal class ScreenFragment : Fragment() {
 
             if (scrollView.canScrollHorizontally(1)) {
                 scrollView.setOnScrollChangeListener { _, scrollX, _, _, _ ->
-                    val toAdd: List<Pair<TreeNode, Float>> =
-                        groupToCoordinates.filter { it.second < scrollX + scrollView.width.toFloat() }
-                    groupToCoordinates.removeAll(toAdd)
-                    val viewsToAdd =
-                        toAdd.flatMap { it.first.toLayout(requireContext(), resolvers) }
-                    val scrollFrame = ((scrollView as? ViewGroup)?.getChildAt(0) as? ViewGroup)
+                    lifecycleScope.launchWhenResumed {
+                        val toAdd: List<Pair<TreeNode, Float>> =
+                            groupToCoordinates.filter { it.second < scrollX + scrollView.width.toFloat() }
+                        groupToCoordinates.removeAll(toAdd)
+                        val viewsToAdd =
+                            toAdd.flatMap { it.first.toLayout(requireContext(), resolvers) }
+                        val scrollFrame = ((scrollView as? ViewGroup)?.getChildAt(0) as? ViewGroup)
 
-                    viewsToAdd.forEach { scrollFrame?.addView(it) }
+                        viewsToAdd.forEach { scrollFrame?.addView(it) }
+                    }
                 }
             } else {
                 scrollView.doOnPreDraw {
-                    val scrollFrame = ((scrollView as? ViewGroup)?.getChildAt(0) as? ViewGroup)
-                    val views = groupToCoordinates.flatMap {
-                        it.first.toLayout(
-                            requireContext(),
-                            resolvers
-                        )
+                    lifecycleScope.launchWhenResumed {
+                        val scrollFrame = ((scrollView as? ViewGroup)?.getChildAt(0) as? ViewGroup)
+                        val views = groupToCoordinates.flatMap { it.first.toLayout(requireContext(), resolvers) }
+                        views.forEach { scrollFrame?.addView(it) }
                     }
-                    views.forEach { scrollFrame?.addView(it) }
                 }
             }
 
@@ -491,25 +396,26 @@ internal class ScreenFragment : Fragment() {
 
             if (scrollView.canScrollVertically(1)) {
                 scrollView.setOnScrollChangeListener { _, _, scrollY, _, _ ->
-                    val toAdd: List<Pair<TreeNode, Float>> =
-                        groupToCoordinates.filter { it.second < scrollY + scrollView.height.toFloat() }
-                    groupToCoordinates.removeAll(toAdd)
-                    val viewsToAdd =
-                        toAdd.flatMap { it.first.toLayout(requireContext(), resolvers) }
-                    val scrollFrame = ((scrollView as? ViewGroup)?.getChildAt(0) as? ViewGroup)
+                    lifecycleScope.launchWhenResumed {
+                        val toAdd: List<Pair<TreeNode, Float>> =
+                            groupToCoordinates.filter { it.second < scrollY + scrollView.height.toFloat() }
+                        groupToCoordinates.removeAll(toAdd)
+                        val viewsToAdd =
+                            toAdd.flatMap { it.first.toLayout(requireContext(), resolvers) }
+                        val scrollFrame = ((scrollView as? ViewGroup)?.getChildAt(0) as? ViewGroup)
 
-                    viewsToAdd.forEach { scrollFrame?.addView(it) }
+                        viewsToAdd.forEach { scrollFrame?.addView(it) }
+                    }
                 }
             } else {
                 scrollView.doOnPreDraw {
-                    val scrollFrame = ((scrollView as? ViewGroup)?.getChildAt(0) as? ViewGroup)
-                    val views = groupToCoordinates.flatMap {
-                        it.first.toLayout(
-                            requireContext(),
-                            resolvers
-                        )
+                    lifecycleScope.launchWhenResumed {
+                        val scrollFrame = ((scrollView as? ViewGroup)?.getChildAt(0) as? ViewGroup)
+                        val views = groupToCoordinates.flatMap {
+                            it.first.toLayout(requireContext(), resolvers)
+                        }
+                        views.forEach { scrollFrame?.addView(it) }
                     }
-                    views.forEach { scrollFrame?.addView(it) }
                 }
             }
             mediaChildIDs.forEach {
@@ -523,11 +429,7 @@ internal class ScreenFragment : Fragment() {
         incomingFrame: FrameLayout
     ) {
         horizontalScrollIDsToPosition.forEach {
-            val scrollView = incomingFrame.findViewWithTag<HorizontalExperienceScrollView>(
-                UUID.fromString(
-                    it.first
-                )
-            )
+            val scrollView = incomingFrame.findViewWithTag<HorizontalExperienceScrollView>(UUID.fromString(it.first))
             scrollView?.scrollX = it.second
         }
     }
@@ -587,9 +489,4 @@ internal class ScreenFragment : Fragment() {
             binding.swipeToRefresh.isEnabled = false
         }
     }
-}
-
-
-sealed class Events {
-
 }

@@ -17,10 +17,13 @@
 
 package app.judo.sdk.core.data
 
+import app.judo.sdk.api.analytics.AnalyticsEvent
 import app.judo.sdk.api.models.*
 import app.judo.sdk.api.models.Collection
 import app.judo.sdk.core.data.adapters.*
+import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 
 object JsonParser {
@@ -109,6 +112,10 @@ object JsonParser {
     private val menuItemVisibilityAdapter = MenuItemVisibilityJsonAdapter()
     private val appearanceAdapter = AppearanceAdapter()
     private val predicateJsonAdapter = PredicateJsonAdapter()
+    private val analyticsEventAdapter = PolymorphicJsonAdapterFactory.of(AnalyticsEvent::class.java, "type")
+        .withSubtype(AnalyticsEvent.Register::class.java, "register")
+        .withSubtype(AnalyticsEvent.Identify::class.java, "identify")
+        .withSubtype(AnalyticsEvent.Screen::class.java, "screen")
 
     val moshi: Moshi = Moshi.Builder()
         .add(fontAdapterFactory)
@@ -137,6 +144,7 @@ object JsonParser {
         .add(menuItemVisibilityAdapter)
         .add(httpMethodAdapter)
         .add(predicateJsonAdapter)
+        .add(analyticsEventAdapter)
         .build()
 
     private val adapter = moshi.adapter(Experience::class.java)
@@ -149,4 +157,34 @@ object JsonParser {
         return moshi.adapter(JudoMessage::class.java).fromJson(json)
     }
 
+    fun parseAnalyticsEvents(json: String): List<AnalyticsEvent> {
+        val parameterizedType = Types.newParameterizedType(
+            MutableList::class.java,
+            AnalyticsEvent::class.java
+        )
+        val adapter: JsonAdapter<List<AnalyticsEvent>> = moshi.adapter(parameterizedType)
+
+        return adapter.fromJson(json) ?: listOf()
+    }
+
+    fun parseDictionaryMap(json: String): Map<String, Any> {
+        val adapter: JsonAdapter<Map<String, Any>> = moshi
+            .adapter(Types.newParameterizedType(Map::class.java, String::class.java, Any::class.java))
+        return adapter.fromJson(json) ?: emptyMap()
+    }
+
+    fun encodeDictionaryMap(map: Map<String, Any>): String {
+        val adapter: JsonAdapter<Map<String, Any>> = moshi
+            .adapter(Types.newParameterizedType(Map::class.java, String::class.java, Any::class.java))
+        return adapter.toJson(map)
+    }
+
+    fun encodeAnalyticsEvents(events: List<AnalyticsEvent>): String {
+        val parameterizedType = Types.newParameterizedType(
+            MutableList::class.java,
+            AnalyticsEvent::class.java
+        )
+        val adapter: JsonAdapter<List<AnalyticsEvent>> = moshi.adapter(parameterizedType)
+        return adapter.toJson(events)
+    }
 }

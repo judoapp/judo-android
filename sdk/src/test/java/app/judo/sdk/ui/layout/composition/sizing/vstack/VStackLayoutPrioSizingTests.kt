@@ -952,12 +952,12 @@ class VStackLayoutPrioSizingTests {
     @Test
     fun `given inf constraints vstack-layout-prio sizing is correct`() {
         // Arrange
-        val expectedHeight = 400f
-        val expectedRectangle1Height = 300f
-        val expectedImage1Height = 0f
+        val expectedHeight = 500f
+        val expectedRectangle1Height = 100f
+        val expectedImage1Height = 300f
         val expectedImage2Height = 100f
 
-        val rectangle1 = createRectangleWithFrame(layoutPriority = 1f)
+        val rectangle1 = createRectangleWithFrame(layoutPriority = 1f, frame = Frame(100f, 100f, alignment = Alignment.CENTER))
         val image1 = createImageWithFrame(resizingMode = ResizingMode.SCALE_TO_FIT)
         val image2 = createImageWithFrame(resizingMode = ResizingMode.ORIGINAL)
 
@@ -986,12 +986,12 @@ class VStackLayoutPrioSizingTests {
     @Test
     fun `given inf constraints vstack-layout-prio 2 sizing is correct`() {
         // Arrange
-        val expectedHeight = 400f
-        val expectedRectangle1Height = 150f
-        val expectedImage1Height = 150f
+        val expectedHeight = 500f
+        val expectedRectangle1Height = 100f
+        val expectedImage1Height = 300f
         val expectedImage2Height = 100f
 
-        val rectangle1 = createRectangleWithFrame(layoutPriority = 1f)
+        val rectangle1 = createRectangleWithFrame(layoutPriority = 1f, frame = Frame(100f, height = 100f, alignment = Alignment.CENTER))
         val image1 = createImageWithFrame(resizingMode = ResizingMode.SCALE_TO_FIT, layoutPriority = 1f)
         val image2 = createImageWithFrame(resizingMode = ResizingMode.ORIGINAL)
 
@@ -1225,12 +1225,12 @@ class VStackLayoutPrioSizingTests {
     @Test
     fun `given inf constraints vstack-layout-prio 9 sizing is correct`() {
         // Arrange
-        val expectedHeight = 400f
-        val expectedRectangle1Height = 300f
-        val expectedImage1Height = 0f
+        val expectedHeight = 500f
+        val expectedRectangle1Height = 100f
+        val expectedImage1Height = 300f
         val expectedImage2Height = 100f
 
-        val rectangle1 = createRectangleWithFrame(layoutPriority = 2f)
+        val rectangle1 = createRectangleWithFrame(layoutPriority = 2f, frame = Frame(100f, minHeight = 100f, alignment = Alignment.CENTER))
         val image1 = createImageWithFrame(layoutPriority = 1f, resizingMode = ResizingMode.SCALE_TO_FIT)
         val image2 = createImageWithFrame(layoutPriority = 3f, resizingMode = ResizingMode.ORIGINAL, frame = Frame(100f, minHeight = 100f, alignment = Alignment.CENTER))
 

@@ -35,7 +35,7 @@ import app.judo.sdk.ui.layout.composition.toSingleLayerLayout
 import app.judo.sdk.ui.views.ExperienceView
 import kotlin.math.roundToInt
 
-internal fun ZStack.construct(
+internal suspend fun ZStack.construct(
     context: Context,
     treeNode: TreeNode,
     resolvers: Resolvers

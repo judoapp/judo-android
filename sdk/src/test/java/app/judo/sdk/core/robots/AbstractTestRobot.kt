@@ -21,10 +21,10 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.environment.MutableEnvironment
-import app.judo.sdk.core.implementations.CookieJarImpl
 import app.judo.sdk.core.implementations.EnvironmentImpl
 import app.judo.sdk.core.implementations.KeyValueCacheImpl
 import app.judo.sdk.core.web.*
+import app.judo.sdk.utils.FakeAnalyticsService
 import app.judo.sdk.utils.FakeFontResourceService
 import app.judo.sdk.utils.TestLoggerImpl
 import app.judo.sdk.utils.TestServerDispatcher
@@ -87,7 +87,7 @@ internal abstract class AbstractTestRobot {
         baseURL = this@AbstractTestRobot.baseURL
 
         baseClient = Http.coreClient(
-            accessTokenSupplier = { accessToken },
+            accessTokenSupplier = { configuration.accessToken },
             deviceIdSupplier = { keyValueCache.retrieveString(Environment.Keys.DEVICE_ID) ?: "TODO" },
             loggerSupplier = { logger },
             cookieJarSupplier = { cookieJar }
@@ -95,6 +95,7 @@ internal abstract class AbstractTestRobot {
 
         fontResourceService = FakeFontResourceService()
 
+        eventQueue = FakeAnalyticsService()
     }
 
     val environment: Environment = backingEnvironment

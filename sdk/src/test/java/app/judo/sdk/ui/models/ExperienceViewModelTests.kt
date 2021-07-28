@@ -21,7 +21,6 @@ import app.judo.sdk.api.models.DataSource
 import app.judo.sdk.api.models.Experience
 import app.judo.sdk.api.models.Text
 import app.judo.sdk.core.data.JsonParser
-import app.judo.sdk.api.data.UserInfoSupplier
 import app.judo.sdk.core.data.ExperienceTree
 import app.judo.sdk.core.robots.AbstractRobotTest
 import app.judo.sdk.ui.robots.ExperienceViewModelRobot
@@ -176,14 +175,13 @@ internal class ExperienceViewModelTests : AbstractRobotTest<ExperienceViewModelR
         val expected = "Hello, Jane Doe"
         val experience = JsonParser.parseExperience(TestJSON.user_data_experience)!!
 
-        val userInfoSupplier = UserInfoSupplier {
+        val userInfoSupplier =
             mapOf(
                 "firstName" to "Jane",
                 "lastName" to "Doe"
             )
-        }
 
-        robot.setUserInfoSupplierTo(
+        robot.setUserInfoTraits(
             userInfoSupplier
         )
 
@@ -225,15 +223,14 @@ internal class ExperienceViewModelTests : AbstractRobotTest<ExperienceViewModelR
         /// Arrange
         val expected = "Hello, Jane Doe"
 
-        val userInfoSupplier = UserInfoSupplier {
+        val userInfoTraits =
             mapOf(
                 "firstName" to "Jane",
                 "lastName" to "Doe"
             )
-        }
 
-        robot.setUserInfoSupplierTo(
-            userInfoSupplier
+        robot.setUserInfoTraits(
+            userInfoTraits
         )
 
         // Act

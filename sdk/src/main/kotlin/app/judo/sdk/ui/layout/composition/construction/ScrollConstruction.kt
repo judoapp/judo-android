@@ -20,9 +20,12 @@ package app.judo.sdk.ui.layout.composition.construction
 import android.content.Context
 import android.os.Build
 import android.view.View
+import android.view.ViewGroup
+import android.webkit.WebView
 import android.widget.FrameLayout
 import app.judo.sdk.api.models.*
 import app.judo.sdk.api.models.Layer
+import app.judo.sdk.ui.extensions.*
 import app.judo.sdk.ui.extensions.dp
 import app.judo.sdk.ui.extensions.setMaskPath
 import app.judo.sdk.ui.extensions.setMaskPathFromMask
@@ -35,10 +38,12 @@ import app.judo.sdk.ui.layout.composition.toSingleLayerLayout
 import app.judo.sdk.ui.views.ExperienceMediaPlayerView
 import app.judo.sdk.ui.views.ExperienceScrollView
 import app.judo.sdk.ui.views.HorizontalExperienceScrollView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.UUID
 import kotlin.math.roundToInt
 
-internal fun ScrollContainer.construct(
+internal suspend fun ScrollContainer.construct(
     context: Context,
     treeNode: TreeNode,
     resolvers: Resolvers
@@ -117,7 +122,7 @@ internal fun ScrollContainer.construct(
         val viewForSizing =
             View(context).apply { layoutParams = FrameLayout.LayoutParams(width.toInt(), height.toInt()) }
         scrollViewInnerFrame.addView(viewForSizing)
-        views.forEach { view -> scrollViewInnerFrame.addView(view) }
+        views.forEach { view -> scrollViewInnerFrame.addJudoView(view) }
     }
 
     scrollView.addView(scrollViewInnerFrame)

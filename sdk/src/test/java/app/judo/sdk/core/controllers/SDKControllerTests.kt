@@ -47,7 +47,7 @@ internal class SDKControllerTests : AbstractRobotTest<SDKControllerTestRobot>() 
         try {
 
             robot.initializeControllerWith(
-                accessToken, arrayOf(domainName)
+                accessToken, domainName
             )
 
         } catch (e: Throwable) {
@@ -79,38 +79,7 @@ internal class SDKControllerTests : AbstractRobotTest<SDKControllerTestRobot>() 
         try {
 
             robot.initializeControllerWith(
-                accessToken, arrayOf(domainName)
-            )
-
-        } catch (e: Throwable) {
-
-            actual = e.toString()
-
-        }
-
-        // Assert
-        expected shouldEqual actual
-
-    }
-
-    @Test
-    fun `user can not initialize the sdk with an empty list of domains`() {
-
-        // Arrange
-        val accessToken = "token1"
-
-        val expected = IllegalArgumentException(
-            ErrorMessages.DOMAINS_NOT_EMPTY
-        ).toString()
-
-        var actual: String? = null
-
-        // Act
-        try {
-
-            robot.initializeControllerWith(
-                accessToken = accessToken,
-                domains = emptyArray()
+                accessToken, domainName
             )
 
         } catch (e: Throwable) {
@@ -142,7 +111,7 @@ internal class SDKControllerTests : AbstractRobotTest<SDKControllerTestRobot>() 
 
             robot.initializeControllerWith(
                 accessToken = accessToken,
-                domains = arrayOf(domain)
+                domain = domain
             )
 
         } catch (e: Throwable) {
@@ -165,7 +134,7 @@ internal class SDKControllerTests : AbstractRobotTest<SDKControllerTestRobot>() 
 
         robot.initializeControllerWith(
             accessToken = accessToken,
-            domains = arrayOf(domain)
+            domain = domain
         )
 
         // Act
@@ -182,11 +151,10 @@ internal class SDKControllerTests : AbstractRobotTest<SDKControllerTestRobot>() 
         // Arrange
         val accessToken = "token1"
         val domain = "test1.judo.app"
-        val domain2 = "test2.judo.app"
 
         robot.initializeControllerWith(
             accessToken = accessToken,
-            domains = arrayOf(domain, domain2)
+            domain = domain
         )
 
         var callBackWasNeverCalled = true
@@ -209,12 +177,11 @@ internal class SDKControllerTests : AbstractRobotTest<SDKControllerTestRobot>() 
         // Arrange
         val accessToken = "token1"
         val domain = "test1.judo.app"
-        val domain2 = "test2.judo.app"
 
         // Act
         robot.initializeControllerWith(
             accessToken = accessToken,
-            domains = arrayOf(domain, domain2)
+            domain = domain
         )
 
         // Assert
@@ -228,7 +195,6 @@ internal class SDKControllerTests : AbstractRobotTest<SDKControllerTestRobot>() 
         // Arrange
         val accessToken = "token1"
         val domain = "test1.judo.app"
-        val domain2 = "test2.judo.app"
 
         val expected = UUID.randomUUID()
 
@@ -237,7 +203,7 @@ internal class SDKControllerTests : AbstractRobotTest<SDKControllerTestRobot>() 
         // Act
         robot.initializeControllerWith(
             accessToken = accessToken,
-            domains = arrayOf(domain, domain2)
+            domain = domain
         )
 
         // Assert
@@ -251,13 +217,12 @@ internal class SDKControllerTests : AbstractRobotTest<SDKControllerTestRobot>() 
         // Arrange
         val accessToken = "token1"
         val domain = "test1.judo.app"
-        val domain2 = "test2.judo.app"
 
         val input = mapOf("judo" to """{"action": "SYNC"}""")
 
         robot.initializeControllerWith(
             accessToken = accessToken,
-            domains = arrayOf(domain, domain2)
+            domain = domain
         )
 
         // Act
@@ -267,28 +232,4 @@ internal class SDKControllerTests : AbstractRobotTest<SDKControllerTestRobot>() 
         robot.assertThatASyncWasTriggered()
 
     }
-
-    @Test
-    fun `Push token can be set`() = runBlocking(robot.environment.ioDispatcher) {
-
-        // Arrange
-        val accessToken = "token1"
-        val domain = "test1.judo.app"
-        val domain2 = "test2.judo.app"
-
-        val input = "aToken"
-
-        robot.initializeControllerWith(
-            accessToken = accessToken,
-            domains = arrayOf(domain, domain2)
-        )
-
-        // Act
-        robot.setPushToken(input)
-
-        // Assert
-        robot.assertThatRegistrationResponseWasReceived()
-
-    }
-
 }

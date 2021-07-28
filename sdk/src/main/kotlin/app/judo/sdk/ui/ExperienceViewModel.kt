@@ -65,7 +65,8 @@ internal class ExperienceViewModel(
         private const val TAG = "ExperienceViewModel"
     }
 
-    private var userInfoOverride: HashMap<String, String>? = null
+    private var userInfoOverride: HashMap<String, Any>? = null
+    private var experienceKey: String? = null
 
     private val backingStateFlow = MutableStateFlow<ExperienceState>(Empty)
 
@@ -115,8 +116,8 @@ internal class ExperienceViewModel(
         publishEvent(event)
     }
     
-    private fun getUserInfo(): Map<String, String> {
-        return userInfoOverride ?: environment.userInfoSupplier.supplyUserInfo()
+    private fun getUserInfo(): Map<String, Any> {
+        return userInfoOverride ?: environment.profileService.userInfo
     }
 
     private val loadDataSource: SideEffect = { tree, node, urlParams ->
@@ -308,9 +309,8 @@ internal class ExperienceViewModel(
                 imagesToRequest.clear()
                 screenVisited.add(screenId)
             }
-            .combine(requestedImageFlow) { nodes, requestedImages ->
-                nodes to requestedImages
-            }
+            .combine(requestedImageFlow) { nodes, requestedImages -> nodes to requestedImages }
+            .flowOn(dispatcher)
             .map { (nodes, requestedImages) ->
                 nodeTransformationPipeline.transformScreenNodesForLayout(
                     nodes,
@@ -320,6 +320,7 @@ internal class ExperienceViewModel(
                     backingExperienceTree.value
                 )
             }
+            .flowOn(ioDispatcher)
             .onEach {
                 if (it.imagesWithoutSizes.isNotEmpty()) imagesToRequest.addAll(it.imagesWithoutSizes)
             }
@@ -555,6 +556,7 @@ internal class ExperienceViewModel(
 
         val experienceTree = environment.experienceTreeRepository.retrieveTreeById(experienceKey)
         if (experienceTree != null) {
+            this.experienceKey = experienceKey
             setExperience(experienceTree, screenId)
         } else {
             backingStateFlow.value = Error(
@@ -602,9 +604,9 @@ internal class ExperienceViewModel(
     }
 
     fun onEvent(event: Any) {
-        environment.logger.i(
+        environment.logger.d(
             tag = TAG,
-            data = "Event received: $event"
+            data = "Event received: ${event.javaClass.simpleName}"
         )
 
         (event as? ExperienceRequested)?.run {
@@ -622,9 +624,9 @@ internal class ExperienceViewModel(
 
     private fun publishEvent(event: Any) {
         viewModelScope.launch(dispatcher) {
-            environment.logger.i(
+            environment.logger.d(
                 tag = TAG,
-                data = "Publishing event: $event"
+                data = "Publishing event: ${event.javaClass.simpleName}"
             )
 
             if (event is Action.PerformSegue && event.data != null) {
@@ -652,4 +654,8 @@ internal class ExperienceViewModel(
         }
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        experienceKey?.let(environment.experienceRepository::remove)
+    }
 }

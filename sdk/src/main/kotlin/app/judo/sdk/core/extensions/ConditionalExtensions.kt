@@ -5,7 +5,6 @@ import app.judo.sdk.api.models.Conditional
 import app.judo.sdk.api.models.Predicate.*
 import app.judo.sdk.core.data.DataContext
 import app.judo.sdk.core.data.fromKeyPath
-import app.judo.sdk.core.data.resolvers.resolveJson
 import org.json.JSONObject
 
 internal fun Conditional.resolve(dataContext: DataContext): Boolean {
@@ -16,54 +15,95 @@ internal fun List<Condition>.resolve(dataContext: DataContext): Boolean {
 
     if (isEmpty()) return true
 
-    return !map { condition ->
+    return fold(initial = true) { accumulator, condition ->
+        if (!accumulator) false else {
+            condition.resolve(dataContext)
+        }
+    }
+}
 
-        val lhs = dataContext.fromKeyPath(condition.keyPath)
-        val rhs = condition.value
+internal fun Condition.resolve(dataContext: DataContext): Boolean {
 
-        when (condition.predicate) {
-            EQUALS -> {
-                return "$lhs" == "$rhs"
-            }
-            DOES_NOT_EQUAL -> {
-                return "$lhs" != "$rhs"
-            }
-            IS_GREATER_THAN -> {
-                return try {
+    val lhs = dataContext.fromKeyPath(keyPath)
+    // TODO: 2021-07-20 Interpolate the value
+    val rhs = /*(value as? String)?.let {
+        interpolator(it, dataContext)
+    } ?: return false*/ value ?: return false
 
-                    "$lhs".toDouble() > "$rhs".toDouble()
-
-                } catch (_: Throwable) {
-                    return false
+    return when (predicate) {
+        EQUALS -> {
+            when (rhs) {
+                is String -> {
+                    (lhs as? String)?.let {
+                        it == rhs
+                    } ?: false
                 }
-            }
-            IS_LESS_THAN -> {
-                return try {
 
-                    "$lhs".toDouble() < "$rhs".toDouble()
-
-                } catch (_: Throwable) {
-                    return false
+                is Number -> {
+                    (lhs as? Number)?.toDouble()?.let {
+                        it == rhs.toDouble()
+                    } ?: false
                 }
-            }
 
-            IS_SET -> {
-                lhs != null && lhs != "null" && lhs != JSONObject.NULL
-            }
-            IS_NOT_SET -> {
-                lhs == null || lhs == "null" || lhs != JSONObject.NULL
-            }
-
-            IS_TRUE -> {
-                "$lhs".equals("true", ignoreCase = true)
-            }
-
-            IS_FALSE -> {
-                "$lhs".equals("false", ignoreCase = true)
+                else -> false
             }
         }
 
+        DOES_NOT_EQUAL -> {
+            when (rhs) {
 
-    }.contains(false)
+                is String -> {
+                    (lhs as? String)?.let {
+                        it != rhs
+                    } ?: false
+                }
+
+                is Number -> {
+                    (lhs as? Number)?.toDouble()?.let {
+                        it != rhs.toDouble()
+                    } ?: false
+                }
+
+                else -> false
+
+            }
+        }
+
+        IS_GREATER_THAN -> {
+            if (rhs is Number) {
+                (lhs as? Number)?.toDouble()?.let {
+                    it > rhs.toDouble()
+                } ?: false
+            } else {
+                false
+            }
+        }
+
+        IS_LESS_THAN -> {
+            if (rhs is Number) {
+                (lhs as? Number)?.toDouble()?.let {
+                    it < rhs.toDouble()
+                } ?: false
+            } else {
+                false
+            }
+        }
+
+        IS_SET -> {
+            lhs != "null" && lhs != JSONObject.NULL
+        }
+
+        IS_NOT_SET -> {
+            lhs == "null" || lhs == JSONObject.NULL
+        }
+
+        IS_TRUE -> {
+            "$lhs".equals("true", ignoreCase = true)
+        }
+
+        IS_FALSE -> {
+            "$lhs".equals("false", ignoreCase = true)
+        }
+    }
 
 }

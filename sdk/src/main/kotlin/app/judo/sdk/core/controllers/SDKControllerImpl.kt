@@ -20,24 +20,20 @@ package app.judo.sdk.core.controllers
 import android.app.Application
 import app.judo.sdk.api.Judo
 import app.judo.sdk.api.android.ExperienceFragmentFactory
-import app.judo.sdk.api.data.UserInfoSupplier
 import app.judo.sdk.api.errors.ExperienceError
-import app.judo.sdk.api.events.ActionReceivedCallback
 import app.judo.sdk.api.events.Event
 import app.judo.sdk.api.events.ScreenViewedCallback
 import app.judo.sdk.api.models.Experience
 import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.environment.MutableEnvironment
 import app.judo.sdk.core.errors.ErrorMessages
+import app.judo.sdk.core.implementations.*
 import app.judo.sdk.core.implementations.EnvironmentImpl
 import app.judo.sdk.core.implementations.NotificationHandlerImpl
-import app.judo.sdk.core.implementations.ProductionLoggerImpl
 import app.judo.sdk.core.implementations.SynchronizerImpl
 import app.judo.sdk.core.log.Logger
 import app.judo.sdk.core.sync.Synchronizer
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.util.*
@@ -64,23 +60,12 @@ internal class SDKControllerImpl : SDKController {
 
     private lateinit var synchronizer: Synchronizer
 
-    override fun initialize(
-        application: Application,
-        accessToken: String,
-        experienceCacheSize: Long,
-        imageCacheSize: Long,
-        vararg domains: String,
-    ) {
-        require(accessToken.isNotBlank()) {
+    override fun initialize(application: Application, configuration: Judo.Configuration) {
+        require(configuration.accessToken.isNotBlank()) {
             ErrorMessages.ACCESS_TOKEN_NOT_BLANK
         }
-        require(domains.isNotEmpty()) {
-            ErrorMessages.DOMAINS_NOT_EMPTY
-        }
-        domains.forEach {
-            require(it.isNotBlank()) {
-                ErrorMessages.DOMAIN_NAME_NOT_BLANK
-            }
+        require(configuration.domain.isNotBlank()) {
+            ErrorMessages.DOMAIN_NAME_NOT_BLANK
         }
 
         if (!this::environment.isInitialized) {
@@ -105,11 +90,10 @@ internal class SDKControllerImpl : SDKController {
                 )
             }
 
-            this.accessToken = accessToken
+            this.configuration = configuration
 
-            domainNames = domains.toSet()
+            environment.eventQueue.start()
         }
-
     }
 
     override suspend fun performSync(prefetchAssets: Boolean, onComplete: () -> Unit) {
@@ -130,11 +114,9 @@ internal class SDKControllerImpl : SDKController {
         }
     }
 
-    override suspend fun setPushToken(fcmToken: String) {
+    override fun setPushToken(fcmToken: String) {
         if (this::environment.isInitialized) {
-            NotificationHandlerImpl(
-                environment
-            ).setPushToken(fcmToken)
+            environment.pushTokenService.register(fcmToken)
         } else {
             logger.e(TAG, null, IllegalStateException(ErrorMessages.SDK_NOT_INITIALIZED))
         }
@@ -148,9 +130,23 @@ internal class SDKControllerImpl : SDKController {
         }
     }
 
-    override fun setUserInfoSupplier(supplier: UserInfoSupplier) {
-        (environment as? MutableEnvironment)?.userInfoSupplier = supplier
+    override fun identify(userId: String?, traits: Map<String, Any>) {
+        if (this::environment.isInitialized) {
+            (environment as? MutableEnvironment)?.profileService?.identify(
+                userId,
+                traits
+            )
+        }
     }
+
+    override fun reset() {
+        if (this::environment.isInitialized) {
+            (environment as? MutableEnvironment)?.profileService?.reset()
+        }
+    }
+
+    override val anonymousId: String
+        get() = (environment as? MutableEnvironment)?.profileService?.anonymousId ?: ""
 
     override fun setExperienceFragmentFactory(factory: ExperienceFragmentFactory) {
         if (this::environment.isInitialized) {
@@ -164,18 +160,6 @@ internal class SDKControllerImpl : SDKController {
                 environment.eventBus.eventFlow.collect { event ->
                     if (event is Event.ScreenViewed) {
                         callback.screenViewed(event)
-                    }
-                }
-            }
-        }
-    }
-
-    override fun addActionReceivedCallback(callback: ActionReceivedCallback) {
-        if(this::environment.isInitialized) {
-            CoroutineScope(environment.mainDispatcher).launch {
-                environment.eventBus.eventFlow.collect { event ->
-                    if (event is Event.ActionReceived) {
-                        callback.actionReceived(event)
                     }
                 }
             }

@@ -1,12 +1,13 @@
 package app.judo.sdk.api.events
 
+import app.judo.sdk.api.analytics.AnalyticsEvent
 import app.judo.sdk.api.models.Action
 import app.judo.sdk.api.models.Experience
 import app.judo.sdk.api.models.Node
 import app.judo.sdk.api.models.Screen
 
 /**
- * These are the types of the Events that your code can subscribe to.
+ * These are the types of the Events emitted on the Event Bus.
  */
 sealed class Event {
     /**
@@ -33,13 +34,17 @@ sealed class Event {
      * parameters on the URL used to open the Experience), and `user` (the user info supplied to
      * the Experience by your app code).
      */
-    data class ActionReceived(val experience: Experience, val screen: Screen, val node: Node, val action: Action, val dataContext: Map<String, Any?>): Event()
+    internal data class ActionReceived(val experience: Experience, val screen: Screen, val node: Node, val action: Action, val dataContext: Map<String, Any?>): Event()
+
+    internal object PushTokenUpdated: Event()
+
+    /**
+     * This event is fired when ProfileService sees an update to user profile (ids, traits, etc.)
+     * information.
+     */
+    internal object Identified: Event()
 }
 
 fun interface ScreenViewedCallback {
     fun screenViewed(event: Event.ScreenViewed)
-}
-
-fun interface ActionReceivedCallback {
-    fun actionReceived(event: Event.ActionReceived)
 }

@@ -77,13 +77,13 @@ internal class ExperienceMediaPlayerView @JvmOverloads constructor(
     private fun setupAndPlayIfVisible(visible: Boolean) {
         val tag = tag as? String ?: return
         when {
-            visible && MediaPlayerInstanceManager.instanceStillAvailable(tag) -> {
-                player?.play()
-            }
             visible && (!MediaPlayerInstanceManager.instanceStillAvailable(tag) || player == null) -> {
                 val exoPlayer = MediaPlayerInstanceManager.getInstance(tag, context)
                 this.player = exoPlayer
                 setupPlayer(context, exoPlayer)
+                player?.play()
+            }
+            visible && MediaPlayerInstanceManager.instanceStillAvailable(tag) -> {
                 player?.play()
             }
             else -> player?.pause()

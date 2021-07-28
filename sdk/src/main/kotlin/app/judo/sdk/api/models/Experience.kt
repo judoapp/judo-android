@@ -23,8 +23,8 @@ import com.squareup.moshi.JsonClass
 data class Experience(
     val id: String,
     val version: Int,
-    val revisionID: Int,
-    val name: String? = null,
+    val revisionID: String,
+    val name: String,
     val nodes: List<Node>,
     val screenIDs: List<String>,
     val initialScreenID: String,

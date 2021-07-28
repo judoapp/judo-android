@@ -35,7 +35,7 @@ internal class NetworkLoggingInterceptor(
 
         val request = chain.request()
 
-        logger.d(
+        logger.v(
             TAG, """
                 REQUEST SENT:
                     $request
@@ -46,7 +46,7 @@ internal class NetworkLoggingInterceptor(
 
         val response = chain.proceed(request)
 
-        logger.d(
+        logger.v(
             TAG, """
             |RESPONSE RECEIVED:
             |   $response

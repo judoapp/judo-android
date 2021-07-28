@@ -21,15 +21,19 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.graphics.Bitmap
 import android.graphics.Shader
+import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.ImageView
+import androidx.appcompat.widget.AppCompatTextView
+import androidx.appcompat.widget.Toolbar
 import androidx.core.view.OneShotPreDrawListener
 import androidx.core.view.ViewCompat
-import app.judo.sdk.api.models.Image
-import app.judo.sdk.api.models.ResizingMode
+import app.judo.sdk.R
+import app.judo.sdk.api.models.*
 import app.judo.sdk.ui.drawables.GIFDrawable
+import app.judo.sdk.ui.layout.Resolvers
 import coil.drawable.MovieDrawable
 import coil.drawable.ScaleDrawable
 import kotlin.math.roundToInt
@@ -180,4 +184,62 @@ inline fun View.doOnDetach(crossinline action: (view: View) -> Unit) {
             }
         })
     }
+}
+
+internal fun Toolbar.setupJudoAppBar(
+    appBar: AppBar,
+    menuItems: List<MenuItem>,
+    screen: Screen?,
+    resolvers: Resolvers,
+    onBackPressed: () -> Unit
+) {
+    val colorResolver = resolvers.colorResolver
+    val actionResolver = resolvers.actionResolver
+
+    title = appBar.interpolatedTitle
+    val buttonColor = colorResolver.resolveForColorInt(appBar.buttonColor)
+    setTitleTextColor(colorResolver.resolveForColorInt(appBar.titleColor))
+    setBackgroundColor(colorResolver.resolveForColorInt(appBar.backgroundColor))
+
+    // set title
+    val fontAttributes = appBar.titleFont.getSystemFontAttributes()
+    val font = fontAttributes.weight.mapToFont()
+
+    val textView = (this.getChildAt(0) as? AppCompatTextView)
+    textView?.typeface = appBar.typeface ?: Typeface.create(font.name, font.style)
+    textView?.textSize = fontAttributes.size
+
+    overflowIcon?.setTint(buttonColor)
+
+    // set menu items
+    menu.clear()
+    menuItems.forEach { menuItem ->
+        menu.add(menuItem.interpolatedTitle).apply {
+            val resourceId: Int = context.getMaterialIconID(menuItem.iconMaterialName)
+
+            menuItem.action?.let { action ->
+                setOnMenuItemClickListener {
+                    screen?.let { screen -> actionResolver.invoke(action, screen, menuItem) }
+                    true
+                }
+            }
+            setIcon(resourceId)
+            icon.setTint(buttonColor)
+            when (menuItem.showAsAction) {
+                MenuItemVisibility.ALWAYS -> setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS)
+                MenuItemVisibility.NEVER -> setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_NEVER)
+                MenuItemVisibility.IF_ROOM -> setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_IF_ROOM)
+            }
+        }
+    }
+
+    // set up icon
+    if (!appBar.hideUpIcon) {
+        setNavigationIcon(R.drawable.judo_sdk_arrow_back)
+        navigationIcon?.setTint(buttonColor)
+        setNavigationOnClickListener {
+            onBackPressed()
+        }
+    }
+    visibility = View.VISIBLE
 }

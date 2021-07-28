@@ -42,4 +42,10 @@ internal class FakeKeyValueCache(
         logger?.d(TAG, "Returning:\n\t$result")
         return result
     }
+
+    override fun remove(key: String): Boolean {
+        logger?.d(TAG, "Removing:\n\t$key")
+        pairs.remove(key)
+        return true
+    }
 }

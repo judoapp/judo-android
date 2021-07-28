@@ -38,6 +38,8 @@ import app.judo.sdk.ui.layout.composition.getAllLeafNodes
 import app.judo.sdk.ui.layout.composition.toLayout
 import app.judo.sdk.ui.layout.composition.toSingleLayerLayout
 import app.judo.sdk.ui.views.ExperienceMediaPlayerView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import java.util.*
 import kotlin.math.roundToInt
 
@@ -122,10 +124,12 @@ internal class CarouselPagerAdapter(private val context: Context, private val re
     }
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int) = CarouselViewHolder.create(viewGroup, padding)
     override fun onBindViewHolder(viewHolder: CarouselViewHolder, position: Int) {
-        val node = if (loop) nodes[position.rem(nodes.size)] else nodes[position]
-        val nodes = node.toLayout(context, resolvers)
-        viewHolder.container.removeAllViews()
-        nodes.forEach { viewHolder.container.addView(it) }
+        runBlocking(Dispatchers.Main.immediate) {
+            val node = if (loop) nodes[position.rem(nodes.size)] else nodes[position]
+            val nodes = node.toLayout(context, resolvers)
+            viewHolder.container.removeAllViews()
+            nodes.forEach { viewHolder.container.addView(it) }
+        }
     }
     override fun getItemCount() = if (loop) Int.MAX_VALUE else nodes.size
 

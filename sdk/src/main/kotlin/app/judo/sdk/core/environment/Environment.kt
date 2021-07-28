@@ -18,19 +18,16 @@
 package app.judo.sdk.core.environment
 
 import app.judo.sdk.BuildConfig
+import app.judo.sdk.api.Judo
 import app.judo.sdk.api.android.ExperienceFragmentFactory
 import app.judo.sdk.core.cache.KeyValueCache
 import app.judo.sdk.core.events.EventBus
-import app.judo.sdk.api.data.UserInfoSupplier
 import app.judo.sdk.core.lang.Tokenizer
 import app.judo.sdk.core.log.Logger
 import app.judo.sdk.core.repositories.ExperienceRepository
 import app.judo.sdk.core.repositories.ExperienceTreeRepository
 import app.judo.sdk.core.repositories.SyncRepository
 import app.judo.sdk.core.services.*
-import app.judo.sdk.core.services.ExperienceService
-import app.judo.sdk.core.services.DevicesService
-import app.judo.sdk.core.services.SyncService
 import kotlinx.coroutines.CoroutineDispatcher
 
 internal interface Environment {
@@ -61,9 +58,7 @@ internal interface Environment {
         val Type: String = if (BuildConfig.DEBUG) "DEVELOPMENT" else "PRODUCTION"
     }
 
-    val accessToken: String
-
-    val domainNames: Set<String>
+    val configuration: Judo.Configuration
 
     val baseURL: String?
 
@@ -77,7 +72,7 @@ internal interface Environment {
 
     val eventBus: EventBus
 
-    val userInfoSupplier: UserInfoSupplier
+    val profileService: ProfileService
 
     val keyValueCache: KeyValueCache
 
@@ -89,9 +84,11 @@ internal interface Environment {
 
     val syncService: SyncService
 
-    val devicesService: DevicesService
+    val pushTokenService: PushTokenService
 
     val dataSourceService: DataSourceService
+
+    val ingestService: IngestService
 
     val experienceRepository: ExperienceRepository
 
@@ -100,6 +97,8 @@ internal interface Environment {
     val syncRepository: SyncRepository
 
     val experienceFragmentFactory: ExperienceFragmentFactory
+
+    val eventQueue: AnalyticsServiceScope
 
     val ioDispatcher: CoroutineDispatcher
 

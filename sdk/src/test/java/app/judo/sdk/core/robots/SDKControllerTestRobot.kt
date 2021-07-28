@@ -17,6 +17,7 @@
 
 package app.judo.sdk.core.robots
 
+import app.judo.sdk.api.Judo
 import app.judo.sdk.core.controllers.SDKControllerImpl
 import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.utils.TestJSON
@@ -33,18 +34,18 @@ internal class SDKControllerTestRobot : AbstractTestRobot() {
 
     private val responses = mutableListOf<Pair<MockResponse, String>>()
 
-    fun initializeControllerWith(accessToken: String, domains: Array<out String>) {
-
-        backingEnvironment.domainNames =
-            domains.toSet()
+    fun initializeControllerWith(accessToken: String, domain: String) {
+        backingEnvironment.configuration = backingEnvironment.configuration.copy(domain = domain)
 
         controller = SDKControllerImpl().apply {
             logger = TestLoggerImpl()
             this.environment = this@SDKControllerTestRobot.environment
             initialize(
                 application = application,
-                accessToken = accessToken,
-                domains = domains
+                configuration = Judo.Configuration(
+                    accessToken = accessToken,
+                    domain = domain
+                )
             )
         }
 
@@ -65,7 +66,7 @@ internal class SDKControllerTestRobot : AbstractTestRobot() {
         val experienceResponse = responses.find { it.second.contains(""""id": "3"""") }?.second
         val experienceResponses = responses.filter { it.second.contains(""""id": "3"""") }
 
-        Assert.assertTrue(syncResponse != null && experienceResponse != null && experienceResponses.size == 2)
+        Assert.assertTrue(syncResponse != null && experienceResponse != null && experienceResponses.size == 1)
 
     }
 
@@ -103,13 +104,7 @@ internal class SDKControllerTestRobot : AbstractTestRobot() {
         assertThatASyncResponseAndTwoExperiencesWereRetrieved()
     }
 
-    suspend fun setPushToken(fcmToken: String) {
+    fun setPushToken(fcmToken: String) {
         controller.setPushToken(fcmToken = fcmToken)
     }
-
-    fun assertThatRegistrationResponseWasReceived() {
-        val actual = responses.find { it.second == TestJSON.register_response }
-        Assert.assertNotNull(actual)
-    }
-
 }

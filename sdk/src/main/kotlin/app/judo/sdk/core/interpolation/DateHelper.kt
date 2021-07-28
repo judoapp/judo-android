@@ -40,7 +40,6 @@ internal class DateHelper(
                 .format(date)
 
         } catch (error: Throwable) {
-
             logger?.e(
                 tag =
                 TAG,
@@ -49,7 +48,6 @@ internal class DateHelper(
             )
 
             input
-
         }
     }
 

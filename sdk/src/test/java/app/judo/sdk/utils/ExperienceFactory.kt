@@ -32,8 +32,9 @@ class ExperienceFactory(
 
         return Experience(
             id = "1",
+            name = "Test",
             version = 1,
-            revisionID = 1,
+            revisionID = "1",
             nodes = listOf(
                 screenFactory.makeScreen1(),
                 screenFactory.makeScreen2(),

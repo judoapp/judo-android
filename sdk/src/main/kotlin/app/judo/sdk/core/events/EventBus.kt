@@ -19,6 +19,9 @@ package app.judo.sdk.core.events
 
 import kotlinx.coroutines.flow.SharedFlow
 
+/**
+ * The Event Bus is an SDK-wide broadcast domain.
+ */
 interface EventBus {
     val eventFlow: SharedFlow<Any>
 

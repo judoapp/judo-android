@@ -30,18 +30,24 @@ import app.judo.sdk.ui.layout.composition.sizing.computePosition
 import app.judo.sdk.ui.layout.composition.sizing.computeSize
 import app.judo.sdk.ui.layout.composition.sizing.isNearestParentStackHorizontal
 import com.squareup.moshi.JsonClass
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /***
  * Build the layout of the tree through traversing the nodes
  */
-internal fun TreeNode.toLayout(
+internal suspend fun TreeNode.toLayout(
     context: Context,
     resolvers: Resolvers
 ): List<View> {
     return when (val layer = value as Layer) {
         is Rectangle -> layer.construct(context, this, resolvers)
         is Image -> layer.construct(context, this, resolvers)
-        is WebView -> layer.construct(context, this, resolvers)
+        is WebView -> {
+            withContext(Dispatchers.Main) {
+                layer.construct(context, this@toLayout, resolvers)
+            }
+        }
         is VStack -> layer.construct(context, this, resolvers)
         is ZStack -> layer.construct(context, this, resolvers)
         is HStack -> layer.construct(context, this, resolvers)
@@ -49,8 +55,16 @@ internal fun TreeNode.toLayout(
         is Carousel -> layer.construct(context, this, resolvers)
         is PageControl -> layer.construct(context, this, resolvers)
         is ScrollContainer -> layer.construct(context, this, resolvers)
-        is Audio -> layer.construct(context, this, resolvers)
-        is Video -> layer.construct(context, this, resolvers)
+        is Audio -> {
+            withContext(Dispatchers.Main) {
+                layer.construct(context, this@toLayout, resolvers)
+            }
+        }
+        is Video -> {
+            withContext(Dispatchers.Main) {
+                layer.construct(context, this@toLayout, resolvers)
+            }
+        }
         is Text -> layer.construct(context, this, resolvers)
         is Icon -> layer.construct(context, this, resolvers)
         is Spacer -> listOf(View(context))
@@ -899,64 +913,6 @@ private fun TreeNode.getFixedHeight(context: Context): Float {
         }
         is Spacer -> layer.frame?.height ?: layer.frame?.minHeight ?: 0f
         else -> 0f
-    }
-}
-
-internal fun TreeNode.affectedByVerticalDoubleMeasure(): Boolean {
-    return when (val layer = this.value) {
-        is Rectangle -> {
-            when {
-                layer.frame?.height == null && layer.aspectRatio != null -> true
-                else -> false
-            }
-        }
-        is Image -> {
-            when {
-                layer.resizingMode == ResizingMode.SCALE_TO_FIT && layer.frame?.height == null -> true
-                layer.resizingMode == ResizingMode.STRETCH && layer.frame?.height == null -> true
-                else -> false
-            }
-        }
-        is Video -> {
-            when {
-                layer.frame?.height == null && layer.aspectRatio != null -> true
-                else -> false
-            }
-        }
-        is WebView -> {
-            when {
-                layer.frame?.height == null && layer.aspectRatio != null -> true
-                else -> false
-            }
-        }
-        is Carousel -> {
-            when {
-                layer.frame?.height == null && layer.aspectRatio != null -> true
-                else -> false
-            }
-        }
-        is ZStack -> {
-            when {
-                layer.frame?.height != null -> false
-                this.children.any { it.affectedByVerticalDoubleMeasure() } -> true
-                else -> false
-            }
-        }
-        is VStack -> {
-            when {
-                layer.frame?.height != null -> false
-                this.children.any { it.affectedByVerticalDoubleMeasure() } -> true
-                else -> false
-            }
-        }
-        is HStack -> {
-            when {
-                layer.frame?.height != null -> false
-                this.children.any { it.affectedByVerticalDoubleMeasure() } -> true
-                else -> false
-            }
-        }
-        else -> false
     }
 }
 

@@ -34,9 +34,9 @@ internal data class ExperienceRequested(
     val experienceKey: String? = intent?.getStringExtra(EXPERIENCE_KEY),
     val experienceURL: String? = intent?.data?.toString() ?: intent?.getStringExtra(EXPERIENCE_URL),
     val ignoreCache: Boolean = intent?.getBooleanExtra(IGNORE_CACHE, false) ?: false,
-    val userInfo: HashMap<String, String>? = try {
+    val userInfo: HashMap<String, Any>? = try {
         @Suppress("UNCHECKED_CAST")
-        intent?.getSerializableExtra(USER_INFO_OVERRIDE) as? HashMap<String, String>
+        intent?.getSerializableExtra(USER_INFO_OVERRIDE) as? HashMap<String, Any>
     } catch (_: Throwable) {
         null
     },

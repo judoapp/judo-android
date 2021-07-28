@@ -73,7 +73,7 @@ internal class TestServerDispatcher(
 
         when (val pathAndCode = request.path to code()) {
 
-            "/test1.judo.app/sync" to 200, "/test2.judo.app/sync" to 200 -> {
+            "/test1.judo.app/sync" to 200 -> {
                 response.apply {
                     setResponseCode(pathAndCode.second)
                     setBody(TestJSON.syncResponse)
@@ -81,7 +81,7 @@ internal class TestServerDispatcher(
                 onResponse(response to TestJSON.syncResponse)
             }
 
-            "/test1.judo.app/testexperience" to 200, "/test2.judo.app/testexperience" to 200 -> {
+            "/test1.judo.app/testexperience" to 200 -> {
                 response.apply {
                     setResponseCode(pathAndCode.second)
                     setBody(TestJSON.experience)
@@ -103,14 +103,6 @@ internal class TestServerDispatcher(
                     setBody(TestJSON.user_data_experience)
                 }
                 onResponse(response to TestJSON.user_data_experience)
-            }
-
-            "/register" to 200 -> {
-                response.apply {
-                    setResponseCode(pathAndCode.second)
-                    setBody(TestJSON.register_response)
-                }
-                onResponse(response to TestJSON.register_response)
             }
 
             "/test1.judo.app/testexperience" to 401 -> {

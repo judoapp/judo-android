@@ -67,28 +67,4 @@ internal class NotificationHandlerImpl(
             )
         }
     }
-
-    override suspend fun setPushToken(fcmToken: String) {
-        environment.keyValueCache.retrieveString(Environment.Keys.DEVICE_ID)?.let { deviceId ->
-
-            val requestBody = RegistrationRequestBody(
-                deviceID = deviceId,
-                deviceToken = fcmToken,
-                environment = Environment.Type
-            )
-
-            val response = environment.devicesService.register(requestBody)
-
-            if (response.isSuccessful && response.body() != null) {
-                environment.logger.i(TAG, "Push token Set")
-            } else {
-                environment.logger.e(
-                    TAG,
-                    "Failed to set push token: ${response.message()}\nCode: ${response.code()}"
-                )
-            }
-
-        }
-    }
-
 }

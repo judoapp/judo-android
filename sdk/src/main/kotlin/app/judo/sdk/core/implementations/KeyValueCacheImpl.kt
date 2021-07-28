@@ -44,4 +44,7 @@ internal class KeyValueCacheImpl(
         return sharedPreferences.getString(key, null)
     }
 
+    override fun remove(key: String): Boolean {
+        return sharedPreferences.edit().remove(key).commit()
+    }
 }

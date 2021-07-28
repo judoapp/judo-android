@@ -15,28 +15,18 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package app.judo.sdk.core.robots
+package app.judo.sdk.core.services
 
-import app.judo.sdk.core.data.RegistrationRequestBody
-import app.judo.sdk.core.data.RegistrationResponse
-import app.judo.sdk.core.environment.Environment
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import retrofit2.Response
+import app.judo.sdk.api.analytics.AnalyticsEvent
 
-@ExperimentalCoroutinesApi
-internal class DevicesServiceRobot : AbstractTestRobot() {
-
-    suspend fun register(registrationRequestBody: RegistrationRequestBody): Response<RegistrationResponse> {
-        return environment.devicesService.register(registrationRequestBody)
-    }
-
-    fun getRequestHeader(name: String): String? {
-        return serverDispatcher.actualRequest?.getHeader(name)
-    }
-
-    fun setDeviceIdTo(deviceId: String) {
-        environment.keyValueCache.putString(Environment.Keys.DEVICE_ID to deviceId)
-    }
-
-
+/**
+ * Client for Judo's Ingest API cloud service.
+ */
+internal interface IngestService {
+    /**
+     * Returns false if events should be maintained in the queue for a future re-attempt.
+     *
+     * Note that a true value doesn't necessarily mean success: if the server API deems the event invalid, we'll still return true.
+     */
+    suspend fun submitBatch(events: List<AnalyticsEvent>): Boolean
 }

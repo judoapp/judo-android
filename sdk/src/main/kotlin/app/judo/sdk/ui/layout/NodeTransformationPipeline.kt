@@ -17,7 +17,6 @@
 
 package app.judo.sdk.ui.layout
 
-import android.util.Log
 import app.judo.sdk.api.models.*
 import app.judo.sdk.api.models.Collection
 import app.judo.sdk.core.controllers.current
@@ -38,7 +37,6 @@ import java.util.*
 
 internal class NodeTransformationPipeline(
     val environment: Environment,
-    private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
 
     private var urlParams: Map<String, String> = emptyMap()
@@ -75,7 +73,7 @@ internal class NodeTransformationPipeline(
         return modifiedNodes
     }
 
-    suspend fun transformScreenNodesForLayout(
+    fun transformScreenNodesForLayout(
         nodes: List<Node>,
         requestedImages: List<RequestedImageDimensions>,
         screenID: String,
@@ -83,30 +81,26 @@ internal class NodeTransformationPipeline(
         experienceTree: ExperienceTree? = null,
         userInfo: Map<String, String> = emptyMap()
     ): NodesTransformInfo {
-        return withContext(defaultDispatcher) {
-
-             experienceTree?.experience?.url?.urlParams()?.let {
-                urlParams = it
-            }
-            val screenNodes = filterNodesForScreen(screenID, nodes)
-            val screenDirectChildren = (screenNodes.find { it.id == screenID } as? Screen)?.getChildNodeIDs()
-            val swipeToRefresh = (screenNodes.any { screenDirectChildren?.contains(it.id) == true && it is ScrollContainer } && screenNodes.any { it is DataSource })
-
-            val canCache = (actionTargetData == null && nodes.any { it is Collection })
-
-            modifyActionsForDataSource(screenNodes)
-            addDataFromPreviousScreenData(screenID = screenID, targetData = actionTargetData, experienceTree = experienceTree, userInfo)
-            val dataSourcesRemoved = removeDataSources(screenNodes)
-            val collectionsRemoved = removeCollections(dataSourcesRemoved, screenID)
-            val conditionalsRemoved = removeConditionals(screenID, collectionsRemoved.first, collectionsRemoved.second, userInfo)
-            val addedImageSizes = addImageSizesForImagesWithoutSize(requestedImages, conditionalsRemoved.first)
-            val imageWithoutSizesRemoved = removeImagesWithoutSizes(addedImageSizes)
-            val imagesWithoutSizes = getImagesWithoutSizes(addedImageSizes).map { it.interpolatedImageURL }.toSet()
-            val interpolationRequiredRemoved = removeAnyNodesRequiringInterpolation(imageWithoutSizesRemoved)
-            val implicitStacksAdded = addImplicitStacksForScrollContainers(interpolationRequiredRemoved)
-
-            NodesTransformInfo(implicitStacksAdded, imagesWithoutSizes, conditionalsRemoved.second, swipeToRefresh, canCache)
+        experienceTree?.experience?.url?.urlParams()?.let {
+            urlParams = it
         }
+        val screenNodes = filterNodesForScreen(screenID, nodes)
+        val screenDirectChildren = (screenNodes.find { it.id == screenID } as? Screen)?.getChildNodeIDs()
+        val swipeToRefresh = (screenNodes.any { screenDirectChildren?.contains(it.id) == true && it is ScrollContainer } && screenNodes.any { it is DataSource })
+
+        val canCache = (actionTargetData == null && nodes.any { it is Collection })
+
+        modifyActionsForDataSource(screenNodes)
+        addDataFromPreviousScreenData(screenID = screenID, targetData = actionTargetData, experienceTree = experienceTree, userInfo)
+        val dataSourcesRemoved = removeDataSources(screenNodes)
+        val collectionsRemoved = removeCollections(dataSourcesRemoved, screenID)
+        val conditionalsRemoved = removeConditionals(screenID, collectionsRemoved.first, collectionsRemoved.second, userInfo)
+        val addedImageSizes = addImageSizesForImagesWithoutSize(requestedImages, conditionalsRemoved.first)
+        val imageWithoutSizesRemoved = removeImagesWithoutSizes(addedImageSizes)
+        val imagesWithoutSizes = getImagesWithoutSizes(addedImageSizes).map { it.interpolatedImageURL }.toSet()
+        val interpolationRequiredRemoved = removeAnyNodesRequiringInterpolation(imageWithoutSizesRemoved)
+        val implicitStacksAdded = addImplicitStacksForScrollContainers(interpolationRequiredRemoved)
+        return NodesTransformInfo(implicitStacksAdded, imagesWithoutSizes, conditionalsRemoved.second, swipeToRefresh, canCache)
     }
 
     private fun removeDataSources(nodes: List<Node>): List<Node> {
@@ -524,7 +518,7 @@ internal class NodeTransformationPipeline(
     ): List<Node> {
 
         val dataContext = dataContextOf(
-            Keyword.USER.value to Environment.current.userInfoSupplier.supplyUserInfo(),
+            Keyword.USER.value to Environment.current.profileService.userInfo,
             Keyword.DATA.value to data,
             Keyword.URL.value to urlParams
         )
@@ -828,6 +822,9 @@ internal class NodeTransformationPipeline(
         // the collection parent
         val modifiedNodes = nodes.toMutableList()
         val collections = nodes.filterIsInstance<Collection>()
+
+        if (collections.isEmpty()) return modifiedNodes to emptyList()
+
         val collectionIDs = collections.map { it.id }
         val nodesWithoutCarouselAncestors = getNodeIDsWithoutCarouselAncestors(screenNodeID, nodes)
 
@@ -857,39 +854,54 @@ internal class NodeTransformationPipeline(
             val collection = it.copy(childIDs = directCopiedNodeID - collectionChildIDs)
             modifiedNodes.add(collection)
         }
-
+        // this is in order to determine which collection child nodes can be lazily loaded
         val directCopyIDs = modifiedNodes.filterIsInstance<Collection>().filter { it.id in nodesWithoutCarouselAncestors }.flatMap { it.childIDs }
 
-        // remove collections
+        // remove collections and attach collection child nodes to collection parent
         nodes.forEach {
-            if (it is NodeContainer) {
+            if (it is NodeContainer && it.getChildNodeIDs().any { childNodeID -> childNodeID in collectionIDs }) {
                 val childCollectionIDs = it.getChildNodeIDs().filter { childID -> childID in collectionIDs }
-                val collectionChildIDs = modifiedNodes.filterIsInstance<Collection>().filter { collection -> collection.id in childCollectionIDs }.flatMap { collection -> collection.childIDs }
+                val collectionIDsToCollectionChildIDs = modifiedNodes
+                    .filterIsInstance<Collection>()
+                    .filter { collection -> collection.id in childCollectionIDs }
+                    .associate { collection -> collection.id to collection.childIDs }
+
+                val newChildIDs = it.getChildNodeIDs().flatMap { childNodeId ->
+                    if (childNodeId in collectionIDsToCollectionChildIDs.keys) {
+                        collectionIDsToCollectionChildIDs.getOrDefault(childNodeId, emptyList())
+                    } else {
+                        listOf(childNodeId)
+                    }
+                }
 
                 when (it) {
                     is HStack -> {
                         modifiedNodes.remove(it)
-                        modifiedNodes.add(it.copy(childIDs = it.childIDs + collectionChildIDs - childCollectionIDs))
+                        modifiedNodes.add(it.copy(childIDs = newChildIDs))
                     }
                     is VStack -> {
                         modifiedNodes.remove(it)
-                        modifiedNodes.add(it.copy(childIDs = it.childIDs + collectionChildIDs - childCollectionIDs))
+                        modifiedNodes.add(it.copy(childIDs = newChildIDs))
                     }
                     is ScrollContainer -> {
                         modifiedNodes.remove(it)
-                        modifiedNodes.add(it.copy(childIDs = it.childIDs + collectionChildIDs - childCollectionIDs))
+                        modifiedNodes.add(it.copy(childIDs = newChildIDs))
                     }
                     is ZStack -> {
                         modifiedNodes.remove(it)
-                        modifiedNodes.add(it.copy(childIDs = it.childIDs + collectionChildIDs - childCollectionIDs))
+                        modifiedNodes.add(it.copy(childIDs = newChildIDs))
                     }
                     is Screen -> {
                         modifiedNodes.remove(it)
-                        modifiedNodes.add(it.copy(childIDs = it.childIDs + collectionChildIDs - childCollectionIDs))
+                        modifiedNodes.add(it.copy(childIDs = newChildIDs))
                     }
                     is Carousel -> {
                         modifiedNodes.remove(it)
-                        modifiedNodes.add(it.copy(childIDs = it.childIDs + collectionChildIDs - childCollectionIDs))
+                        modifiedNodes.add(it.copy(childIDs = newChildIDs))
+                    }
+                    is Conditional -> {
+                        modifiedNodes.remove(it)
+                        modifiedNodes.add(it.copy(childIDs = newChildIDs))
                     }
                 }
             }
@@ -898,7 +910,6 @@ internal class NodeTransformationPipeline(
 
         return modifiedNodes to directCopyIDs
     }
-
 }
 
 internal data class NodesTransformInfo(val nodes: List<Node>, val imagesWithoutSizes: Set<String> = emptySet(), val collectionNodeIDs: List<String>, val swipeToRefresh: Boolean = false, val canCache: Boolean = false)

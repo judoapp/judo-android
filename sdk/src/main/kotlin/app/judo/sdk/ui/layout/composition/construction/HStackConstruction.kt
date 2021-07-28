@@ -35,7 +35,7 @@ import app.judo.sdk.ui.layout.composition.toSingleLayerLayout
 import app.judo.sdk.ui.views.ExperienceView
 import kotlin.math.roundToInt
 
-internal fun HStack.construct(
+internal suspend fun HStack.construct(
     context: Context,
     treeNode: TreeNode,
     resolvers: Resolvers

@@ -19,6 +19,8 @@
 
 package app.judo.sdk.utils
 
+import app.judo.sdk.api.models.Predicate
+
 object TestJSON {
 
     val syncResponse = """{
@@ -463,6 +465,12 @@ object TestJSON {
             "sortDescriptors": []
         }""".trimMargin()
 
+    val condition = """{
+      "keyPath": "data",
+      "predicate": "${Predicate.EQUALS.code}",
+      "value": 1
+}""".trimMargin()
+
     val conditional = """{
   "id": "906e5161-d309-4916-b018-16a198606596",
   "__typeName": "Conditional",
@@ -475,12 +483,6 @@ object TestJSON {
     }
   ]
 }""".trimMargin()
-
-    const val register_response = """{
-    "appId": 9,
-    "deviceToken": "aToken",
-    "isProduction": false
-}"""
 
     const val app_bar = """{
             "id": "54BDDF49-BD4D-4232-AA87-15FA584D819C",
@@ -530,6 +532,7 @@ object TestJSON {
     private const val dummyBlurHash = "UQF5\${'$'}|xu9#Sh~7xsJ=NHW9jDoeI^OHWA\$eIp"
     val experience = """{
   "id": "3",
+  "name": "Test",
   "version": 1,
   "revisionID": 3,
   "screenIDs": [
@@ -2618,6 +2621,7 @@ object TestJSON {
 
     val nav_test_judo: String = """{
     "id": 149,
+    "name": "Nav Test",
     "version": 1,
     "revisionID": 149,
     "appearance": "dark",
