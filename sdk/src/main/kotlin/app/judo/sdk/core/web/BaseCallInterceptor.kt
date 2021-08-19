@@ -22,7 +22,7 @@ import okhttp3.Interceptor
 import okhttp3.Protocol
 import okhttp3.Response
 import okhttp3.ResponseBody
-import java.io.IOException
+import java.util.*
 
 internal class BaseCallInterceptor(
     private val accessTokenSupplier: () -> String,
@@ -41,10 +41,24 @@ internal class BaseCallInterceptor(
 
         logger.v(TAG, "Request intercepted:\n\t$original")
 
+
         val newRequest = original.newBuilder().apply {
-            addHeader("Accept", "application/json")
-            addHeader("Judo-Access-Token", accessTokenSupplier())
-            addHeader("Judo-Device-ID", deviceIdSupplier())
+            val domain = original.url().topPrivateDomain()?.toLowerCase(Locale.ROOT)
+            if(domain == "judo.app" || domain == null) {
+                addHeader("Accept", "application/json")
+                // Note that Judo-Access-Token is going to be added again to headers in the case
+                // of first-party data sources (data.judo.app) getting an implicit Authorizer
+                // (handled in DataSourceServiceImpl) that adds the Judo access token.  This entire
+                // `if` block is only present in the first place because BaseCallInterceptor should
+                // probably be factored apart into separate interceptors for Judo API use vs Data
+                // Source use.
+                // Another note: the check for domain being null is a bad hack to make the tests
+                // work in the meantime, because they have a host of "localhost" which does not have
+                // a top private domain.
+                // https://github.com/judoapp/judo-android-develop/issues/397
+                addHeader("Judo-Access-Token", accessTokenSupplier())
+                addHeader("Judo-Device-ID", deviceIdSupplier())
+            }
         }.build()
 
         logger.v(TAG, "Request changed to:\n\t$newRequest")

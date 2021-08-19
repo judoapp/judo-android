@@ -126,7 +126,8 @@ internal class EnvironmentImpl(
     override var dataSourceService: DataSourceService = DataSourceServiceImpl(
         baseClientSupplier = { baseClient },
         baseURLSupplier = { baseURL },
-        loggerSupplier = { logger }
+        loggerSupplier = { logger },
+        authorizersSupplier = { configuration.authorizers },
     )
 
     override var ingestService: IngestService = IngestServiceImpl(

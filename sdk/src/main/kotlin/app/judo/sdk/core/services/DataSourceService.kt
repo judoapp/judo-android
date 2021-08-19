@@ -17,6 +17,9 @@
 
 package app.judo.sdk.core.services
 
+import app.judo.sdk.api.models.Authorizer
+import app.judo.sdk.api.models.URLRequest
+
 internal interface DataSourceService {
 
     sealed class Result {
@@ -31,21 +34,8 @@ internal interface DataSourceService {
 
     }
 
-    suspend fun getData(
-        url: String,
-        headers: Map<String, String> = emptyMap(),
+    suspend fun performRequest(
+        urlRequest: URLRequest,
+        authorizersOverride: List<Authorizer>? = null
     ): Result
-
-    suspend fun putData(
-        url: String,
-        headers: Map<String, String> = emptyMap(),
-        body: String? = null
-    ): Result
-
-    suspend fun postData(
-        url: String,
-        headers: Map<String, String> = emptyMap(),
-        body: String? = null
-    ): Result
-
 }

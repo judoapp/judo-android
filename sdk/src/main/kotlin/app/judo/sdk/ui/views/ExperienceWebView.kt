@@ -22,12 +22,15 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import app.judo.sdk.api.models.MaskPath
 import app.judo.sdk.api.models.Shadow
 import app.judo.sdk.ui.extensions.draw
 import app.judo.sdk.ui.extensions.toDrawableShadow
 import app.judo.sdk.ui.layout.Resolvers
+
 
 @SuppressLint("SetJavaScriptEnabled")
 internal class ExperienceWebView @JvmOverloads constructor(
@@ -52,10 +55,11 @@ internal class ExperienceWebView @JvmOverloads constructor(
     private var drawableShadow: DrawableShadow? = null
 
     init {
+        webViewClient = WebViewClient()
         settings.apply {
-            javaScriptCanOpenWindowsAutomatically = false
             domStorageEnabled = true
             javaScriptEnabled = true
+            mediaPlaybackRequiresUserGesture = false
             setBackgroundColor(Color.TRANSPARENT)
         }
     }
@@ -84,5 +88,17 @@ internal class ExperienceWebView @JvmOverloads constructor(
             maxOverScrollY,
             isTouchEvent
         )
+    }
+
+    /**
+     * Overrides [onTouchEvent] in order to (optionally) prevent touch & drag scrolling of the
+     * web view.  We suppress the ClickableViewAccessibility warning because that warning
+     * is intended for usage of onTouchEvent to detect clicks.  There is no click equivalent of
+     * touch & drag for scrolling.
+     */
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        requestDisallowInterceptTouchEvent(scrollEnabled)
+        return super.onTouchEvent(event)
     }
 }

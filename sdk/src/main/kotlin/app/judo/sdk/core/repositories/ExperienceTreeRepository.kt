@@ -31,8 +31,7 @@ internal interface ExperienceTreeRepository: ExperienceRepository {
         }
     }
 
-    fun retrieveTreeById(key: String): ExperienceTree? {
+    suspend fun retrieveTreeById(key: String): ExperienceTree? {
         return retrieveById(key)?.let { ExperienceTree(it) }
     }
-
 }

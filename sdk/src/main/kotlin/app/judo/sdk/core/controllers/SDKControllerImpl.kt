@@ -23,7 +23,9 @@ import app.judo.sdk.api.android.ExperienceFragmentFactory
 import app.judo.sdk.api.errors.ExperienceError
 import app.judo.sdk.api.events.Event
 import app.judo.sdk.api.events.ScreenViewedCallback
+import app.judo.sdk.api.models.Authorizer
 import app.judo.sdk.api.models.Experience
+import app.judo.sdk.api.models.URLRequest
 import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.environment.MutableEnvironment
 import app.judo.sdk.core.errors.ErrorMessages
@@ -122,10 +124,11 @@ internal class SDKControllerImpl : SDKController {
         }
     }
 
-    override fun loadExperienceIntoMemory(experience: Experience) {
+    override fun loadExperienceIntoMemory(experience: Experience, authorizers: List<Authorizer>) {
         if (this::environment.isInitialized) {
             environment.experienceRepository.put(
-                experience
+                experience,
+                authorizers = authorizers
             )
         }
     }

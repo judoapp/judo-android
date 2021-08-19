@@ -19,9 +19,12 @@ package app.judo.sdk.core.implementations
 
 import android.graphics.Typeface
 import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import app.judo.sdk.api.models.FontResource
 import app.judo.sdk.core.data.JsonParser
 import app.judo.sdk.core.services.FontResourceService
+import app.judo.sdk.ui.extensions.toUri
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
@@ -75,13 +78,11 @@ internal class FontResourceServiceImpl(
         }.build().create(ResourceAPI::class.java)
     }
 
-
     override suspend fun getTypefacesFor(fonts: List<FontResource>, ignoreCache: Boolean): Map<String, Typeface> {
 
         val result = mutableMapOf<String, Typeface>()
 
         val cacheControlHeader = if (ignoreCache) "no-cache" else null
-
         fonts.forEach { resource ->
             when (resource) {
 
@@ -89,59 +90,90 @@ internal class FontResourceServiceImpl(
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
+                        if (resource.url.isLocalFileUri()) {
+
+                            resource.url.toUri().path?.let { path ->
+                                val localFile = File(path)
+
+                                result.putAll(typefacesFromTTCFile(localFile, resource))
+                            }
+                        } else {
+                            val response = api.getFile(resource.url, cacheControlHeader)
+
+                            val body = response.body()?.bytes()
+
+                            val pathname = cachePathSupplier()
+
+                            val file = File("$pathname/fontFamily.${resource.url.substringAfterLast(".")}")
+
+                            body?.let { bytes ->
+
+                                file.writeBytes(bytes)
+
+                                result.putAll(typefacesFromTTCFile(file, resource))
+                            }
+
+                            file.delete()
+                        }
+                    }
+                }
+
+                is FontResource.Single -> {
+
+                    if (resource.url.isLocalFileUri()) {
+                        resource.url.toUri().path?.let { path ->
+                            val localFile = File(path)
+
+                            val face = Typeface.createFromFile(localFile)
+
+                            result[resource.name] = face
+                        }
+                    } else {
+
                         val response = api.getFile(resource.url, cacheControlHeader)
 
                         val body = response.body()?.bytes()
 
                         val pathname = cachePathSupplier()
 
-                        val file = File("$pathname/fontFamily.${resource.url.takeLast(3)}")
+                        val file = File("$pathname/${resource.name}.${resource.url.substringAfterLast(".")}")
 
                         body?.let { bytes ->
-
                             file.writeBytes(bytes)
 
-                            val builder = Typeface.Builder(file)
+                            val face = Typeface.createFromFile(file)
 
-                            resource.names.forEachIndexed { index, name ->
-                                builder.setTtcIndex(index)
-                                builder.build()?.let { face ->
-                                    result[name] = face
-                                }
-                            }
+                            result.put(resource.name, face)
                         }
 
                         file.delete()
 
                     }
                 }
-
-                is FontResource.Single -> {
-
-                    val response = api.getFile(resource.url, cacheControlHeader)
-
-                    val body = response.body()?.bytes()
-
-                    val pathname = cachePathSupplier()
-
-                    val file = File("$pathname/${resource.name}.${resource.url.takeLast(3)}")
-
-                    body?.let { bytes ->
-                        file.writeBytes(bytes)
-
-                        val face = Typeface.createFromFile(file)
-
-                        result.put(resource.name, face)
-                    }
-
-                    file.delete()
-
-                }
-
             }
         }
 
         return result
+    }
+
+    private fun String.isLocalFileUri() = this.startsWith("file://")
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun typefacesFromTTCFile(file: File, resource: FontResource.Collection): Map<String, Typeface> {
+
+        val builder = Typeface.Builder(file)
+
+        val typefacesMap = mutableMapOf<String, Typeface>()
+
+        resource.names.forEachIndexed { index, name ->
+            builder.setTtcIndex(index)
+            builder.build()?.let { face ->
+                typefacesMap[name] = face
+            }
+        }
+
+        return typefacesMap
+
     }
 
 }

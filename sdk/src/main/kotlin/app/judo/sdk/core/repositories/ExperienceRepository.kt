@@ -18,6 +18,7 @@
 package app.judo.sdk.core.repositories
 
 import app.judo.sdk.api.errors.ExperienceError
+import app.judo.sdk.api.models.Authorizer
 import app.judo.sdk.api.models.Experience
 import app.judo.sdk.core.data.Resource
 import kotlinx.coroutines.flow.Flow
@@ -33,16 +34,18 @@ internal interface ExperienceRepository {
      * Caches a Experience into memory.
      * The judo is associated to a given [key] if no key is passed
      * then the [Experience.id] is used instead.
+     * @param authorizers A list of [Authorizer]s to apply in lieu of the authorizers specified by a developer in [Judo.Configuration].
      * @return The previous Experience associated to the [key] or null if there is none.
     * */
-    fun put(experience: Experience, key: String? = null): Experience?
+    fun put(experience: Experience, key: String? = null, authorizers: List<Authorizer>): Experience?
 
     /**
      * Returns the value corresponding to the given [key], or `null` if such a key is not present.
      */
-    fun retrieveById(key: String): Experience?
+    suspend fun retrieveById(key: String): Experience?
 
     fun remove(key: String)
 
+    fun retrieveAuthorizersOverrideById(key: String): List<Authorizer>?
 }
 

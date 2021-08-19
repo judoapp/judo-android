@@ -17,6 +17,9 @@
 
 package app.judo.sdk.core.implementations
 
+import app.judo.sdk.api.models.Authorizer
+import app.judo.sdk.api.models.HttpMethod
+import app.judo.sdk.api.models.URLRequest
 import app.judo.sdk.core.log.Logger
 import app.judo.sdk.core.services.DataSourceService
 import okhttp3.MediaType
@@ -32,14 +35,16 @@ import retrofit2.http.*
 internal class DataSourceServiceImpl(
     private val baseClientSupplier: () -> OkHttpClient,
     private val baseURLSupplier: () -> String?,
-    private val loggerSupplier: () -> Logger? = { null }
+    private val loggerSupplier: () -> Logger? = { null },
+    private val authorizersSupplier: () -> List<Authorizer> = { emptyList() }
 ) : DataSourceService {
 
     companion object {
         /**
-         * This is just a place holderURL and will be replaced during actual calls
+         * This is just a place holder URL (needed to configure Retrofit) and will be replaced
+         * during actual calls.
          */
-        private const val url: String = "https://devices.judo.app"
+        private const val url: String = "https://placeholder.judo.app"
     }
 
     interface DataSourceAPI {
@@ -86,81 +91,49 @@ internal class DataSourceServiceImpl(
             .build().create(DataSourceAPI::class.java)
     }
 
-    override suspend fun getData(
-        url: String,
-        headers: Map<String, String>
+    override suspend fun performRequest(
+        urlRequest: URLRequest,
+        authorizersOverride: List<Authorizer>?
     ): DataSourceService.Result {
-
         val sanitizedURL = baseURLSupplier()?.let { baseURL ->
-            url.replaceFirst(Regex("""^(https://|http://)""", RegexOption.IGNORE_CASE), baseURL)
-        } ?: url
+            urlRequest.url.replaceFirst(Regex("""^(https://|http://)""", RegexOption.IGNORE_CASE), baseURL)
+        } ?: urlRequest.url
 
-        val response = api.get(sanitizedURL, headers)
-        val json = response.body()?.string()
-        if (response.isSuccessful && json != null) {
-            return DataSourceService.Result.Success(
-                body = json
-            )
+        val modifiedRequest = urlRequest.copy(url = sanitizedURL)
+
+        val authorizers = authorizersOverride ?: authorizersSupplier()
+
+        authorizers.forEach { authorizer ->
+            // the authorizers mutate the urlrequest.
+            authorizer.authorize(modifiedRequest)
         }
 
-        return DataSourceService.Result.Failure(
-            Throwable(response.message())
-        )
-    }
+        val response: Response<ResponseBody> = when(modifiedRequest.method) {
+            HttpMethod.GET -> {
+                api.get(sanitizedURL, modifiedRequest.headers)
+            }
+            HttpMethod.PUT -> {
+                val body = modifiedRequest.body
+                if (body == null) {
+                    api.put(sanitizedURL, modifiedRequest.headers)
+                } else {
+                    val contentType = MediaType.parse("text/plain")
+                    val requestBody = RequestBody.create(contentType, body)
 
-    override suspend fun putData(
-        url: String,
-        headers: Map<String, String>,
-        body: String?
-    ): DataSourceService.Result {
+                    api.putWithBody(sanitizedURL, modifiedRequest.headers, requestBody)
+                }
+            }
+            HttpMethod.POST -> {
+                val body = modifiedRequest.body
+                if (body == null) {
+                    api.post(sanitizedURL, modifiedRequest.headers)
+                } else {
+                    val contentType = MediaType.parse("text/plain")
+                    val requestBody = RequestBody.create(contentType, body)
 
-        val sanitizedURL = baseURLSupplier()?.let { baseURL ->
-            url.replaceFirst(Regex("""^(https://|http://)""", RegexOption.IGNORE_CASE), baseURL)
-        } ?: url
-
-        val response = if (body == null) {
-            api.put(sanitizedURL, headers)
-        } else {
-
-            val contentType = MediaType.parse("text/plain")
-            val requestBody = RequestBody.create(contentType, body)
-
-            api.putWithBody(sanitizedURL, headers, requestBody)
-        }
-
-
-        val json = response.body()?.string()
-        if (response.isSuccessful && json != null) {
-            return DataSourceService.Result.Success(
-                body = json
-            )
-        }
-
-        return DataSourceService.Result.Failure(
-            Throwable(response.message())
-        )
-
-    }
-
-    override suspend fun postData(
-        url: String,
-        headers: Map<String, String>,
-        body: String?
-    ): DataSourceService.Result {
-
-        val sanitizedURL = baseURLSupplier()?.let { baseURL ->
-            url.replaceFirst(Regex("""^(https://|http://)""", RegexOption.IGNORE_CASE), baseURL)
-        } ?: url
-
-        val response = if (body == null) {
-            api.post(sanitizedURL, headers)
-        } else {
-
-
-            val contentType = MediaType.parse("text/plain")
-            val requestBody = RequestBody.create(contentType, body)
-
-            api.postWithBody(sanitizedURL, headers, requestBody)
+                    api.postWithBody(sanitizedURL, modifiedRequest.headers, requestBody)
+                }
+            }
         }
 
         val json = response.body()?.string()

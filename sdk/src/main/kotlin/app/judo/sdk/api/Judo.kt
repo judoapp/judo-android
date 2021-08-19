@@ -25,7 +25,10 @@ import androidx.annotation.MainThread
 import app.judo.sdk.api.android.ExperienceFragmentFactory
 import app.judo.sdk.api.events.ScreenViewedCallback
 import app.judo.sdk.api.logs.LogLevel
+import app.judo.sdk.api.models.Authorizer
 import app.judo.sdk.api.models.Experience
+import app.judo.sdk.api.models.HttpMethod
+import app.judo.sdk.api.models.URLRequest
 import app.judo.sdk.core.controllers.NoOpSDKController
 import app.judo.sdk.core.controllers.SDKController
 import app.judo.sdk.core.controllers.SDKControllerImpl
@@ -35,6 +38,7 @@ import app.judo.sdk.ui.ExperienceActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.net.URL
 
 
 /**
@@ -216,12 +220,13 @@ object Judo {
         experience: Experience,
         activityClass: Class<*> = ExperienceActivity::class.java,
         screenId: String? = null,
-        userInfo: Map<String, Any>? = null
+        userInfo: Map<String, Any>? = null,
+        authorizers: List<Authorizer> = listOf()
     ): Intent {
         return try {
             activityClass.asSubclass(activityClass)
 
-            controller.loadExperienceIntoMemory(experience)
+            controller.loadExperienceIntoMemory(experience, authorizers)
 
             Intent(context, activityClass).apply {
                 putExtra(Environment.Keys.LOAD_FROM_MEMORY, true)
@@ -262,7 +267,15 @@ object Judo {
 
         val experienceCacheSize: Long = Environment.Sizes.EXPERIENCE_CACHE_SIZE,
         val imageCacheSize: Long = Environment.Sizes.IMAGE_CACHE_SIZE,
+        var authorizers: List<Authorizer> = emptyList()
     ) {
+        init {
+            authorizers = (authorizers + listOf(
+                // add an implicit default authorizer for first-party Judo data sources.
+                Authorizer("data.judo.app") { it.headers["Judo-Access-Token"] = accessToken }
+            )).distinct()
+        }
+
         enum class AnalyticsMode {
             /**
              * All events are tracked along with any user data passed to the
@@ -307,6 +320,12 @@ object Judo {
 
             fun setImageCacheSize(imageCacheSize: Long): Builder {
                 this.results = results.copy(imageCacheSize = imageCacheSize)
+                return this
+            }
+
+            fun authorize(pattern: String, with: (URLRequest) -> Unit): Builder {
+                val authorizer = Authorizer(pattern, with)
+                this.results = results.copy(authorizers = this.results.authorizers + listOf(authorizer))
                 return this
             }
 

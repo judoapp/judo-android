@@ -17,6 +17,8 @@
 
 package app.judo.sdk.core.implementations
 
+import app.judo.sdk.api.models.HttpMethod
+import app.judo.sdk.api.models.URLRequest
 import app.judo.sdk.core.robots.AbstractRobotTest
 import app.judo.sdk.core.robots.DataSourceServiceRobot
 import app.judo.sdk.core.services.DataSourceService
@@ -42,14 +44,19 @@ internal class TheDataSourceService : AbstractRobotTest<DataSourceServiceRobot>(
 
         val url = "https://dummyapi.io/data/api/user?limit=10"
 
-        val headers: Map<String, String> = mapOf(
+        val headers = hashMapOf(
             "app-id" to "609561d4e8fed0600a0a26b8"
         )
 
+        val request = URLRequest(
+            url,
+            HttpMethod.GET,
+            headers
+        )
+
         // Act
-        val actual = robot.environment.dataSourceService.getData(
-            url = url,
-            headers = headers
+        val actual = robot.environment.dataSourceService.performRequest(
+            request
         )
 
         // Assert
@@ -65,14 +72,20 @@ internal class TheDataSourceService : AbstractRobotTest<DataSourceServiceRobot>(
 
         val url = "https://dummyapi.io/data/api/user?limit=10"
 
-        val headers: Map<String, String> = mapOf(
+        val headers = hashMapOf(
             "app-id" to "609561d4e8fed0600a0a26b8"
         )
 
+        val request = URLRequest(
+            url,
+            HttpMethod.PUT,
+            headers
+        )
+
         // Act
-        val actual = robot.environment.dataSourceService.putData(
-            url = url,
-            headers = headers
+
+        val actual = robot.environment.dataSourceService.performRequest(
+            request
         )
 
         // Assert
@@ -88,17 +101,22 @@ internal class TheDataSourceService : AbstractRobotTest<DataSourceServiceRobot>(
 
         val url = "https://dummyapi.io/data/api/user/put"
 
-        val headers: Map<String, String> = mapOf(
+        val headers = hashMapOf(
             "app-id" to "609561d4e8fed0600a0a26b8"
         )
 
         val body = """{"name":"User"}"""
 
+        val request = URLRequest(
+            url,
+            HttpMethod.PUT,
+            headers,
+            body
+        )
+
         // Act
-        val actual = robot.environment.dataSourceService.putData(
-            url = url,
-            headers = headers,
-            body = body
+        val actual = robot.environment.dataSourceService.performRequest(
+            request
         )
 
         // Assert
@@ -114,14 +132,19 @@ internal class TheDataSourceService : AbstractRobotTest<DataSourceServiceRobot>(
 
         val url = "https://dummyapi.io/data/api/user/put/null"
 
-        val headers: Map<String, String> = mapOf(
+        val headers = hashMapOf(
             "app-id" to "609561d4e8fed0600a0a26b8"
         )
 
+        val request = URLRequest(
+            url,
+            HttpMethod.PUT,
+            headers
+        )
+
         // Act
-        val actual = robot.environment.dataSourceService.putData(
-            url = url,
-            headers = headers,
+        val actual = robot.environment.dataSourceService.performRequest(
+            request
         )
 
         // Assert
@@ -138,14 +161,19 @@ internal class TheDataSourceService : AbstractRobotTest<DataSourceServiceRobot>(
 
         val url = "https://dummyapi.io/data/api/user?limit=10"
 
-        val headers: Map<String, String> = mapOf(
+        val headers = hashMapOf(
             "app-id" to "609561d4e8fed0600a0a26b8"
         )
 
+        val request = URLRequest(
+            url,
+            HttpMethod.POST,
+            headers
+        )
+
         // Act
-        val actual = robot.environment.dataSourceService.postData(
-            url = url,
-            headers = headers
+        val actual = robot.environment.dataSourceService.performRequest(
+            request
         )
 
         // Assert
@@ -161,17 +189,22 @@ internal class TheDataSourceService : AbstractRobotTest<DataSourceServiceRobot>(
 
         val url = "https://dummyapi.io/data/api/user/post"
 
-        val headers: Map<String, String> = mapOf(
+        val headers = hashMapOf(
             "app-id" to "609561d4e8fed0600a0a26b8"
         )
 
         val body = """{"name":"User"}"""
 
+        val request = URLRequest(
+            url,
+            HttpMethod.POST,
+            headers,
+            body
+        )
+
         // Act
-        val actual = robot.environment.dataSourceService.postData(
-            url = url,
-            headers = headers,
-            body = body
+        val actual = robot.environment.dataSourceService.performRequest(
+            request
         )
 
         // Assert
@@ -187,14 +220,19 @@ internal class TheDataSourceService : AbstractRobotTest<DataSourceServiceRobot>(
 
         val url = "https://dummyapi.io/data/api/user/post/null"
 
-        val headers: Map<String, String> = mapOf(
+        val headers = hashMapOf(
             "app-id" to "609561d4e8fed0600a0a26b8"
         )
 
+        val request = URLRequest(
+            url,
+            HttpMethod.POST,
+            headers
+        )
+
         // Act
-        val actual = robot.environment.dataSourceService.postData(
-            url = url,
-            headers = headers,
+        val actual = robot.environment.dataSourceService.performRequest(
+            request
         )
 
         // Assert

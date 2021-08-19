@@ -19,12 +19,13 @@ package app.judo.sdk.core.implementations
 
 import android.os.Build
 import app.judo.sdk.api.errors.ExperienceError
+import app.judo.sdk.api.models.Authorizer
 import app.judo.sdk.api.models.Experience
+import app.judo.sdk.api.models.FontResource
 import app.judo.sdk.core.data.ExperienceTree
 import app.judo.sdk.core.data.Resource
 import app.judo.sdk.core.errors.ErrorMessages
 import app.judo.sdk.core.log.Logger
-import app.judo.sdk.core.repositories.ExperienceRepository
 import app.judo.sdk.core.repositories.ExperienceTreeRepository
 import app.judo.sdk.core.services.ExperienceService
 import app.judo.sdk.core.services.FontResourceService
@@ -36,7 +37,6 @@ import com.squareup.moshi.JsonEncodingException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 import okio.IOException
 import java.util.*
 
@@ -52,6 +52,33 @@ internal class ExperienceRepositoryImpl(
 
     private val inMemoryExperiences = mutableMapOf<String, Experience>()
 
+    private suspend fun createTypeFaceLoader(fonts: List<FontResource>, ignoreCache: Boolean): TypeFaceLoader {
+        fontResourceServiceSupplier().let { faceService ->
+
+            val typefaceMap = faceService.getTypefacesFor(fonts, ignoreCache)
+
+            return TypeFaceLoader(typefaces = typefaceMap)
+        }
+    }
+
+    private fun createTranslationLoader(experience: Experience): TranslationLoader {
+        experience.localization.let { translations ->
+
+            val translator = TranslatorImpl(theTranslationMap = translations) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    listOf(Locale.getDefault().toLanguageTag())
+                } else {
+                    emptyList()
+                }
+            }
+
+            return TranslationLoader(translator = translator::translate)
+
+        }
+    }
+
+    private val authorizersOverrides = mutableMapOf<String, List<Authorizer>>()
+
     override fun retrieveExperience(
         aURL: String,
         ignoreCache: Boolean,
@@ -65,26 +92,9 @@ internal class ExperienceRepositoryImpl(
 
                 val experience = response.body()!!
 
-                val typeFaceLoader = fontResourceServiceSupplier().let { faceService ->
+                val typeFaceLoader = createTypeFaceLoader(experience.fonts, ignoreCache)
 
-                    val typefaceMap = faceService.getTypefacesFor(experience.fonts, ignoreCache)
-
-                    TypeFaceLoader(typefaces = typefaceMap)
-                }
-
-                val translationLoader = experience.localization.let { translations ->
-
-                    val translator = TranslatorImpl(theTranslationMap = translations) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            listOf(Locale.getDefault().toLanguageTag())
-                        } else {
-                            emptyList()
-                        }
-                    }
-
-                    TranslationLoader(translator = translator::translate)
-
-                }
+                val translationLoader = createTranslationLoader(experience)
 
                 experience.accept(visitorsOf(typeFaceLoader, translationLoader))
 
@@ -132,15 +142,31 @@ internal class ExperienceRepositoryImpl(
         }
     }
 
-    override fun put(experience: Experience, key: String?): Experience? {
-        return inMemoryExperiences.put(key ?: experience.id, experience)
+    override fun put(experience: Experience, key: String?, authorizers: List<Authorizer>): Experience? {
+        val experienceKey = key ?: experience.id
+        authorizersOverrides.put(experienceKey, authorizers)
+        return inMemoryExperiences.put(experienceKey, experience)
     }
 
     override fun remove(key: String) {
+        authorizersOverrides.remove(key)
         inMemoryExperiences.remove(key)
     }
 
-    override fun retrieveById(key: String): Experience? {
-        return inMemoryExperiences[key]
+    override suspend fun retrieveById(key: String): Experience? {
+
+        return inMemoryExperiences[key]?.let { experience ->
+            val typeFaceLoader = createTypeFaceLoader(experience.fonts, false)
+
+            val translationLoader = createTranslationLoader(experience)
+
+            experience.accept(visitorsOf(typeFaceLoader, translationLoader))
+
+            experience
+        }
+    }
+
+    override fun retrieveAuthorizersOverrideById(key: String): List<Authorizer>? {
+        return authorizersOverrides[key]
     }
 }

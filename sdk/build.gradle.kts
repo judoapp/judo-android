@@ -9,7 +9,7 @@ plugins {
 
 val judoGroupId = "app.judo"
 val judoArtifactId = "judo-sdk"
-val judoVersion = "1.2.0"
+val judoVersion = "1.3.0"
 
 android {
     compileSdkVersion(30)

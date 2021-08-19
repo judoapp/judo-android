@@ -209,10 +209,11 @@ internal class ScreenFragment : Fragment() {
         nodesForScreenInfo: NodesForScreenInfo,
         fromCache: Boolean
     ) {
-        val frameChildCount = binding.screenFrame.childCount
-        val (incomingFrame, outgoingFrame) = if (frameChildCount == 0) {
+        val (incomingFrame, outgoingFrame) = if (binding.screenFrame.tag == null) {
+            binding.screenFrame.tag = "active"
             binding.screenFrame to binding.screenFrame2
         } else {
+            binding.screenFrame.tag = null
             binding.screenFrame2 to binding.screenFrame
         }
 

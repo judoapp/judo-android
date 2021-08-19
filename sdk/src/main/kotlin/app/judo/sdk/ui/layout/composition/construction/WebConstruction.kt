@@ -21,7 +21,7 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Build
 import android.view.View
-import android.view.View.LAYER_TYPE_SOFTWARE
+import android.view.View.LAYER_TYPE_HARDWARE
 import android.widget.FrameLayout
 import app.judo.sdk.api.models.WebView
 import app.judo.sdk.ui.extensions.calculateDisplayableAreaFromMaskPath
@@ -48,8 +48,9 @@ internal fun WebView.construct(context: Context, treeNode: TreeNode, resolvers: 
             setMargins(sizeAndCoordinates.x.roundToInt(), sizeAndCoordinates.y.roundToInt(), 0, 0)
         }
         setBackgroundColor(Color.TRANSPARENT)
-        // in order to enable setting opacity on the content of the Webview
-        setLayerType(LAYER_TYPE_SOFTWARE, null)
+
+        setLayerType(LAYER_TYPE_HARDWARE, null)
+
         scrollEnabled = isScrollEnabled
         loadUrl(this@construct.interpolatedURL)
     }

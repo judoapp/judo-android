@@ -53,10 +53,18 @@ class ExampleApplication : MultiDexApplication() {
             Judo.logLevel = LogLevel.Verbose
         }
 
+        val config = Judo.Configuration.Builder(
+            accessToken = "<JUDO-ACCESS-TOKEN>",
+            domain = "myapp.judo.app"
+        )
+
+        config.authorize("*.myapp.app") { request ->
+            request.headers["X-My-Authorization"] = "my api key"
+        }
+
         Judo.initialize(
             application = this,
-            accessToken = "<ACCESS-TOKEN>",
-            domain = "myapp.judo.app"
+            configuration = config.build()
         )
 
         Judo.performSync(prefetchAssets = false) {

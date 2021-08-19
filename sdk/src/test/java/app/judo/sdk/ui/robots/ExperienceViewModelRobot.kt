@@ -98,7 +98,7 @@ internal class ExperienceViewModelRobot : AbstractTestRobot() {
     }
 
     fun loadExperienceIntoMemory(experience: Experience) {
-        environment.experienceRepository.put(experience)
+        environment.experienceRepository.put(experience, authorizers = emptyList())
     }
 
     fun initializeExperienceFromMemory(judoKey: String, screenId: String? = null) {

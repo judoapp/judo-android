@@ -21,7 +21,9 @@ import android.app.Application
 import app.judo.sdk.api.Judo
 import app.judo.sdk.api.android.ExperienceFragmentFactory
 import app.judo.sdk.api.events.ScreenViewedCallback
+import app.judo.sdk.api.models.Authorizer
 import app.judo.sdk.api.models.Experience
+import app.judo.sdk.api.models.URLRequest
 import app.judo.sdk.core.implementations.ProductionLoggerImpl
 import app.judo.sdk.core.log.Logger
 
@@ -48,7 +50,8 @@ internal class NoOpSDKController : SDKController {
         /* no-op */
     }
 
-    override fun loadExperienceIntoMemory(experience: Experience) {
+
+    override fun loadExperienceIntoMemory(experience: Experience, authorizers: List<Authorizer>) {
         /* no-op */
     }
 

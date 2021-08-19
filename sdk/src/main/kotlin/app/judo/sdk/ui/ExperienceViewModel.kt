@@ -66,6 +66,7 @@ internal class ExperienceViewModel(
     }
 
     private var userInfoOverride: HashMap<String, Any>? = null
+    private var authorizersOverride: List<Authorizer>? = null
     private var experienceKey: String? = null
 
     private val backingStateFlow = MutableStateFlow<ExperienceState>(Empty)
@@ -502,36 +503,14 @@ internal class ExperienceViewModel(
 
         val body = dataSource.interpolatedHttpBody
 
-        val result: DataSourceService.Result =
-            when (dataSource.httpMethod) {
+        val request = URLRequest(
+            url,
+            dataSource.httpMethod,
+            HashMap(headers),
+            body
+        )
 
-                HttpMethod.GET -> {
-                    dataService.getData(
-                        url = url,
-                        headers = headers
-                    )
-                }
-
-                HttpMethod.PUT -> {
-                    dataService.putData(
-                        url = url,
-                        headers = headers,
-                        body = body
-                    )
-                }
-
-                HttpMethod.POST -> {
-                    dataService.postData(
-                        url = url,
-                        headers = headers,
-                        body = body
-                    )
-                }
-
-            }
-
-        return when (result) {
-
+        return when (val result: DataSourceService.Result = dataService.performRequest(request, authorizersOverride)) {
             is DataSourceService.Result.Failure -> {
                 environment.logger.e(
                     TAG,
@@ -543,9 +522,7 @@ internal class ExperienceViewModel(
             is DataSourceService.Result.Success -> {
                 result.body
             }
-
         }
-
     }
 
     private fun initializeFromMemory(experienceKey: String, screenId: String? = null) {
@@ -554,16 +531,21 @@ internal class ExperienceViewModel(
             data = "Loading experience from memory: $experienceKey\nScreen ID: $screenId"
         )
 
-        val experienceTree = environment.experienceTreeRepository.retrieveTreeById(experienceKey)
-        if (experienceTree != null) {
-            this.experienceKey = experienceKey
-            setExperience(experienceTree, screenId)
-        } else {
-            backingStateFlow.value = Error(
-                error = ExperienceError.ExperienceNotFoundError(
-                    message = ErrorMessages.EXPERIENCE_NOT_IN_MEMORY
+        viewModelScope.launch(dispatcher) {
+            val experienceTree = environment.experienceTreeRepository.retrieveTreeById(experienceKey)
+
+            val authorizersOverride = environment.experienceRepository.retrieveAuthorizersOverrideById(experienceKey)
+            if (experienceTree != null) {
+                this@ExperienceViewModel.experienceKey = experienceKey
+                this@ExperienceViewModel.authorizersOverride = authorizersOverride
+                this@ExperienceViewModel.setExperience(experienceTree, screenId)
+            } else {
+                backingStateFlow.value = Error(
+                    error = ExperienceError.ExperienceNotFoundError(
+                        message = ErrorMessages.EXPERIENCE_NOT_IN_MEMORY
+                    )
                 )
-            )
+            }
         }
     }
 
