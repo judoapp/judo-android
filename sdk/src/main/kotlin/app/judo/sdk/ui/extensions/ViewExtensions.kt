@@ -219,7 +219,7 @@ internal fun Toolbar.setupJudoAppBar(
 
             menuItem.action?.let { action ->
                 setOnMenuItemClickListener {
-                    screen?.let { screen -> actionResolver.invoke(action, screen, menuItem) }
+                    actionResolver.invoke(action, menuItem)
                     true
                 }
             }

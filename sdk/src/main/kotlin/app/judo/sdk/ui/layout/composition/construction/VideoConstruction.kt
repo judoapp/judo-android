@@ -29,7 +29,6 @@ import app.judo.sdk.ui.layout.Resolvers
 import app.judo.sdk.ui.layout.composition.TreeNode
 import app.judo.sdk.ui.layout.composition.toSingleLayerLayout
 import app.judo.sdk.ui.views.ExperienceMediaPlayerView
-import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import kotlin.math.roundToInt
 
 internal fun Video.construct(context: Context, treeNode: TreeNode, resolvers: Resolvers): List<View> {

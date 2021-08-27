@@ -108,7 +108,7 @@ internal fun Text.construct(context: Context, treeNode: TreeNode, resolvers: Res
             }
             background?.foreground = rippleDrawable
             background?.setOnClickListener {
-                treeNode.findNearestAncestor<Screen>()?.let { screen -> resolvers.actionResolver(action!!, screen, treeNode.value) }
+                resolvers.actionResolver(action!!, treeNode.value)
             }
         }
         action != null && (this.overlay?.node is Image || this.overlay?.node is Rectangle) -> {
@@ -118,14 +118,14 @@ internal fun Text.construct(context: Context, treeNode: TreeNode, resolvers: Res
             }
             overlay?.foreground = rippleDrawable
             overlay?.setOnClickListener {
-                treeNode.findNearestAncestor<Screen>()?.let { screen -> resolvers.actionResolver(action!!, screen, treeNode.value) }
+                resolvers.actionResolver(action!!, treeNode.value)
             }
         }
         action != null -> {
             textView.foreground = createRipple(context, resolvers.statusBarColorResolver.color)
             textView.setOnClickListener {
                 val action = action ?: return@setOnClickListener
-                treeNode.findNearestAncestor<Screen>()?.let { screen -> resolvers.actionResolver(action, screen, treeNode.value) }
+                resolvers.actionResolver(action, treeNode.value)
             }
         }
     }

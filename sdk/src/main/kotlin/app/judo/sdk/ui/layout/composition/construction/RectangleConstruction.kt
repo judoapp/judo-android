@@ -55,7 +55,7 @@ internal fun Rectangle.construct(context: Context, treeNode: TreeNode, resolvers
     action?.let { action ->
         rectangle.foreground = createRipple(context, resolvers.statusBarColorResolver.color, cornerRadius)
         rectangle.setOnClickListener { _ ->
-            treeNode.findNearestAncestor<Screen>()?.let { screen -> resolvers.actionResolver(action, screen, treeNode.value) }
+            resolvers.actionResolver(action, treeNode.value)
         }
     }
 

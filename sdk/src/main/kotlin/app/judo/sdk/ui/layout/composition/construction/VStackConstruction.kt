@@ -62,7 +62,7 @@ internal suspend fun VStack.construct(
     this.action?.let { action ->
         view.foreground = createRipple(context, resolvers.statusBarColorResolver.color)
         view.setOnClickListener {
-            treeNode.findNearestAncestor<Screen>()?.let { screen -> resolvers.actionResolver(action, screen, treeNode.value) }
+            resolvers.actionResolver(action, treeNode.value)
         }
     }
 

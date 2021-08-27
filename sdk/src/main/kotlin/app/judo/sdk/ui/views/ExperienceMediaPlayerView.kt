@@ -18,11 +18,11 @@ import app.judo.sdk.core.controllers.current
 import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.services.ImageService
 import app.judo.sdk.ui.MediaPlayerInstanceManager
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.SimpleExoPlayer
-import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import com.google.android.exoplayer2.ui.PlayerView
+import app.judo.shaded.exoplayer2.MediaItem
+import app.judo.shaded.exoplayer2.Player
+import app.judo.shaded.exoplayer2.SimpleExoPlayer
+import app.judo.shaded.exoplayer2.ui.AspectRatioFrameLayout
+import app.judo.shaded.exoplayer2.ui.PlayerView
 import kotlinx.coroutines.*
 
 internal class ExperienceMediaPlayerView @JvmOverloads constructor(
@@ -46,11 +46,11 @@ internal class ExperienceMediaPlayerView @JvmOverloads constructor(
     }
 
     init {
-        findViewById<ImageButton>(R.id.exo_prev)?.apply {
+        findViewById<ImageButton>(R.id.judo_exo_prev)?.apply {
             setImageDrawable(null)
             setOnClickListener(null)
         }
-        findViewById<ImageButton>(R.id.exo_next)?.apply {
+        findViewById<ImageButton>(R.id.judo_exo_next)?.apply {
             setImageDrawable(null)
             setOnClickListener(null)
         }
@@ -111,7 +111,7 @@ internal class ExperienceMediaPlayerView @JvmOverloads constructor(
         }
 
         fun setArtwork(drawable: Drawable) {
-            val artworkView = findViewById<ImageView>(R.id.exo_artwork)
+            val artworkView = findViewById<ImageView>(R.id.judo_exo_artwork)
             artworkView?.setImageDrawable(drawable)
             artworkView?.visibility = View.VISIBLE
         }
@@ -120,7 +120,7 @@ internal class ExperienceMediaPlayerView @JvmOverloads constructor(
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 super.onIsPlayingChanged(isPlaying)
                 if (isPlaying) {
-                    val artworkView = findViewById<ImageView>(R.id.exo_artwork)
+                    val artworkView = findViewById<ImageView>(R.id.judo_exo_artwork)
                     artworkView?.visibility = View.INVISIBLE
                     player.removeListener(this)
                 }

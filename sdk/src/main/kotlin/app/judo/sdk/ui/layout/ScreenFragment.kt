@@ -139,7 +139,7 @@ internal class ScreenFragment : Fragment() {
         val resolvers = Resolvers(
             colorResolver,
             GradientResolver(requireContext(), appearance),
-            model::onAction,
+            { action, node -> model.onAction(action, screenID, node) },
             StatusBarColorResolver(requireActivity().window.statusBarColor)
         )
 

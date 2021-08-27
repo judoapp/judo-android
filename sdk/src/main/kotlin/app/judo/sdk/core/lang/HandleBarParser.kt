@@ -144,7 +144,7 @@ internal class HandleBarParser<U> : AbstractParser<U, Token.HandleBarExpression>
         val innerContext = with(input) {
             ParserContext(
                 text = text,
-                state = Token.HandleBarExpression(""),
+                state = Token.HandleBarExpression("", position = position),
                 position = position,
                 line = line
             )

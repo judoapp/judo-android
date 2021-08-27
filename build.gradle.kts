@@ -20,5 +20,8 @@ allprojects {
     repositories {
         google()
         jcenter()
+        maven {
+            url = java.net.URI.create("https://judoapp.github.io/judo-android-libs/maven")
+        }
     }
 }

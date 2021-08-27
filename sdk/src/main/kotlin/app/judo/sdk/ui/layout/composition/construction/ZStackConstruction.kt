@@ -59,7 +59,7 @@ internal suspend fun ZStack.construct(
     this.action?.let { action ->
         judoStackFrame.foreground = createRipple(context, resolvers.statusBarColorResolver.color)
         judoStackFrame.setOnClickListener {
-            treeNode.findNearestAncestor<Screen>()?.let { screen -> resolvers.actionResolver(action, screen, treeNode.value) }
+            resolvers.actionResolver(action, treeNode.value)
         }
     }
 

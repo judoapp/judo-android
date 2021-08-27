@@ -20,6 +20,7 @@ package app.judo.sdk.core.implementations
 import app.judo.sdk.core.data.DataContext
 import app.judo.sdk.core.data.dataContextOf
 import app.judo.sdk.core.data.resolvers.resolveJson
+import app.judo.sdk.core.interpolation.DateHelper
 import app.judo.sdk.core.lang.Interpolator
 import app.judo.sdk.core.lang.TokenizerImpl
 import app.judo.sdk.utils.TestJSON
@@ -42,18 +43,20 @@ internal class TheInterpolator {
                 "location" to "beach",
                 "dateTime" to "2021-06-19T15:54:01Z",
                 "dateTimeNoZone" to "2021-06-19T15:54:01",
+                "dateWithASpace" to "2021-06-19 15:54:01",
                 "date" to "2021-06-19",
                 "time" to "15:54:01",
                 "timeZone" to "15:54:01Z",
                 "user" to mapOf(
                     "first_name" to "Jane",
                     "last_name" to "Doe",
-                )
+                ),
+                "thingID" to "1234",
             ),
             "user" to mapOf(
                 "first_name" to "Jane",
                 "last_name" to "Doe",
-            )
+            ),
         )
 
         val loggerSupplier = {
@@ -237,7 +240,7 @@ internal class TheInterpolator {
     }
 
     @Test
-    fun `Interpolates can interpolate just data`() {
+    fun `Can interpolate just data`() {
         // Arrange
 
         val data = resolveJson(TestJSON.dummy_api_response)
@@ -254,6 +257,55 @@ internal class TheInterpolator {
         val actual = InterpolatorImpl(
             tokenizer = TokenizerImpl(),
             dataContext = context
+        ).interpolate(theTextToInterpolate = input)
+
+        println(actual)
+
+        // Assert
+        Assert.assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `Can interpolate dates with a space`() {
+        // Arrange
+
+        val expected = "15:54"
+
+        val theTextToInterpolate = "{{ date data.dateWithASpace \"HH:mm\" }}"
+
+        // Act
+        val actual = interpolator.interpolate(
+            theTextToInterpolate
+        )
+
+        // Assert
+        Assert.assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `Can interpolate imbalanced curly brackets`() {
+        // Arrange
+
+        val expected = """{
+      "query" : "query{someThings{things{thingId\thingNameFull\thingLogoNoText{url,description}\thingLogoWithText{url,description}}}}",
+      "variables" : {
+        "thingId" : "1234"
+      }
+    }
+"""
+
+        val input = """{
+      "query" : "query{someThings{things{thingId\thingNameFull\thingLogoNoText{url,description}\thingLogoWithText{url,description}}}}",
+      "variables" : {
+        "thingId" : "{{data.thingID}}"
+      }
+    }
+"""
+
+        // Act
+        val actual = InterpolatorImpl(
+            tokenizer = TokenizerImpl(),
+            dataContext = dataContext
         ).interpolate(theTextToInterpolate = input)
 
         println(actual)

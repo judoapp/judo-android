@@ -69,24 +69,24 @@ class TheTokenizer {
     }
 
     @Test
-    fun `Imbalanced handlebars throws IllegalStateException`() {
+    fun `Tokenizes Imbalanced curly braces`() {
         // Arrange
 
-        val input = "Hello, {{ data.world }"
-
+        val input = """{
+      "query" : "query{someThings{things{thingId\thingNameFull\thingLogoNoText{url,description}\thingLogoWithText{url,description}}}}",
+      "variables" : {
+        "thingId" : "{{data.thing.id}}"
+      }
+    }
+"""
         // Act
 
-        val actual = try {
-            tokenizer.tokenize(text = input)
-            null
-        } catch (e: IllegalStateException) {
-            e
-        }
+        val actual = tokenizer.tokenize(text = input)
 
         println("ACTUAL: $actual")
 
         // Assert
-        assertTrue(actual is java.lang.IllegalStateException)
+        assertTrue(actual.size == 3)
     }
 
 }

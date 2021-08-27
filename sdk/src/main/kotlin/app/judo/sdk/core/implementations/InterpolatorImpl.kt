@@ -25,6 +25,7 @@ import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.environment.Environment.RegexPatterns
 import app.judo.sdk.core.interpolation.DateHelper
 import app.judo.sdk.core.interpolation.LowercaseHelper
+import app.judo.sdk.core.interpolation.SpaceReplacerHelper
 import app.judo.sdk.core.interpolation.UppercaseHelper
 import app.judo.sdk.core.lang.FunctionName.*
 import app.judo.sdk.core.lang.Interpolator
@@ -94,7 +95,9 @@ internal class InterpolatorImpl(
 
         val helper = when (theToken.functionName) {
             DATE -> {
-                DateHelper(logger)
+                SpaceReplacerHelper(
+                    DateHelper(logger)
+                )
             }
             UPPERCASE -> {
                 UppercaseHelper()

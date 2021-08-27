@@ -17,8 +17,6 @@
 
 package app.judo.sdk.core.lang
 
-import java.util.regex.Pattern
-
 internal class TokenizerImpl : Tokenizer {
 
     private val regularTextTextParser: Parser<Unit, Token.RegularText> = RegularTextParser()
@@ -27,8 +25,8 @@ internal class TokenizerImpl : Tokenizer {
 
     private val parser: Parser<Unit, List<Token>> = ManyParser(
         OrParser(
-            parserA = handleBarParser,
-            parserB = regularTextTextParser
+            parserA = regularTextTextParser,
+            parserB = handleBarParser
         )
     )
 
@@ -38,25 +36,6 @@ internal class TokenizerImpl : Tokenizer {
 
         cachedMappings[text]?.let {
             return it
-        }
-
-        val openPattern = Regex("\\{\\{")
-
-        val closingPattern = Regex(Pattern.quote("}}"))
-
-        val openingCount = openPattern.findAll(input = text).count()
-
-        val closingCount = closingPattern.findAll(input = text).count()
-
-        val textIsImbalanced = openingCount != closingCount
-
-        if (textIsImbalanced) {
-            throw IllegalStateException(
-                """ALL HANDLEBARS MUST BE OPENED AND CLOSED CORRECTLY
-                    |The amount of {{ must be equal to the amount of }}
-                    |{{ = $openingCount & }} = $closingCount
-                """.trimMargin()
-            )
         }
 
         val input = ParserContext(

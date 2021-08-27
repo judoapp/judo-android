@@ -1,8 +1,7 @@
 package app.judo.sdk.ui
 
 import android.content.Context
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.SimpleExoPlayer
+import app.judo.shaded.exoplayer2.SimpleExoPlayer
 import java.util.*
 
 internal object MediaPlayerInstanceManager {

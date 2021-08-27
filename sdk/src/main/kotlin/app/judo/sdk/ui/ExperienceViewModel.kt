@@ -570,19 +570,20 @@ internal class ExperienceViewModel(
         return getNodes().find { it.id == nodeID } as? T
     }
 
-    fun onAction(action: Action, screen: Screen, node: Node) {
+    fun onAction(action: Action, screenID: String, node: Node) {
         val experience = backingExperienceTree.value?.experience ?: return
+        (backingExperienceTree.value?.experience?.nodes?.find { it.id == screenID } as? Screen)?.let { screen ->
+            val dataContext = dataContextOf(
+                Keyword.USER.value to getUserInfo(),
+                Keyword.DATA.value to actionTargets[screen.id],
+                Keyword.URL.value to experience.url?.urlParams()
+            )
 
-        val dataContext = dataContextOf(
-            Keyword.USER.value to getUserInfo(),
-            Keyword.DATA.value to actionTargets[screen.id],
-            Keyword.URL.value to experience.url?.urlParams()
-        )
+            val event = Event.ActionReceived(experience, screen, node, action, dataContext)
 
-        val event = Event.ActionReceived(experience, screen, node, action, dataContext)
-
-        publishEvent(action)
-        publishEvent(event)
+            publishEvent(action)
+            publishEvent(event)
+        }
     }
 
     fun onEvent(event: Any) {

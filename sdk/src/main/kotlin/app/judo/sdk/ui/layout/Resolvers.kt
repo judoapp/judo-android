@@ -26,7 +26,7 @@ import app.judo.sdk.core.data.resolvers.StatusBarColorResolver
 import app.judo.sdk.core.extensions.NodeTree
 import app.judo.sdk.ui.layout.composition.TreeNode
 
-internal typealias ActionResolver = (Action, Screen, Node) -> Unit
+internal typealias ActionResolver = (Action, Node) -> Unit
 
 internal data class Resolvers(
     val colorResolver: ColorResolver,

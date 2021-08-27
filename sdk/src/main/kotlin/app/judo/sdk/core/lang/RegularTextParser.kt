@@ -25,7 +25,7 @@ internal class RegularTextParser<U> : AbstractParser<U, Token.RegularText>() {
         true
     }
 
-    private val textParser = ManyParser(
+    private val textParser = Many1Parser(
         AndRightParser(
             leftParser = notHandleBar,
             rightParser = anyParser

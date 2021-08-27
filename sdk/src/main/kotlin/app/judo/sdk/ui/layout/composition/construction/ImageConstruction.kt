@@ -73,7 +73,7 @@ internal fun Image.construct(context: Context, treeNode: TreeNode, resolvers: Re
     action?.let { action ->
         imageView.foreground = createRipple(context, resolvers.statusBarColorResolver.color)
         imageView.setOnClickListener {
-            treeNode.findNearestAncestor<Screen>()?.let { screen -> resolvers.actionResolver(action, screen, treeNode.value) }
+            resolvers.actionResolver(action, treeNode.value)
         }
     }
 

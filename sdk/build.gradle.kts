@@ -9,7 +9,7 @@ plugins {
 
 val judoGroupId = "app.judo"
 val judoArtifactId = "judo-sdk"
-val judoVersion = "1.3.0"
+val judoVersion = "1.3.1"
 
 android {
     compileSdkVersion(30)
@@ -59,12 +59,12 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.3")
     // endregion Jetbrains
 
-    // region Google
-    implementation ("com.google.android.exoplayer:exoplayer-core:2.12.0")
-    implementation ("com.google.android.exoplayer:exoplayer-hls:2.12.0")
-    implementation ("com.google.android.exoplayer:exoplayer-dash:2.12.0")
-    implementation ("com.google.android.exoplayer:exoplayer-ui:2.12.0")
-    // endregion Google
+    // region Judo Exoplayer
+    implementation ("app.judo.libs:exoplayer-core:2.12.0")
+    implementation ("app.judo.libs:exoplayer-hls:2.12.0")
+    implementation ("app.judo.libs:exoplayer-dash:2.12.0")
+    implementation ("app.judo.libs:exoplayer-ui:2.12.0")
+    // endregion Judo Exoplayer
 
     // region AndroidX
     implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
