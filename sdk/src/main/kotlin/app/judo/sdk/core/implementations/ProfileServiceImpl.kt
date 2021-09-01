@@ -112,6 +112,11 @@ internal class ProfileServiceImpl(
         }
         this.userId = userId
         this.traits = traits
+        CoroutineScope(mainDispatcher).launch {
+            evenBus.publish(
+                Event.Identified
+            )
+        }
         logger.d(TAG, "Identified with userId $userId")
     }
 
