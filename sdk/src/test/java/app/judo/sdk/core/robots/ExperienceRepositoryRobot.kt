@@ -48,7 +48,7 @@ internal class ExperienceRepositoryRobot : AbstractTestRobot() {
     }
 
     fun put(experience: Experience, key: String? = null): Experience? {
-        return environment.experienceRepository.put(experience, key, emptyList())
+        return environment.experienceRepository.put(experience, key, emptyList(), emptyMap())
     }
 
     suspend fun retrieveById(key: String): Experience? {

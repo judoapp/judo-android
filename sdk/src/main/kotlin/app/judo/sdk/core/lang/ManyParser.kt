@@ -25,6 +25,19 @@ internal class ManyParser<U, out O>(
     private val parser: Parser<U, O>,
 ) : AbstractParser<U, List<O>>() {
 
+    override fun parse(input: ParserContext<U>): Result<U, List<O>> {
+
+        if (input.text.isEmpty() || input.position > input.text.lastIndex)
+            return Parser.Result.Success(
+                match = Parser.Match(
+                    emptyList(),
+                    input
+                )
+            )
+
+        return parseNonEmptyInput(input)
+    }
+
     override fun parseNonEmptyInput(input: ParserContext<U>): Result<U, List<O>> {
 
         return when (val initial = parser.parse(input)) {

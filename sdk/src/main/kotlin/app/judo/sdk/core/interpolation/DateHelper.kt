@@ -26,9 +26,11 @@ internal class DateHelper(
         DateTimeFormatter.ISO_TIME
     }
 
-    override fun invoke(data: Any?, argument: String?): String {
+    override fun invoke(data: Any, arguments: List<String>?): String {
 
         val input = "$data"
+
+        val argument = arguments?.firstOrNull()
 
         return try {
 

@@ -32,8 +32,8 @@ internal sealed class Token {
         override val value: String,
         val keys: List<String> = emptyList(),
         val keyword: Keyword = Keyword.DATA,
-        val functionName: FunctionName? = null,
-        val functionArgument: String? = null,
+        val helperName: HelperName? = null,
+        val helperArguments: List<String>? = null,
         override val position: Int = 0
     ) : Token()
 }

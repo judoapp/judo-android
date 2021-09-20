@@ -639,4 +639,119 @@ internal class RectangleSizingTests {
         expectedWidth shouldEqual actualWidth
         expectedHeight shouldEqual actualHeight
     }
+
+    @Test
+    fun `given value constraints rectangle frame minHeight and maxHeight sizing is correct`() {
+        // Arrange
+        val expectedHeight = 20f
+        val expectedWidth = 300f
+        val rectangle = createRectangleWithFrame(Frame(minHeight = 20f, maxHeight = MaxHeight.Finite(20f), alignment = Alignment.CENTER))
+
+        val parentConstraints = Dimensions(Dimension.Value(300f), Dimension.Value(300f))
+
+        // Act
+        rectangle.computeSize(mockContext, screenNode, parentConstraints)
+        val actualHeight = rectangle.sizeAndCoordinates.height
+        val actualWidth = rectangle.sizeAndCoordinates.width
+
+        // Assert
+        expectedWidth shouldEqual actualWidth
+        expectedHeight shouldEqual actualHeight
+    }
+
+    @Test
+    fun `given value constraints rectangle frame minHeight and maxHeight sizing is correct 2`() {
+        // Arrange
+        val expectedHeight = 80f
+        val expectedWidth = 300f
+        val rectangle = createRectangleWithFrame(Frame(minHeight = 20f, maxHeight = MaxHeight.Finite(80f), alignment = Alignment.CENTER))
+
+        val parentConstraints = Dimensions(Dimension.Value(300f), Dimension.Value(300f))
+
+        // Act
+        rectangle.computeSize(mockContext, screenNode, parentConstraints)
+        val actualHeight = rectangle.sizeAndCoordinates.height
+        val actualWidth = rectangle.sizeAndCoordinates.width
+
+        // Assert
+        expectedWidth shouldEqual actualWidth
+        expectedHeight shouldEqual actualHeight
+    }
+
+    @Test
+    fun `given value constraints rectangle frame minHeight and infinite maxHeight sizing is correct`() {
+        // Arrange
+        val expectedHeight = 300f
+        val expectedWidth = 300f
+        val rectangle = createRectangleWithFrame(Frame(minHeight = 20f, maxHeight = MaxHeight.Infinite(), alignment = Alignment.CENTER))
+
+        val parentConstraints = Dimensions(Dimension.Value(300f), Dimension.Value(300f))
+
+        // Act
+        rectangle.computeSize(mockContext, screenNode, parentConstraints)
+        val actualHeight = rectangle.sizeAndCoordinates.height
+        val actualWidth = rectangle.sizeAndCoordinates.width
+
+        // Assert
+        expectedWidth shouldEqual actualWidth
+        expectedHeight shouldEqual actualHeight
+    }
+
+    @Test
+    fun `given value constraints rectangle frame minWidth and maxWidth sizing is correct`() {
+        // Arrange
+        val expectedHeight = 300f
+        val expectedWidth = 20f
+        val rectangle = createRectangleWithFrame(Frame(minWidth = 20f, maxWidth = MaxWidth.Finite(20f), alignment = Alignment.CENTER))
+
+        val parentConstraints = Dimensions(Dimension.Value(300f), Dimension.Value(300f))
+
+        // Act
+        rectangle.computeSize(mockContext, screenNode, parentConstraints)
+        val actualHeight = rectangle.sizeAndCoordinates.height
+        val actualWidth = rectangle.sizeAndCoordinates.width
+
+        // Assert
+        expectedWidth shouldEqual actualWidth
+        expectedHeight shouldEqual actualHeight
+    }
+
+    @Test
+    fun `given value constraints rectangle frame minWidth and maxWidth sizing is correct 2`() {
+        // Arrange
+        val expectedHeight = 300f
+        val expectedWidth = 80f
+        val rectangle = createRectangleWithFrame(Frame(minWidth = 20f, maxWidth = MaxWidth.Finite(80f), alignment = Alignment.CENTER))
+
+        val parentConstraints = Dimensions(Dimension.Value(300f), Dimension.Value(300f))
+
+        // Act
+        rectangle.computeSize(mockContext, screenNode, parentConstraints)
+        val actualHeight = rectangle.sizeAndCoordinates.height
+        val actualWidth = rectangle.sizeAndCoordinates.width
+
+        // Assert
+        expectedWidth shouldEqual actualWidth
+        expectedHeight shouldEqual actualHeight
+    }
+
+    @Test
+    fun `given value constraints rectangle frame minWidth and infinite maxWidth sizing is correct`() {
+        // Arrange
+        val expectedHeight = 300f
+        val expectedWidth = 300f
+        val rectangle = createRectangleWithFrame(Frame(minWidth = 20f, maxWidth = MaxWidth.Infinite(), alignment = Alignment.CENTER))
+
+        val parentConstraints = Dimensions(Dimension.Value(300f), Dimension.Value(300f))
+
+        // Act
+        rectangle.computeSize(mockContext, screenNode, parentConstraints)
+        val actualHeight = rectangle.sizeAndCoordinates.height
+        val actualWidth = rectangle.sizeAndCoordinates.width
+
+        // Assert
+        expectedWidth shouldEqual actualWidth
+        expectedHeight shouldEqual actualHeight
+    }
+
 }

@@ -336,4 +336,118 @@ internal class WebSizingTests {
         expectedWidth shouldEqual actualWidth
         expectedHeight shouldEqual actualHeight
     }
+
+    @Test
+    fun `given value constraints web frame minHeight and maxHeight sizing is correct`() {
+        // Arrange
+        val expectedHeight = 20f
+        val expectedWidth = 300f
+        val web = createWebWithFrame(Frame(minHeight = 20f, maxHeight = MaxHeight.Finite(20f), alignment = Alignment.CENTER))
+
+        val parentConstraints = Dimensions(Dimension.Value(300f), Dimension.Value(300f))
+
+        // Act
+        web.computeSize(mockContext, screenNode, parentConstraints)
+        val actualHeight = web.sizeAndCoordinates.height
+        val actualWidth = web.sizeAndCoordinates.width
+
+        // Assert
+        expectedWidth shouldEqual actualWidth
+        expectedHeight shouldEqual actualHeight
+    }
+
+    @Test
+    fun `given value constraints web frame minHeight and maxHeight sizing is correct 2`() {
+        // Arrange
+        val expectedHeight = 80f
+        val expectedWidth = 300f
+        val web = createWebWithFrame(Frame(minHeight = 20f, maxHeight = MaxHeight.Finite(80f), alignment = Alignment.CENTER))
+
+        val parentConstraints = Dimensions(Dimension.Value(300f), Dimension.Value(300f))
+
+        // Act
+        web.computeSize(mockContext, screenNode, parentConstraints)
+        val actualHeight = web.sizeAndCoordinates.height
+        val actualWidth = web.sizeAndCoordinates.width
+
+        // Assert
+        expectedWidth shouldEqual actualWidth
+        expectedHeight shouldEqual actualHeight
+    }
+
+    @Test
+    fun `given value constraints web frame minHeight and infinite maxHeight sizing is correct`() {
+        // Arrange
+        val expectedHeight = 300f
+        val expectedWidth = 300f
+        val web = createWebWithFrame(Frame(minHeight = 20f, maxHeight = MaxHeight.Infinite(), alignment = Alignment.CENTER))
+
+        val parentConstraints = Dimensions(Dimension.Value(300f), Dimension.Value(300f))
+
+        // Act
+        web.computeSize(mockContext, screenNode, parentConstraints)
+        val actualHeight = web.sizeAndCoordinates.height
+        val actualWidth = web.sizeAndCoordinates.width
+
+        // Assert
+        expectedWidth shouldEqual actualWidth
+        expectedHeight shouldEqual actualHeight
+    }
+
+    @Test
+    fun `given value constraints web frame minWidth and maxWidth sizing is correct`() {
+        // Arrange
+        val expectedHeight = 300f
+        val expectedWidth = 20f
+        val web = createWebWithFrame(Frame(minWidth = 20f, maxWidth = MaxWidth.Finite(20f), alignment = Alignment.CENTER))
+
+        val parentConstraints = Dimensions(Dimension.Value(300f), Dimension.Value(300f))
+
+        // Act
+        web.computeSize(mockContext, screenNode, parentConstraints)
+        val actualHeight = web.sizeAndCoordinates.height
+        val actualWidth = web.sizeAndCoordinates.width
+
+        // Assert
+        expectedWidth shouldEqual actualWidth
+        expectedHeight shouldEqual actualHeight
+    }
+
+    @Test
+    fun `given value constraints web frame minWidth and maxWidth sizing is correct 2`() {
+        // Arrange
+        val expectedHeight = 300f
+        val expectedWidth = 80f
+        val web = createWebWithFrame(Frame(minWidth = 20f, maxWidth = MaxWidth.Finite(80f), alignment = Alignment.CENTER))
+
+        val parentConstraints = Dimensions(Dimension.Value(300f), Dimension.Value(300f))
+
+        // Act
+        web.computeSize(mockContext, screenNode, parentConstraints)
+        val actualHeight = web.sizeAndCoordinates.height
+        val actualWidth = web.sizeAndCoordinates.width
+
+        // Assert
+        expectedWidth shouldEqual actualWidth
+        expectedHeight shouldEqual actualHeight
+    }
+
+    @Test
+    fun `given value constraints web frame minWidth and infinite maxWidth sizing is correct`() {
+        // Arrange
+        val expectedHeight = 300f
+        val expectedWidth = 300f
+        val web = createWebWithFrame(Frame(minWidth = 20f, maxWidth = MaxWidth.Infinite(), alignment = Alignment.CENTER))
+
+        val parentConstraints = Dimensions(Dimension.Value(300f), Dimension.Value(300f))
+
+        // Act
+        web.computeSize(mockContext, screenNode, parentConstraints)
+        val actualHeight = web.sizeAndCoordinates.height
+        val actualWidth = web.sizeAndCoordinates.width
+
+        // Assert
+        expectedWidth shouldEqual actualWidth
+        expectedHeight shouldEqual actualHeight
+    }
 }

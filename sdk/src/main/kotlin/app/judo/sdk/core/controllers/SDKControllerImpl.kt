@@ -124,11 +124,12 @@ internal class SDKControllerImpl : SDKController {
         }
     }
 
-    override fun loadExperienceIntoMemory(experience: Experience, authorizers: List<Authorizer>) {
+    override fun loadExperienceIntoMemory(experience: Experience, authorizers: List<Authorizer>, urlQueryParameters: Map<String, String>) {
         if (this::environment.isInitialized) {
             environment.experienceRepository.put(
                 experience,
-                authorizers = authorizers
+                authorizers = authorizers,
+                urlQueryParams = urlQueryParameters
             )
         }
     }

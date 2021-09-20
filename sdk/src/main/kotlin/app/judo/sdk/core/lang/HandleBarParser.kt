@@ -29,27 +29,36 @@ internal class HandleBarParser<U> : AbstractParser<U, Token.HandleBarExpression>
     private val maybeWhitespace: Parser<Token.HandleBarExpression, String> =
         WhitespaceParser()
 
-    // Puts the function name and argument into the state then maps the value back to a String
-    private val maybeAFunctionName: Parser<Token.HandleBarExpression, String> =
-        MapParser(MaybeParser(MapStateParser(FunctionName.values().toList()
-            .map<FunctionName, Parser<Token.HandleBarExpression, Pair<String, FunctionName>>> { functionName ->
-                MapParser(StringParser(functionName.value)) { value ->
-                    value to functionName
+    // Reduce the helper names into a single Parser
+    private val helperNameParser: Parser<Token.HandleBarExpression, Pair<String, HelperName>> =
+        HelperName.values().toList()
+            .map<HelperName, Parser<Token.HandleBarExpression, Pair<String, HelperName>>> { helperName ->
+                MapParser(StringParser(helperName.value)) { value ->
+                    value to helperName
                 }
             }.reduce { acc, parser ->
                 OrParser(acc, parser)
-            }) { oldState, (value, functionName) ->
+            }
 
-            oldState.copy(
-                functionName = functionName
-            ) to value
+    // Puts the helper name and argument into the state then maps the value back to a String
+    private val maybeAHelperName: Parser<Token.HandleBarExpression, String> =
+        MapParser(
+            MaybeParser(
+                MapStateParser(
+                    helperNameParser
+                ) { oldState, (value, helperName) ->
 
-        })
-        ) { functionName ->
-            functionName ?: ""
+                    oldState.copy(
+                        helperName = helperName
+                    ) to value
+
+                }
+            )
+        ) { helperName ->
+            helperName ?: ""
         }
 
-    // Puts the function name and argument into the state then maps the value back to a String
+    // Puts the helper name and argument into the state then maps the value back to a String
     private val aKeyword: Parser<Token.HandleBarExpression, String> =
         MapStateParser(Keyword.values().toList()
             .map<Keyword, Parser<Token.HandleBarExpression, Pair<String, Keyword>>> { functionName ->
@@ -91,31 +100,37 @@ internal class HandleBarParser<U> : AbstractParser<U, Token.HandleBarExpression>
     // TODO: 2021-05-23 Replace with StringLiteralParser
     private val quoteParser = CharParser<Token.HandleBarExpression>('"')
 
-    private val anyCharParser = IdentifierParser<Token.HandleBarExpression>(
-        listOf('"')
+    private val anythingButAQuotationParser = IdentifierParser<Token.HandleBarExpression>(
+        invalidCharacters = listOf('"')
     )
 
-    private val maybeAFunctionArgument: Parser<Token.HandleBarExpression, String> = MapParser(
-        MaybeParser(
-            MapStateParser(
-                BetweenParser(
-                    quoteParser,
-                    anyCharParser,
-                    quoteParser
-                )
-            ) { oldState, argument ->
+    private val helperArgument: Parser<Token.HandleBarExpression, String> = MapParser(
+        MapStateParser(
+            BetweenParser(
+                quoteParser,
+                anythingButAQuotationParser,
+                quoteParser
+            )
+        ) { oldState, argument ->
 
-                val newState = oldState.copy(
-                    functionArgument = argument
-                )
+            val newState = oldState.copy(
+                helperArguments = oldState.helperArguments?.plus(argument) ?: listOf(argument)
+            )
 
-                val newValue = "\"$argument\""
+            val newValue = "\"$argument\""
 
-                newState to newValue
-            }
-        )
+            newState to newValue
+        }
     ) { argument ->
-        argument ?: ""
+        argument
+    }
+
+    private val manyHelperArguments: Parser<Token.HandleBarExpression, String> = MapParser(
+        MaybeParser(
+            Separator1Parser(helperArgument, CharParser(' '))
+        )
+    ) { names ->
+        names?.joinToString(" ") ?: ""
     }
 
     private val twoRightBrackets = StringParser<Token.HandleBarExpression>("}}")
@@ -124,13 +139,13 @@ internal class HandleBarParser<U> : AbstractParser<U, Token.HandleBarExpression>
         SequenceParser(
             twoLeftBrackets,
             maybeWhitespace,
-            maybeAFunctionName,
+            maybeAHelperName,
             maybeWhitespace,
             aKeyword,
             maybeADot,
             maybeADotSeparatedListOfKeys,
             maybeWhitespace,
-            maybeAFunctionArgument,
+            manyHelperArguments,
             maybeWhitespace,
             twoRightBrackets
         )

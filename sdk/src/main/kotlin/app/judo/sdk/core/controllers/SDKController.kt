@@ -50,7 +50,7 @@ internal interface SDKController {
 
     fun setPushToken(fcmToken: String)
 
-    fun loadExperienceIntoMemory(experience: Experience, authorizers: List<Authorizer>)
+    fun loadExperienceIntoMemory(experience: Experience, authorizers: List<Authorizer>, urlQueryParameters: Map<String, String>)
 
     fun identify(userId: String?, traits: Map<String, Any>)
 

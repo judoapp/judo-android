@@ -17,6 +17,7 @@
 
 package app.judo.sdk.core.implementations
 
+import app.judo.sdk.BuildConfig
 import app.judo.sdk.api.models.Experience
 import app.judo.sdk.core.data.JsonParser
 import app.judo.sdk.core.services.ExperienceService
@@ -26,6 +27,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Query
 import retrofit2.http.Url
 import java.io.File
 
@@ -49,7 +51,8 @@ internal class ExperienceServiceImpl(
         @GET
         suspend fun getExperience(
             @Url aURL: String,
-            @Header("Cache-Control") cacheControlHeader: String?
+            @Header("Cache-Control") cacheControlHeader: String?,
+            @Query("apiVersion") apiVersion: Int = BuildConfig.API_VERSION,
         ): Response<Experience>
     }
 

@@ -25,9 +25,10 @@ import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.environment.Environment.RegexPatterns
 import app.judo.sdk.core.interpolation.DateHelper
 import app.judo.sdk.core.interpolation.LowercaseHelper
+import app.judo.sdk.core.interpolation.ReplaceHelper
 import app.judo.sdk.core.interpolation.SpaceReplacerHelper
 import app.judo.sdk.core.interpolation.UppercaseHelper
-import app.judo.sdk.core.lang.FunctionName.*
+import app.judo.sdk.core.lang.HelperName.*
 import app.judo.sdk.core.lang.Interpolator
 import app.judo.sdk.core.lang.Token
 import app.judo.sdk.core.lang.Tokenizer
@@ -44,7 +45,10 @@ internal class InterpolatorImpl(
         private const val TAG = "InterpolatorImpl"
     }
 
-    override fun interpolate(theTextToInterpolate: String): String? {
+    override fun interpolate(theTextToInterpolate: String): String? =
+        interpolate(theTextToInterpolate, dataContext)
+
+    override fun interpolate(theTextToInterpolate: String, dataContext: DataContext): String? {
 
         val logger = loggerSupplier()
 
@@ -70,7 +74,7 @@ internal class InterpolatorImpl(
                     val data = dataContext.fromKeyPath(keyPath) ?: return null
                     if (data == "null") return null
                     if (data == JSONObject.NULL) return null
-                    val result = executeFunction(theToken, data, logger)
+                    val result = executeHelper(theToken, data, logger)
                     theToken.copy(value = result)
                 }
 
@@ -81,7 +85,7 @@ internal class InterpolatorImpl(
         }.joinToString(separator = "") { it.value }
     }
 
-    private fun executeFunction(
+    private fun executeHelper(
         theToken: Token.HandleBarExpression,
         data: Any?,
         logger: Logger?
@@ -89,25 +93,28 @@ internal class InterpolatorImpl(
 
         if (data == null) return ""
 
-        if (theToken.functionName == null) return "$data"
+        if (theToken.helperName == null) return "$data"
 
-        val argument = theToken.functionArgument
+        val arguments = theToken.helperArguments
 
-        val helper = when (theToken.functionName) {
+        val helper: Interpolator.Helper = when (theToken.helperName) {
             DATE -> {
                 SpaceReplacerHelper(
                     DateHelper(logger)
                 )
             }
-            UPPERCASE -> {
-                UppercaseHelper()
-            }
             LOWERCASE -> {
                 LowercaseHelper()
             }
+            UPPERCASE -> {
+                UppercaseHelper()
+            }
+            REPLACE -> {
+                ReplaceHelper()
+            }
         }
 
-        return helper(data, argument)
+        return helper(data, arguments)
 
     }
 

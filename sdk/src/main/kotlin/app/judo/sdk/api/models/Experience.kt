@@ -34,7 +34,7 @@ data class Experience(
 ) : Visitable {
 
     @Transient
-    internal var url: String? = null
+    internal var urlQueryParameters: Map<String, String>? = null
 
     /**
      * Get all the [NODE_TYPE] nodes in this Experience if it has any.

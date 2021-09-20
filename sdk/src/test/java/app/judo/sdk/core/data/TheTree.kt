@@ -2,7 +2,10 @@ package app.judo.sdk.core.data
 
 import app.judo.sdk.api.models.Conditional
 import app.judo.sdk.core.extensions.*
+import app.judo.sdk.core.implementations.InterpolatorImpl
 import app.judo.sdk.core.lang.Keyword
+import app.judo.sdk.core.lang.ProtoInterpolator
+import app.judo.sdk.core.lang.TokenizerImpl
 import app.judo.sdk.utils.TestJSON
 import org.junit.Assert
 import org.junit.Test
@@ -29,7 +32,10 @@ class TheTree {
 
             if (node is Conditional) {
 
-                val resolution = node.resolve(dataContext)
+                val resolution = node.resolve(dataContext, InterpolatorImpl(
+                    tokenizer = TokenizerImpl(),
+                    dataContext = dataContext
+                ))
                 println("Pruning ${node.name}: $resolution")
 
                 return@prune resolution

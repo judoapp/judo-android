@@ -342,4 +342,118 @@ internal class CarouselSizingTests {
         expectedWidth shouldEqual actualWidth
         expectedHeight shouldEqual actualHeight
     }
+
+    @Test
+    fun `given value constraints carousel frame minHeight and maxHeight sizing is correct`() {
+        // Arrange
+        val expectedHeight = 20f
+        val expectedWidth = 300f
+        val carousel = createCarouselWithFrame(Frame(minHeight = 20f, maxHeight = MaxHeight.Finite(20f), alignment = Alignment.CENTER))
+
+        val parentConstraints = Dimensions(Dimension.Value(300f), Dimension.Value(300f))
+
+        // Act
+        carousel.computeSize(mockContext, screenNode, parentConstraints)
+        val actualHeight = carousel.sizeAndCoordinates.height
+        val actualWidth = carousel.sizeAndCoordinates.width
+
+        // Assert
+        expectedWidth shouldEqual actualWidth
+        expectedHeight shouldEqual actualHeight
+    }
+
+    @Test
+    fun `given value constraints carousel frame minHeight and maxHeight sizing is correct 2`() {
+        // Arrange
+        val expectedHeight = 80f
+        val expectedWidth = 300f
+        val carousel = createCarouselWithFrame(Frame(minHeight = 20f, maxHeight = MaxHeight.Finite(80f), alignment = Alignment.CENTER))
+
+        val parentConstraints = Dimensions(Dimension.Value(300f), Dimension.Value(300f))
+
+        // Act
+        carousel.computeSize(mockContext, screenNode, parentConstraints)
+        val actualHeight = carousel.sizeAndCoordinates.height
+        val actualWidth = carousel.sizeAndCoordinates.width
+
+        // Assert
+        expectedWidth shouldEqual actualWidth
+        expectedHeight shouldEqual actualHeight
+    }
+
+    @Test
+    fun `given value constraints carousel frame minHeight and infinite maxHeight sizing is correct`() {
+        // Arrange
+        val expectedHeight = 300f
+        val expectedWidth = 300f
+        val carousel = createCarouselWithFrame(Frame(minHeight = 20f, maxHeight = MaxHeight.Infinite(), alignment = Alignment.CENTER))
+
+        val parentConstraints = Dimensions(Dimension.Value(300f), Dimension.Value(300f))
+
+        // Act
+        carousel.computeSize(mockContext, screenNode, parentConstraints)
+        val actualHeight = carousel.sizeAndCoordinates.height
+        val actualWidth = carousel.sizeAndCoordinates.width
+
+        // Assert
+        expectedWidth shouldEqual actualWidth
+        expectedHeight shouldEqual actualHeight
+    }
+
+    @Test
+    fun `given value constraints carousel frame minWidth and maxWidth sizing is correct`() {
+        // Arrange
+        val expectedHeight = 300f
+        val expectedWidth = 20f
+        val carousel = createCarouselWithFrame(Frame(minWidth = 20f, maxWidth = MaxWidth.Finite(20f), alignment = Alignment.CENTER))
+
+        val parentConstraints = Dimensions(Dimension.Value(300f), Dimension.Value(300f))
+
+        // Act
+        carousel.computeSize(mockContext, screenNode, parentConstraints)
+        val actualHeight = carousel.sizeAndCoordinates.height
+        val actualWidth = carousel.sizeAndCoordinates.width
+
+        // Assert
+        expectedWidth shouldEqual actualWidth
+        expectedHeight shouldEqual actualHeight
+    }
+
+    @Test
+    fun `given value constraints carousel frame minWidth and maxWidth sizing is correct 2`() {
+        // Arrange
+        val expectedHeight = 300f
+        val expectedWidth = 80f
+        val carousel = createCarouselWithFrame(Frame(minWidth = 20f, maxWidth = MaxWidth.Finite(80f), alignment = Alignment.CENTER))
+
+        val parentConstraints = Dimensions(Dimension.Value(300f), Dimension.Value(300f))
+
+        // Act
+        carousel.computeSize(mockContext, screenNode, parentConstraints)
+        val actualHeight = carousel.sizeAndCoordinates.height
+        val actualWidth = carousel.sizeAndCoordinates.width
+
+        // Assert
+        expectedWidth shouldEqual actualWidth
+        expectedHeight shouldEqual actualHeight
+    }
+
+    @Test
+    fun `given value constraints carousel frame minWidth and infinite maxWidth sizing is correct`() {
+        // Arrange
+        val expectedHeight = 300f
+        val expectedWidth = 300f
+        val carousel = createCarouselWithFrame(Frame(minWidth = 20f, maxWidth = MaxWidth.Infinite(), alignment = Alignment.CENTER))
+
+        val parentConstraints = Dimensions(Dimension.Value(300f), Dimension.Value(300f))
+
+        // Act
+        carousel.computeSize(mockContext, screenNode, parentConstraints)
+        val actualHeight = carousel.sizeAndCoordinates.height
+        val actualWidth = carousel.sizeAndCoordinates.width
+
+        // Assert
+        expectedWidth shouldEqual actualWidth
+        expectedHeight shouldEqual actualHeight
+    }
 }

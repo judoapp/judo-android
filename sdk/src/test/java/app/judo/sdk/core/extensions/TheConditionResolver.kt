@@ -21,7 +21,10 @@ import app.judo.sdk.api.models.Condition
 import app.judo.sdk.api.models.Predicate
 import app.judo.sdk.core.data.JsonParser
 import app.judo.sdk.core.data.dataContextOf
+import app.judo.sdk.core.implementations.InterpolatorImpl
+import app.judo.sdk.core.lang.TokenizerImpl
 import app.judo.sdk.utils.TestJSON
+import app.judo.sdk.utils.TestLoggerImpl
 import org.junit.Assert
 
 import org.junit.Test
@@ -31,7 +34,8 @@ class TheConditionResolver {
     @Test
     fun resolve() {
 
-        val condition = JsonParser.moshi.adapter(Condition::class.java).fromJson(TestJSON.condition)!!
+        val condition =
+            JsonParser.moshi.adapter(Condition::class.java).fromJson(TestJSON.condition)!!
 
         val dataContext = dataContextOf(
             "data" to 1.0
@@ -98,5 +102,36 @@ class TheConditionResolver {
         )
 
         Assert.assertFalse(condition.resolve(dataContext))
+    }
+
+    @Test
+    fun `interpolates the right hand side value`() {
+        val condition = Condition("data", Predicate.EQUALS, """{{ user.firstName }}""")
+
+        val userData = mapOf(
+            "firstName" to "Jane"
+        )
+
+        val dataContext = dataContextOf(
+            "data" to "Jane",
+            "user" to userData
+        )
+
+        val interpolator = InterpolatorImpl(
+            tokenizer = TokenizerImpl(),
+            loggerSupplier = { TestLoggerImpl() },
+            dataContext = dataContext
+        )
+
+        val rhs = interpolator.interpolate(
+            theTextToInterpolate = condition.value as String,
+            dataContext = dataContext
+        )
+
+        Assert.assertTrue(
+            condition.resolve(
+                dataContext, interpolator
+            )
+        )
     }
 }

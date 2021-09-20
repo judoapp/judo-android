@@ -25,7 +25,7 @@ class FakeFontResourceService(
     private val defaultTypeface: Typeface = Typeface.create("sans-serif", Typeface.NORMAL),
 ) : FontResourceService {
 
-    override suspend fun getTypefacesFor(fonts: List<FontResource>, ignoreCache: Boolean): Map<String, Typeface> {
+    override suspend fun getTypefacesFor(fonts: List<FontResource>): Map<String, Typeface> {
         val result = mutableMapOf<String, Typeface>()
 
         fonts.forEach { resource ->

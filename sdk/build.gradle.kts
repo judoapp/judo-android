@@ -9,7 +9,8 @@ plugins {
 
 val judoGroupId = "app.judo"
 val judoArtifactId = "judo-sdk"
-val judoVersion = "1.3.2"
+val judoVersion = "1.3.3"
+val judoApiVersion = "1"
 
 android {
     compileSdkVersion(30)
@@ -18,6 +19,7 @@ android {
         minSdkVersion(19)
         multiDexEnabled = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("int", "API_VERSION", judoApiVersion)
     }
 
     buildTypes {

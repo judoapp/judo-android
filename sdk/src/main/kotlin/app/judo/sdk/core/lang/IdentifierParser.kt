@@ -18,7 +18,7 @@
 package app.judo.sdk.core.lang
 
 internal class IdentifierParser<U>(
-    private val invalidCharacter: List<Char> = emptyList()
+    private val invalidCharacters: List<Char> = emptyList()
 ) : AbstractParser<U, String>() {
 
     constructor(
@@ -26,7 +26,7 @@ internal class IdentifierParser<U>(
     ) : this(invalidCharacters.toList())
 
     private val validIdentifierCharacterParser = PredicateParser<U> { theCharacter ->
-        !invalidCharacter.contains(theCharacter)
+        !invalidCharacters.contains(theCharacter)
     }
 
     private val parser = MapParser(

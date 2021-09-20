@@ -51,7 +51,7 @@ internal class NoOpSDKController : SDKController {
     }
 
 
-    override fun loadExperienceIntoMemory(experience: Experience, authorizers: List<Authorizer>) {
+    override fun loadExperienceIntoMemory(experience: Experience, authorizers: List<Authorizer>, urlQueryParameters: Map<String, String>) {
         /* no-op */
     }
 

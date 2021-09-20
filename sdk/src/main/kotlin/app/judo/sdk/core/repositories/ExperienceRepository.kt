@@ -35,9 +35,10 @@ internal interface ExperienceRepository {
      * The judo is associated to a given [key] if no key is passed
      * then the [Experience.id] is used instead.
      * @param authorizers A list of [Authorizer]s to apply in lieu of the authorizers specified by a developer in [Judo.Configuration].
+     * @param urlQueryParams A map of url query parameters to apply for in memory experiences
      * @return The previous Experience associated to the [key] or null if there is none.
     * */
-    fun put(experience: Experience, key: String? = null, authorizers: List<Authorizer>): Experience?
+    fun put(experience: Experience, key: String? = null, authorizers: List<Authorizer>, urlQueryParams: Map<String, String>): Experience?
 
     /**
      * Returns the value corresponding to the given [key], or `null` if such a key is not present.
@@ -47,5 +48,7 @@ internal interface ExperienceRepository {
     fun remove(key: String)
 
     fun retrieveAuthorizersOverrideById(key: String): List<Authorizer>?
+
+    fun retrieveUrlQueryParametersById(key: String): Map<String, String>?
 }
 

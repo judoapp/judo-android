@@ -17,6 +17,7 @@
 
 package app.judo.sdk.core.implementations
 
+import app.judo.sdk.BuildConfig
 import app.judo.sdk.core.data.SyncResponse
 import app.judo.sdk.core.services.SyncService
 import okhttp3.OkHttpClient
@@ -24,6 +25,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Query
 import retrofit2.http.Url
 
 internal class SyncServiceImpl(
@@ -37,7 +39,10 @@ internal class SyncServiceImpl(
 
     interface SyncAPI {
         @GET
-        suspend fun getSync(@Url aURL: String): Response<SyncResponse>
+        suspend fun getSync(
+            @Url aURL: String,
+            @Query("apiVersion") apiVersion: Int = BuildConfig.API_VERSION
+        ): Response<SyncResponse>
     }
 
     private val api by lazy {

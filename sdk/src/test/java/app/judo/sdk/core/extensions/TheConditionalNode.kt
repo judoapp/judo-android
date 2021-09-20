@@ -3,7 +3,9 @@ package app.judo.sdk.core.extensions
 import app.judo.sdk.api.models.Conditional
 import app.judo.sdk.core.data.JsonParser
 import app.judo.sdk.core.data.dataContextOf
+import app.judo.sdk.core.implementations.InterpolatorImpl
 import app.judo.sdk.core.lang.Keyword
+import app.judo.sdk.core.lang.TokenizerImpl
 import app.judo.sdk.utils.TestJSON
 import org.junit.Assert
 import org.junit.Assert.*
@@ -22,7 +24,10 @@ class TheConditionalNode {
         )
 
         // Act
-        val actual = conditional.resolve(dataContext = dataContext)
+        val actual = conditional.resolve(dataContext = dataContext, interpolator = InterpolatorImpl(
+            tokenizer = TokenizerImpl(),
+            dataContext = dataContext
+        ))
 
         // Assert
         assertTrue(actual)

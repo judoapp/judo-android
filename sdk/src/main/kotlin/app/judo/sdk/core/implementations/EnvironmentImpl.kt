@@ -137,12 +137,9 @@ internal class EnvironmentImpl(
     )
 
     private val experienceRepositoryImpl = ExperienceRepositoryImpl(
-        experienceServiceSupplier = { experienceService },
-        fontResourceServiceSupplier = {
-            fontResourceService
-        }
+        experienceServiceSupplier = { experienceService }
     ) {
-        logger
+        fontResourceService
     }
 
     override var experienceRepository: ExperienceRepository = experienceRepositoryImpl

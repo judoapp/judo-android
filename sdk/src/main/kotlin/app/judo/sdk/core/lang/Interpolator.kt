@@ -17,12 +17,16 @@
 
 package app.judo.sdk.core.lang
 
-fun interface Interpolator {
+import app.judo.sdk.core.data.DataContext
+
+interface Interpolator {
 
     fun interface Helper {
-        operator fun invoke(data: Any?, argument: String?): String
+        operator fun invoke(data: Any, arguments: List<String>?): String
     }
 
     fun interpolate(theTextToInterpolate: String): String?
+
+    fun interpolate(theTextToInterpolate: String, dataContext: DataContext): String?
 
 }

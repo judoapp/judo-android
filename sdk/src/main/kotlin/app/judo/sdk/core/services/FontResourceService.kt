@@ -22,6 +22,6 @@ import app.judo.sdk.api.models.FontResource
 
 internal interface FontResourceService {
 
-    suspend fun getTypefacesFor(fonts: List<FontResource>, ignoreCache: Boolean = false): Map<String, Typeface>
+    suspend fun getTypefacesFor(fonts: List<FontResource>): Map<String, Typeface>
 
 }

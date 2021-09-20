@@ -17,6 +17,7 @@
 
 package app.judo.sdk.utils
 
+import app.judo.sdk.BuildConfig
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
@@ -73,7 +74,7 @@ internal class TestServerDispatcher(
 
         when (val pathAndCode = request.path to code()) {
 
-            "/test1.judo.app/sync" to 200 -> {
+            "/test1.judo.app/sync?apiVersion=${BuildConfig.API_VERSION}" to 200 -> {
                 response.apply {
                     setResponseCode(pathAndCode.second)
                     setBody(TestJSON.syncResponse)
@@ -81,7 +82,7 @@ internal class TestServerDispatcher(
                 onResponse(response to TestJSON.syncResponse)
             }
 
-            "/test1.judo.app/testexperience" to 200 -> {
+            "/test1.judo.app/testexperience?apiVersion=${BuildConfig.API_VERSION}" to 200 -> {
                 response.apply {
                     setResponseCode(pathAndCode.second)
                     setBody(TestJSON.experience)
@@ -89,7 +90,7 @@ internal class TestServerDispatcher(
                 onResponse(response to TestJSON.experience)
             }
 
-            "/test1.judo.app/datasourcetestexperience" to 200 -> {
+            "/test1.judo.app/datasourcetestexperience?apiVersion=${BuildConfig.API_VERSION}" to 200 -> {
                 response.apply {
                     setResponseCode(pathAndCode.second)
                     setBody(TestJSON.data_source_experience_single_screen)
@@ -97,7 +98,7 @@ internal class TestServerDispatcher(
                 onResponse(response to TestJSON.data_source_experience_single_screen)
             }
 
-            "/test1.judo.app/userdatatestexperience" to 200 -> {
+            "/test1.judo.app/userdatatestexperience?apiVersion=${BuildConfig.API_VERSION}" to 200 -> {
                 response.apply {
                     setResponseCode(pathAndCode.second)
                     setBody(TestJSON.user_data_experience)
@@ -105,14 +106,14 @@ internal class TestServerDispatcher(
                 onResponse(response to TestJSON.user_data_experience)
             }
 
-            "/test1.judo.app/testexperience" to 401 -> {
+            "/test1.judo.app/testexperience?apiVersion=${BuildConfig.API_VERSION}" to 401 -> {
                 response.apply {
                     setResponseCode(pathAndCode.second)
                 }
                 onResponse(response to "")
             }
 
-            "/test1.judo.app/testexperience" to 201 -> {
+            "/test1.judo.app/testexperience?apiVersion=${BuildConfig.API_VERSION}" to 201 -> {
                 response.apply {
                     setResponseCode(pathAndCode.second)
                 }

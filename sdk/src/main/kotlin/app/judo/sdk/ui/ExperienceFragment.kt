@@ -112,6 +112,18 @@ open class ExperienceFragment : Fragment() {
         }
     }
 
+
+    override fun onStop() {
+
+        activity?.run {
+            if (isChangingConfigurations) {
+                model.onConfigurationChange()
+            }
+        }
+
+        super.onStop()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !isEmbeddedFragment()) {

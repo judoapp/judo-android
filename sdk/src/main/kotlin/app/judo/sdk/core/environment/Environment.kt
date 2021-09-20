@@ -46,17 +46,16 @@ internal interface Environment {
     }
 
     object RegexPatterns {
-        const val HANDLE_BAR_EXPRESSION_PATTERN: String = """\{\{[^}]*\}\}"""
+        const val HANDLE_BAR_EXPRESSION_PATTERN: String = """\{\{.*\}\}"""
     }
 
     object Sizes {
         const val EXPERIENCE_CACHE_SIZE: Long = 250L * 1024L * 1024L // 256 MB
         const val IMAGE_CACHE_SIZE: Long = 250L * 1024L * 1024L // 256 MB
+        const val FONT_CACHE_SIZE: Long = 50L * 1024L * 1024L // 50 MB
     }
 
-    companion object {
-        val Type: String = if (BuildConfig.DEBUG) "DEVELOPMENT" else "PRODUCTION"
-    }
+    companion object
 
     val configuration: Judo.Configuration
 

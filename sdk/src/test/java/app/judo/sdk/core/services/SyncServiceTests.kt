@@ -17,6 +17,7 @@
 
 package app.judo.sdk.core.services
 
+import app.judo.sdk.BuildConfig
 import app.judo.sdk.core.data.SyncData
 import app.judo.sdk.core.data.SyncResponse
 import app.judo.sdk.core.implementations.SyncServiceImpl
@@ -132,6 +133,20 @@ class SyncServiceTests {
 
         // Assert
         Assert.assertTrue(actual?.contains(expected) == true)
+    }
+
+    @Test
+    fun `requests contain apiVersion query`() = runBlocking {
+        // Arrange
+        val expected = "apiVersion=${BuildConfig.API_VERSION}"
+
+        // Act
+        service.getSync(domainName)
+
+        val actual = serverDispatcher.actualRequest?.requestUrl?.query()?.endsWith(expected) ?: true
+
+        // Assert
+        Assert.assertTrue(actual)
     }
 
     @Test

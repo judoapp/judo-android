@@ -17,6 +17,7 @@
 
 package app.judo.sdk.core.sync
 
+import app.judo.sdk.BuildConfig
 import app.judo.sdk.core.robots.AbstractRobotTest
 import app.judo.sdk.core.robots.SynchronizerTestRobot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -34,7 +35,7 @@ internal class SynchronizerTests : AbstractRobotTest<SynchronizerTestRobot>() {
     @Test
     fun `URL in SyncResponse is used to fetch a Experience`() = runBlocking(robot.environment.ioDispatcher) {
         // Arrange
-        val expected = "/test1.judo.app/testexperience"
+        val expected = "/test1.judo.app/testexperience?apiVersion=${BuildConfig.API_VERSION}"
 
         // Act
         robot.performSync()
@@ -48,7 +49,7 @@ internal class SynchronizerTests : AbstractRobotTest<SynchronizerTestRobot>() {
     @Test
     fun `callback is run when the sync is complete`() = runBlocking(robot.environment.ioDispatcher) {
         // Arrange
-        val expected = "/test1.judo.app/testexperience"
+        val expected = "/test1.judo.app/testexperience?apiVersion=${BuildConfig.API_VERSION}"
 
         var callBackWasNeverCalled = true
 

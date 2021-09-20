@@ -22,10 +22,8 @@ import app.judo.sdk.api.errors.ExperienceError
 import app.judo.sdk.api.models.Authorizer
 import app.judo.sdk.api.models.Experience
 import app.judo.sdk.api.models.FontResource
-import app.judo.sdk.core.data.ExperienceTree
 import app.judo.sdk.core.data.Resource
 import app.judo.sdk.core.errors.ErrorMessages
-import app.judo.sdk.core.log.Logger
 import app.judo.sdk.core.repositories.ExperienceTreeRepository
 import app.judo.sdk.core.services.ExperienceService
 import app.judo.sdk.core.services.FontResourceService
@@ -42,20 +40,19 @@ import java.util.*
 
 internal class ExperienceRepositoryImpl(
     private val experienceServiceSupplier: () -> ExperienceService,
-    private val fontResourceServiceSupplier: () -> FontResourceService,
-    private val loggerSupplier: () -> Logger? = { null }
+    private val fontResourceServiceSupplier: () -> FontResourceService
 ) : ExperienceTreeRepository {
 
     companion object {
-        private const val TAG = "ExperienceRepositoryImpl"
+        private const val TAG = "ExperienceRepository"
     }
 
     private val inMemoryExperiences = mutableMapOf<String, Experience>()
 
-    private suspend fun createTypeFaceLoader(fonts: List<FontResource>, ignoreCache: Boolean): TypeFaceLoader {
+    private suspend fun createTypeFaceLoader(fonts: List<FontResource>): TypeFaceLoader {
         fontResourceServiceSupplier().let { faceService ->
 
-            val typefaceMap = faceService.getTypefacesFor(fonts, ignoreCache)
+            val typefaceMap = faceService.getTypefacesFor(fonts)
 
             return TypeFaceLoader(typefaces = typefaceMap)
         }
@@ -78,13 +75,13 @@ internal class ExperienceRepositoryImpl(
     }
 
     private val authorizersOverrides = mutableMapOf<String, List<Authorizer>>()
+    private val inMemoryExperienceQueryParams = mutableMapOf<String, Map<String, String>>()
 
     override fun retrieveExperience(
         aURL: String,
         ignoreCache: Boolean,
     ): Flow<Resource<Experience, ExperienceError>> {
         return flow {
-            val logger = loggerSupplier()
             val service = experienceServiceSupplier()
             emit(Resource.Loading())
             val response = service.getExperience(aURL, ignoreCache)
@@ -92,7 +89,7 @@ internal class ExperienceRepositoryImpl(
 
                 val experience = response.body()!!
 
-                val typeFaceLoader = createTypeFaceLoader(experience.fonts, ignoreCache)
+                val typeFaceLoader = createTypeFaceLoader(experience.fonts)
 
                 val translationLoader = createTranslationLoader(experience)
 
@@ -142,21 +139,23 @@ internal class ExperienceRepositoryImpl(
         }
     }
 
-    override fun put(experience: Experience, key: String?, authorizers: List<Authorizer>): Experience? {
+    override fun put(experience: Experience, key: String?, authorizers: List<Authorizer>, urlQueryParams: Map<String, String>): Experience? {
         val experienceKey = key ?: experience.id
         authorizersOverrides.put(experienceKey, authorizers)
+        inMemoryExperienceQueryParams.put(experienceKey, urlQueryParams)
         return inMemoryExperiences.put(experienceKey, experience)
     }
 
     override fun remove(key: String) {
         authorizersOverrides.remove(key)
+        inMemoryExperienceQueryParams.remove(key)
         inMemoryExperiences.remove(key)
     }
 
     override suspend fun retrieveById(key: String): Experience? {
 
         return inMemoryExperiences[key]?.let { experience ->
-            val typeFaceLoader = createTypeFaceLoader(experience.fonts, false)
+            val typeFaceLoader = createTypeFaceLoader(experience.fonts)
 
             val translationLoader = createTranslationLoader(experience)
 
@@ -168,5 +167,9 @@ internal class ExperienceRepositoryImpl(
 
     override fun retrieveAuthorizersOverrideById(key: String): List<Authorizer>? {
         return authorizersOverrides[key]
+    }
+
+    override fun retrieveUrlQueryParametersById(key: String): Map<String, String>? {
+        return inMemoryExperienceQueryParams[key]
     }
 }

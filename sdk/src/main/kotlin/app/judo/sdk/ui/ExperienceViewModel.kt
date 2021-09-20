@@ -68,6 +68,7 @@ internal class ExperienceViewModel(
     private var userInfoOverride: HashMap<String, Any>? = null
     private var authorizersOverride: List<Authorizer>? = null
     private var experienceKey: String? = null
+    private var isConfigurationChanging = false
 
     private val backingStateFlow = MutableStateFlow<ExperienceState>(Empty)
 
@@ -109,7 +110,7 @@ internal class ExperienceViewModel(
         val dataContext = dataContextOf(
             Keyword.USER.value to getUserInfo(),
             Keyword.DATA.value to actionTargets[screen.id],
-            Keyword.URL.value to experience.url?.urlParams()
+            Keyword.URL.value to experience.urlQueryParameters
         )
 
         val event = Event.ScreenViewed(experience, screen, dataContext)
@@ -173,20 +174,7 @@ internal class ExperienceViewModel(
 
         if (node is Collection) {
 
-            val items = node.items
-            val limit = node.limit
-
-            if (limit != null && items != null && items.isNotEmpty()) {
-
-                val index = limit.startAt.dec()
-
-                node.items = items
-                    .subList(
-                        index, items.lastIndex
-                    )
-                    .take(limit.show)
-
-            }
+            node.limit()
 
         }
     }
@@ -201,7 +189,9 @@ internal class ExperienceViewModel(
                         Keyword.DATA.value to value,
                         Keyword.URL.value to urlParams
                     )
-                    return@filter node.conditions.resolve(dataContext)
+                    return@filter node.conditions.resolve(dataContext, InterpolatorImpl(
+                        dataContext = dataContext
+                    ))
                 }
             }
         }
@@ -220,7 +210,9 @@ internal class ExperienceViewModel(
                         Keyword.URL.value to urlParams
                     )
 
-                    return@filter node.filters.resolve(dataContext)
+                    return@filter node.filters.resolve(dataContext, InterpolatorImpl(
+                        dataContext = dataContext
+                    ))
 
                 }
 
@@ -295,7 +287,7 @@ internal class ExperienceViewModel(
             }
             .map { (experienceTree, screenId) ->
 
-                loadDataSourcesForScreen(environment, experienceTree, screenId)
+                renderNodes(environment, experienceTree, screenId)
 
             }
             .flowOn(environment.ioDispatcher)
@@ -352,6 +344,7 @@ internal class ExperienceViewModel(
         nodesForScreenInfo?.let {
             screenLayoutCache.put(screenId, nodesForScreenInfo)
         }
+        refreshNodes(screenId)
         requestImages(imagesToRequest)
     }
 
@@ -379,10 +372,11 @@ internal class ExperienceViewModel(
     fun refreshNodes(screenId: String) {
         viewModelScope.launch {
             backingExperienceTree.value?.let { tree ->
-                val nodes = loadDataSourcesForScreen(
+                val nodes = renderNodes(
                     environment,
                     experienceTree = tree,
                     screenId = screenId,
+                    isRefresh = true
                 )
                 backingNodesFlow.emit(nodes)
             }
@@ -415,7 +409,7 @@ internal class ExperienceViewModel(
 
                         setExperience(
                             experienceTree = resource.data.apply {
-                                experience.url = originalUrl
+                                experience.urlQueryParameters = originalUrl?.urlParams()
                             },
                             screenId = screenId
                         )
@@ -456,19 +450,29 @@ internal class ExperienceViewModel(
         return trunk
     }
 
-    private suspend fun loadDataSourcesForScreen(
+    private suspend fun renderNodes(
         environment: Environment,
         experienceTree: ExperienceTree,
         screenId: String,
+        isRefresh: Boolean = false
     ): List<Node> {
 
         val tree: Tree<Node>? = experienceTree.screenNodes[screenId]?.trunk
 
-        val urlParams = experienceTree.experience.url?.urlParams() ?: emptyMap()
+        val urlParams = experienceTree.experience.urlQueryParameters ?: emptyMap()
 
         tree?.run {
 
             val sideEffects = arrayOf(
+                loadInterpolator,
+                loadCollectionValues,
+                filterCollectionValues,
+                sortCollectionValues,
+                limitCollectionValues,
+                resolveCollectionForDirectConditionalValues
+            )
+
+            val refreshSideEffects = arrayOf(
                 loadDataSource,
                 loadInterpolator,
                 loadCollectionValues,
@@ -482,7 +486,7 @@ internal class ExperienceViewModel(
                 environment = environment,
                 trunk = this,
                 urlParams = urlParams,
-                sideEffects = sideEffects
+                sideEffects = if (isRefresh) refreshSideEffects else sideEffects
             )
         }
 
@@ -510,7 +514,8 @@ internal class ExperienceViewModel(
             body
         )
 
-        return when (val result: DataSourceService.Result = dataService.performRequest(request, authorizersOverride)) {
+        return when (val result: DataSourceService.Result =
+            dataService.performRequest(request, authorizersOverride)) {
             is DataSourceService.Result.Failure -> {
                 environment.logger.e(
                     TAG,
@@ -532,10 +537,15 @@ internal class ExperienceViewModel(
         )
 
         viewModelScope.launch(dispatcher) {
-            val experienceTree = environment.experienceTreeRepository.retrieveTreeById(experienceKey)
+            val experienceTree =
+                environment.experienceTreeRepository.retrieveTreeById(experienceKey)
 
-            val authorizersOverride = environment.experienceRepository.retrieveAuthorizersOverrideById(experienceKey)
+            val authorizersOverride =
+                environment.experienceRepository.retrieveAuthorizersOverrideById(experienceKey)
+            val urlQueryParams =
+                environment.experienceRepository.retrieveUrlQueryParametersById(experienceKey)
             if (experienceTree != null) {
+                experienceTree.experience.urlQueryParameters = urlQueryParams
                 this@ExperienceViewModel.experienceKey = experienceKey
                 this@ExperienceViewModel.authorizersOverride = authorizersOverride
                 this@ExperienceViewModel.setExperience(experienceTree, screenId)
@@ -576,7 +586,7 @@ internal class ExperienceViewModel(
             val dataContext = dataContextOf(
                 Keyword.USER.value to getUserInfo(),
                 Keyword.DATA.value to actionTargets[screen.id],
-                Keyword.URL.value to experience.url?.urlParams()
+                Keyword.URL.value to experience.urlQueryParameters
             )
 
             val event = Event.ActionReceived(experience, screen, node, action, dataContext)
@@ -618,10 +628,6 @@ internal class ExperienceViewModel(
                 }
             }
 
-            if (event is Action.PerformSegue && event.screenID !in screenVisited) {
-                refreshNodes(event.screenID)
-            }
-
             environment.eventBus.publish(event)
         }
     }
@@ -637,8 +643,18 @@ internal class ExperienceViewModel(
         }
     }
 
+    fun onConfigurationChange() {
+        isConfigurationChanging = true
+    }
+
     override fun onCleared() {
+        // This ViewModel is destroyed on configuration changes.
+        // This is caused by the parent fragment this VM is associated to
+        // being destroyed and a new one taking it's place.
+        // That problem has not been solved at the moment so this is a workaround
+        // for that.
+        if (!isConfigurationChanging)
+            experienceKey?.let(environment.experienceRepository::remove)
         super.onCleared()
-        experienceKey?.let(environment.experienceRepository::remove)
     }
 }

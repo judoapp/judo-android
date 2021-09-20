@@ -111,7 +111,7 @@ internal fun PageControl.construct(
         hidesForSinglePage = this@construct.hidesForSinglePage
         carouselID?.let { id ->
             doOnGlobalLayout {
-                val viewPager = rootView.findViewWithTag<ViewPager2>(UUID.fromString(id))
+                val viewPager = rootView.findViewWithTag<ViewPager2>(id)
                 this.indicatorCount = viewPager?.getUniqueItemCount() ?: 0
                 viewPager?.registerForChanges(this)
             }

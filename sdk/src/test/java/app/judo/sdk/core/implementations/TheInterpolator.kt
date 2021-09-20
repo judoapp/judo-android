@@ -52,6 +52,15 @@ internal class TheInterpolator {
                     "last_name" to "Doe",
                 ),
                 "thingID" to "1234",
+                "request" to """{
+  "things": [
+    {
+      "name": "Picture",
+      "thumbnailURL": "https://static.www.things.com/image/private/{format}/category/alfdskj23r"
+    }
+  ]
+  }
+""",
             ),
             "user" to mapOf(
                 "first_name" to "Jane",
@@ -277,6 +286,34 @@ internal class TheInterpolator {
         val actual = interpolator.interpolate(
             theTextToInterpolate
         )
+
+        // Assert
+        Assert.assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `Interpolates the replace helper`() {
+        // Arrange
+
+        val expected = """{
+  "things": [
+    {
+      "name": "Picture",
+      "thumbnailURL": "https://static.www.things.com/image/private/h_200,w_300/category/alfdskj23r"
+    }
+  ]
+  }
+"""
+
+        val input = """{{ replace data.request "{format}" "h_200,w_300" }}"""
+
+        // Act
+        val actual = InterpolatorImpl(
+            tokenizer = TokenizerImpl(),
+            dataContext = dataContext
+        ).interpolate(theTextToInterpolate = input)
+
+        println(actual)
 
         // Assert
         Assert.assertEquals(expected, actual)

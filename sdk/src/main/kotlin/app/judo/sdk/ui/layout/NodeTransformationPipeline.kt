@@ -29,6 +29,7 @@ import app.judo.sdk.core.extensions.resolve
 import app.judo.sdk.core.extensions.traverse
 import app.judo.sdk.core.extensions.urlParams
 import app.judo.sdk.core.implementations.InterpolatorImpl
+import app.judo.sdk.core.lang.Interpolator
 import app.judo.sdk.core.lang.Keyword
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -79,9 +80,10 @@ internal class NodeTransformationPipeline(
         screenID: String,
         actionTargetData: Any? = null,
         experienceTree: ExperienceTree? = null,
-        userInfo: Map<String, String> = emptyMap()
+        userInfo: Map<String, Any> = environment.profileService.userInfo,
+        defaultInterpolator: Interpolator? = null
     ): NodesTransformInfo {
-        experienceTree?.experience?.url?.urlParams()?.let {
+        experienceTree?.experience?.urlQueryParameters?.let {
             urlParams = it
         }
         val screenNodes = filterNodesForScreen(screenID, nodes)
@@ -92,9 +94,10 @@ internal class NodeTransformationPipeline(
 
         modifyActionsForDataSource(screenNodes)
         addDataFromPreviousScreenData(screenID = screenID, targetData = actionTargetData, experienceTree = experienceTree, userInfo)
-        val dataSourcesRemoved = removeDataSources(screenNodes)
-        val collectionsRemoved = removeCollections(dataSourcesRemoved, screenID)
-        val conditionalsRemoved = removeConditionals(screenID, collectionsRemoved.first, collectionsRemoved.second, userInfo)
+        val nonCollectionConditionalsResolved = resolveNonCollectionConditionals(screenID, screenNodes, actionTargetData, userInfo, defaultInterpolator)
+        val dataSourcesRemoved = removeDataSources(nonCollectionConditionalsResolved)
+        val collectionsRemoved = removeCollections(dataSourcesRemoved, screenID, userInfo)
+        val conditionalsRemoved = removeConditionals(screenID, collectionsRemoved.first, collectionsRemoved.second)
         val addedImageSizes = addImageSizesForImagesWithoutSize(requestedImages, conditionalsRemoved.first)
         val imageWithoutSizesRemoved = removeImagesWithoutSizes(addedImageSizes)
         val imagesWithoutSizes = getImagesWithoutSizes(addedImageSizes).map { it.interpolatedImageURL }.toSet()
@@ -160,13 +163,20 @@ internal class NodeTransformationPipeline(
     }
 
     private fun getDataSourceChildIDs(dataSources: List<DataSource>, ids: List<String>): MutableList<String> {
-        val dataSourceIds = dataSources.map { it.id }
 
-        val nestedIDs = mutableListOf<String>()
+        val nestedIDs = mutableMapOf<Int, List<String>>()
         dataSources.forEach {
-            if (it.id in ids) nestedIDs.addAll(getDataSourceChildIDs(dataSources, it.childIDs))
+            if (it.id in ids) {
+                val index = ids.indexOf(it.id)
+                nestedIDs[index] = getDataSourceChildIDs(dataSources, it.childIDs)
+            }
         }
-        return (ids.filter { it !in dataSourceIds } + nestedIDs).toMutableList()
+        val modifiedIds = ids.toMutableList()
+        nestedIDs.forEach { (index, ids) ->
+            modifiedIds.removeAt(index)
+            modifiedIds.addAll(index, ids)
+        }
+        return modifiedIds
     }
 
     private fun removeImagesWithoutSizes(nodes: List<Node>): List<Node> {
@@ -360,7 +370,7 @@ internal class NodeTransformationPipeline(
         screenID: String,
         targetData: Any? = null,
         experienceTree: ExperienceTree? = null,
-        userInfo: Map<String, String>
+        userInfo: Map<String, Any>
     ) {
 
         if (targetData != null) {
@@ -401,13 +411,14 @@ internal class NodeTransformationPipeline(
 
     }
 
-    private fun removeConditionals(
+    private fun resolveNonCollectionConditionals (
         screenID: String,
         nodes: List<Node>,
-        collectionChildIDs: List<String>,
-        userInfo: Map<String, String>
-    ): Pair<List<Node>, List<String>> {
-        if (nodes.any { it is Conditional }) {
+        actionTargetData: Any?,
+        userInfo: Map<String, Any>,
+        defaultInterpolator: Interpolator?
+    ): List<Node> {
+        if (nodes.any { it is Conditional}) {
             val screenNode: Screen = (nodes.find { it.id == screenID } as Screen?)!!
 
             val nodeMap = nodes.associateBy { it.id }
@@ -415,97 +426,184 @@ internal class NodeTransformationPipeline(
             val childNodes = screenNode.childIDs.mapNotNull { id -> nodeMap[id] }
             val trunk: NodeTree = root.insertNode(nodeMap, childNodes)
 
+            val containersToIDsToRemove = mutableListOf<Pair<String, String>>()
+
             // removes branches from the tree for conditionals that resolve to false
             val pruned = trunk.prune { tree ->
                 val node = tree.value
                 if (node is Conditional) {
                     val nearestCollection: Collection? = tree.findNearestAncestor { it is Collection } as? Collection
-                    if (nearestCollection != null) {
+                    if (nearestCollection == null) {
                         val dataSourceAncestor = (tree.findNearestAncestor { it is DataSource } as? DataSource)
 
-                        dataSourceAncestor?.let { dataSource ->
-                            val dataContext = dataContextOf(
+                        val dataContext = if (dataSourceAncestor != null) {
+                            dataContextOf(
                                 Keyword.USER.value to userInfo,
-                                Keyword.DATA.value to dataSource.data,
+                                Keyword.DATA.value to dataSourceAncestor.data,
                                 Keyword.URL.value to urlParams
                             )
-                            return@prune node.conditions.resolve(dataContext)
+                        } else {
+                            dataContextOf(
+                                Keyword.USER.value to userInfo,
+                                Keyword.DATA.value to actionTargetData,
+                                Keyword.URL.value to urlParams
+                            )
                         }
+
+                        val resolvedConditions = node.conditions.resolve(dataContext, defaultInterpolator ?: InterpolatorImpl(
+                            dataContext = dataContext
+                        ))
+
+                        if (!resolvedConditions) {
+                            val parentID = tree.parent?.value?.id
+                            if (parentID != null) containersToIDsToRemove.add(parentID to node.id)
+                        }
+
+                        return@prune resolvedConditions
                     }
                 }
                 return@prune true
             }
-            val containerIDToConditionalChildren = mutableMapOf<String, List<String>>()
-            val modifiedCollectionChildIDs = collectionChildIDs.toMutableList()
-
-            // builds up a map of container ids to the children of conditionals for containers that
-            // have conditional children so that we can modify the container child ids to remove the id
-            // of the conditional and add the ids of the conditional's children
-
-            // this also checks to see if any conditionals are direct children of collections so
-            // we can remove their ids from the list of collection children and add their children to the list
-            pruned?.traverse { tree ->
-                val node = tree.value
-                if (node is NodeContainer) {
-                    val conditionals = tree.children.filter { it.value is Conditional }
-
-                    conditionals.forEach { conditional ->
-                        val index = tree.children.indexOf(conditional)
-                        tree.children.addAll(index, conditional.children)
-                        tree.children.remove(conditional)
-                        containerIDToConditionalChildren.put(node.id, tree.children.map { it.value.id })
-                        if (conditional.value.id in modifiedCollectionChildIDs) {
-                            val collectionChildIndex = modifiedCollectionChildIDs.indexOf(conditional.value.id)
-                            modifiedCollectionChildIDs.addAll(collectionChildIndex, conditional.children.map { it.value.id })
-                            modifiedCollectionChildIDs.remove(conditional.value.id)
-                        }
-                    }
-                }
-            }
             val prunedList = pruned?.flatten() ?: emptyList()
 
-            val modifiedNodes = prunedList.toMutableList()
+            val modifiablePrunedList = prunedList.toMutableList()
 
-            // modify the list of nodes by copying container nodes with their new child id lists
-            // based upon resolving and removing conditionals
-            containerIDToConditionalChildren.keys.forEach { containerID ->
-                val container = (modifiedNodes.find { it.id == containerID } as? NodeContainer)!!
-
-                containerIDToConditionalChildren[containerID]?.let { newChildList ->
-                    when (container) {
+            // remove conditional ids from parents for false conditionals
+            containersToIDsToRemove.forEach { (containerID, conditionalID) ->
+                val containerNode = prunedList.find { it.id == containerID }
+                containerNode?.let {
+                    when(it) {
                         is HStack -> {
-                            modifiedNodes.remove(container)
-                            modifiedNodes.add(container.copy(childIDs = newChildList))
+                            modifiablePrunedList.remove(it)
+                            modifiablePrunedList.add(it.copy(childIDs = it.childIDs - conditionalID))
                         }
                         is VStack -> {
-                            modifiedNodes.remove(container)
-                            modifiedNodes.add(container.copy(childIDs = newChildList))
+                            modifiablePrunedList.remove(it)
+                            modifiablePrunedList.add(it.copy(childIDs = it.childIDs - conditionalID))
                         }
                         is ScrollContainer -> {
-                            modifiedNodes.remove(container)
-                            modifiedNodes.add(container.copy(childIDs = newChildList))
+                            modifiablePrunedList.remove(it)
+                            modifiablePrunedList.add(it.copy(childIDs = it.childIDs - conditionalID))
                         }
                         is ZStack -> {
-                            modifiedNodes.remove(container)
-                            modifiedNodes.add(container.copy(childIDs = newChildList))
+                            modifiablePrunedList.remove(it)
+                            modifiablePrunedList.add(it.copy(childIDs = it.childIDs - conditionalID))
                         }
                         is Screen -> {
-                            modifiedNodes.remove(container)
-                            modifiedNodes.add(container.copy(childIDs = newChildList))
-                        }
-                        is Carousel -> {
-                            modifiedNodes.remove(container)
-                            modifiedNodes.add(container.copy(childIDs = newChildList))
+                            modifiablePrunedList.remove(it)
+                            modifiablePrunedList.add(it.copy(childIDs = it.childIDs - conditionalID))
                         }
                         is AppBar -> {
-                            modifiedNodes.remove(container)
-                            modifiedNodes.add(container.copy(childIDs = newChildList))
+                            modifiablePrunedList.remove(it)
+                            modifiablePrunedList.add(it.copy(childIDs = it.childIDs - conditionalID))
+                        }
+                        is Carousel -> {
+                            modifiablePrunedList.remove(it)
+                            modifiablePrunedList.add(it.copy(childIDs = it.childIDs - conditionalID))
+                        }
+                        is DataSource -> {
+                            modifiablePrunedList.remove(it)
+                            modifiablePrunedList.add(it.copy(childIDs = it.childIDs - conditionalID).apply {
+                                interpolator = it.interpolator
+                                data = it.data
+                            })
+                        }
+                        is Conditional -> {
+                            modifiablePrunedList.remove(it)
+                            modifiablePrunedList.add(it.copy(childIDs = it.childIDs - conditionalID))
                         }
                     }
                 }
             }
 
-            return modifiedNodes.filter { it !is Conditional } to modifiedCollectionChildIDs
+            return modifiablePrunedList
+        }
+        return nodes
+    }
+
+    private fun getConditionalChildIDs(conditionals: List<Conditional>, ids: List<String>): MutableList<String> {
+
+        val nestedIDs = mutableMapOf<Int, List<String>>()
+        conditionals.forEach {
+            if (it.id in ids) {
+                val index = ids.indexOf(it.id)
+                nestedIDs[index] = getConditionalChildIDs(conditionals, it.childIDs)
+            }
+        }
+        val modifiedIds = ids.toMutableList()
+        nestedIDs.forEach { (index, ids) ->
+            modifiedIds.removeAt(index)
+            modifiedIds.addAll(index, ids)
+        }
+        return modifiedIds
+    }
+
+    private fun removeConditionals(
+        screenID: String,
+        nodes: List<Node>,
+        collectionChildIDs: List<String>,
+    ): Pair<List<Node>, List<String>> {
+        if (nodes.any { it is Conditional }) {
+            val screenNode: Screen = (nodes.find { it.id == screenID } as Screen?)!!
+
+            val modifiedNodes = nodes.toMutableList()
+            val conditionals = nodes.filterIsInstance<Conditional>()
+            val conditionalIDs = conditionals.map { it.id }
+
+            val modifiedCollectionChildIDs = collectionChildIDs.toMutableList()
+
+            conditionalIDs.forEach { conditionalID ->
+                if (conditionalID in collectionChildIDs) {
+                    val conditionalChildIDs = getConditionalChildIDs(conditionals, conditionals.find { it.id == conditionalID }?.childIDs ?: emptyList())
+                    val collectionChildIndex = modifiedCollectionChildIDs.indexOf(conditionalID)
+                    modifiedCollectionChildIDs.addAll(collectionChildIndex, conditionalChildIDs)
+                    modifiedCollectionChildIDs.remove(conditionalID)
+                }
+            }
+
+            nodes.forEach {
+                if (it is NodeContainer
+                    && conditionalIDs.any { conditionalID -> conditionalID in it.getChildNodeIDs() }
+                    && it !in conditionals
+                ) {
+                    val childIDs = it.getChildNodeIDs()
+                    val theConditionalsChildIDs = getConditionalChildIDs(conditionals, childIDs)
+
+                    when (it) {
+                        is HStack -> {
+                            modifiedNodes.remove(it)
+                            modifiedNodes.add(it.copy(childIDs = theConditionalsChildIDs - conditionalIDs))
+                        }
+                        is VStack -> {
+                            modifiedNodes.remove(it)
+                            modifiedNodes.add(it.copy(childIDs = theConditionalsChildIDs - conditionalIDs))
+                        }
+                        is ScrollContainer -> {
+                            modifiedNodes.remove(it)
+                            modifiedNodes.add(it.copy(childIDs = theConditionalsChildIDs - conditionalIDs))
+                        }
+                        is ZStack -> {
+                            modifiedNodes.remove(it)
+                            modifiedNodes.add(it.copy(childIDs = theConditionalsChildIDs - conditionalIDs))
+                        }
+                        is Screen -> {
+                            modifiedNodes.remove(it)
+                            modifiedNodes.add(it.copy(childIDs = theConditionalsChildIDs - conditionalIDs))
+                        }
+                        is Carousel -> {
+                            modifiedNodes.remove(it)
+                            modifiedNodes.add(it.copy(childIDs = theConditionalsChildIDs - conditionalIDs))
+                        }
+                        is AppBar -> {
+                            modifiedNodes.remove(it)
+                            modifiedNodes.add(it.copy(childIDs = theConditionalsChildIDs - conditionalIDs))
+                        }
+                    }
+                }
+            }
+            modifiedNodes.removeAll(conditionals)
+
+            return modifiedNodes to modifiedCollectionChildIDs
         }
         return nodes to collectionChildIDs
     }
@@ -515,10 +613,11 @@ internal class NodeTransformationPipeline(
         baseID: String,
         nodeToCopy: Node,
         nodes: List<Node>,
+        userInfo: Map<String, Any>
     ): List<Node> {
 
         val dataContext = dataContextOf(
-            Keyword.USER.value to Environment.current.profileService.userInfo,
+            Keyword.USER.value to userInfo,
             Keyword.DATA.value to data,
             Keyword.URL.value to urlParams
         )
@@ -585,20 +684,24 @@ internal class NodeTransformationPipeline(
                 listOf(copiedNode)
             }
             is Conditional -> {
-                val children = nodeToCopy.getChildNodeIDs().mapNotNull { childID -> nodes.find { node -> childID == node.id } }
-                val copiedDescendants = children.flatMap { copy(data, baseID, it, nodes) }
-                val childIDs = children.map { "${baseID}-${it.id}" }
+                if (nodeToCopy.conditions.resolve(dataContext)) {
+                    val children = nodeToCopy.getChildNodeIDs().mapNotNull { childID -> nodes.find { node -> childID == node.id } }
+                    val copiedDescendants = children.flatMap { copy(data, baseID, it, nodes, userInfo) }
+                    val childIDs = children.map { "${baseID}-${it.id}" }
 
-                val copiedNode = nodeToCopy.copy(
-                    id = "${baseID}-${nodeToCopy.id}",
-                    childIDs = childIDs,
-                )
+                    val copiedNode = nodeToCopy.copy(
+                        id = "${baseID}-${nodeToCopy.id}",
+                        childIDs = childIDs,
+                    )
 
-                listOf(copiedNode) + copiedDescendants
+                    listOf(copiedNode) + copiedDescendants
+                } else {
+                    listOf()
+                }
             }
             is ZStack -> {
                 val children = nodeToCopy.getChildNodeIDs().mapNotNull { childID -> nodes.find { node -> childID == node.id } }
-                val copiedDescendants = children.flatMap { copy(data, baseID, it, nodes) }
+                val copiedDescendants = children.flatMap { copy(data, baseID, it, nodes, userInfo) }
                 val childIDs = children.map { "${baseID}-${it.id}" }
                 val backgroundNode = copyBackground("${baseID}-${nodeToCopy.id}", nodeToCopy.background)
                 val overlayNode = copyOverlay("${baseID}-${nodeToCopy.id}", nodeToCopy.overlay)
@@ -618,7 +721,7 @@ internal class NodeTransformationPipeline(
             }
             is VStack -> {
                 val children = nodeToCopy.getChildNodeIDs().mapNotNull { childID -> nodes.find { node -> childID == node.id } }
-                val copiedDescendants = children.flatMap { copy(data, baseID, it, nodes) }
+                val copiedDescendants = children.flatMap { copy(data, baseID, it, nodes, userInfo) }
                 val childIDs = children.map { "${baseID}-${it.id}" }
                 val backgroundNode = copyBackground("${baseID}-${nodeToCopy.id}", nodeToCopy.background)
                 val overlayNode = copyOverlay("${baseID}-${nodeToCopy.id}", nodeToCopy.overlay)
@@ -638,12 +741,12 @@ internal class NodeTransformationPipeline(
             }
             is Screen -> {
                 val children = nodeToCopy.getChildNodeIDs().mapNotNull { childID -> nodes.find { node -> childID == node.id } }
-                val copiedDescendants = children.flatMap { copy(data, baseID, it, nodes) }
+                val copiedDescendants = children.flatMap { copy(data, baseID, it, nodes, userInfo) }
                 listOf(nodeToCopy.copy(id = "${baseID}-${nodeToCopy.id}", childIDs = copiedDescendants.map { it.id })) + copiedDescendants
             }
             is ScrollContainer -> {
                 val children = nodeToCopy.getChildNodeIDs().mapNotNull { childID -> nodes.find { node -> childID == node.id } }
-                val copiedDescendants = children.flatMap { copy(data, baseID, it, nodes) }
+                val copiedDescendants = children.flatMap { copy(data, baseID, it, nodes, userInfo) }
                 val childIDs = children.map { "${baseID}-${it.id}" }
                 val backgroundNode = copyBackground("${baseID}-${nodeToCopy.id}", nodeToCopy.background)
                 val overlayNode = copyOverlay("${baseID}-${nodeToCopy.id}", nodeToCopy.overlay)
@@ -678,7 +781,7 @@ internal class NodeTransformationPipeline(
             }
             is Carousel -> {
                 val children = nodeToCopy.getChildNodeIDs().mapNotNull { childID -> nodes.find { node -> childID == node.id } }
-                val copiedDescendants = children.flatMap { copy(data, baseID, it, nodes) }
+                val copiedDescendants = children.flatMap { copy(data, baseID, it, nodes, userInfo) }
                 val childIDs = children.map { "${baseID}-${it.id}" }
                 val backgroundNode = copyBackground("${baseID}-${nodeToCopy.id}", nodeToCopy.background)
                 val overlayNode = copyOverlay("${baseID}-${nodeToCopy.id}", nodeToCopy.overlay)
@@ -707,6 +810,8 @@ internal class NodeTransformationPipeline(
                     mask = mask,
                     action = action
                 ).apply {
+                    translator = nodeToCopy.translator
+                    typeface = nodeToCopy.typeface
                     interpolator = InterpolatorImpl(dataContext = dataContext)
                 }
 
@@ -714,7 +819,7 @@ internal class NodeTransformationPipeline(
             }
             is HStack -> {
                 val children = nodeToCopy.getChildNodeIDs().mapNotNull { childID -> nodes.find { node -> childID == node.id } }
-                val copiedDescendants = children.flatMap { copy(data, baseID, it, nodes) }
+                val copiedDescendants = children.flatMap { copy(data, baseID, it, nodes, userInfo) }
                 val childIDs = children.map { "${baseID}-${it.id}" }
                 val backgroundNode = copyBackground("${baseID}-${nodeToCopy.id}", nodeToCopy.background)
                 val overlayNode = copyOverlay("${baseID}-${nodeToCopy.id}", nodeToCopy.overlay)
@@ -767,7 +872,7 @@ internal class NodeTransformationPipeline(
 
                 listOf(copiedNode)
             }
-            else -> throw IllegalStateException()
+            else -> throw IllegalStateException("${nodeToCopy.typeName}")
         }
     }
 
@@ -817,7 +922,7 @@ internal class NodeTransformationPipeline(
         }
     }
 
-    private fun removeCollections(nodes: List<Node>, screenNodeID: String): Pair<List<Node>, List<String>> {
+    private fun removeCollections(nodes: List<Node>, screenNodeID: String, userInfo: Map<String, Any>): Pair<List<Node>, List<String>> {
         // remove collections by copying the children for each DAO and attaching the children to
         // the collection parent
         val modifiedNodes = nodes.toMutableList()
@@ -835,18 +940,20 @@ internal class NodeTransformationPipeline(
             val copiedNodes = mutableListOf<Node>()
             val directCopiedNodeID = mutableListOf<String>()
 
-            collectionChildren.forEach { collectionChild ->
-                it.items?.forEachIndexed { index, data ->
+            it.items?.forEachIndexed { index, data ->
+                collectionChildren.forEach { collectionChild ->
                     val copies = copy(
                         data,
                         "${it.id}-${index}",
                         collectionChild,
-                        modifiedNodes
+                        modifiedNodes,
+                        userInfo
                     )
-                    directCopiedNodeID.add(copies.first().id)
+                    copies.firstOrNull()?.id?.let { directCopiedNodeID.add(it) }
                     copiedNodes.addAll(copies)
                 }
             }
+            
             modifiedNodes.addAll(copiedNodes)
             modifiedNodes.remove(it)
             modifiedNodes.removeAll(collectionChildren)

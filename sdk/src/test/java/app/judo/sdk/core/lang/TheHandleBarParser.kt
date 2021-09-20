@@ -24,14 +24,14 @@ import org.junit.Test
 class TheHandleBarParser {
 
     @Test
-    fun `Parses the Handle Barred text with function name correctly`() {
+    fun `Parses the Handle Barred text with helper name correctly`() {
         // Arrange
 
         val expectedToken = Token.HandleBarExpression(
             value = "{{ date data.key1.value   \"YY-mm\" }}",
             keyword = Keyword.DATA,
-            functionName = FunctionName.DATE,
-            functionArgument = "YY-mm",
+            helperName = HelperName.DATE,
+            helperArguments = listOf("YY-mm"),
             keys = listOf("key1", "value")
         )
 
@@ -64,14 +64,14 @@ class TheHandleBarParser {
     }
 
     @Test
-    fun `Parses the Handle Barred text with the uppercase function name correctly`() {
+    fun `Parses the Handle Barred text with the uppercase helper name correctly`() {
         // Arrange
 
         val expectedToken = Token.HandleBarExpression(
             value = "{{ uppercase data.key1.value }}",
             keyword = Keyword.DATA,
-            functionName = FunctionName.UPPERCASE,
-            functionArgument = null,
+            helperName = HelperName.UPPERCASE,
+            helperArguments = null,
             keys = listOf("key1", "value")
         )
 
@@ -104,14 +104,14 @@ class TheHandleBarParser {
     }
 
     @Test
-    fun `Parses the Handle Barred text with the lowercase function name correctly`() {
+    fun `Parses the Handle Barred text with the lowercase helper name correctly`() {
         // Arrange
 
         val expectedToken = Token.HandleBarExpression(
             value = "{{ lowercase data.key1.value }}",
             keyword = Keyword.DATA,
-            functionName = FunctionName.LOWERCASE,
-            functionArgument = null,
+            helperName = HelperName.LOWERCASE,
+            helperArguments = null,
             keys = listOf("key1", "value")
         )
 
@@ -144,7 +144,44 @@ class TheHandleBarParser {
     }
 
     @Test
-    fun `Parses the Handle Barred text without function name correctly`() {
+    fun `Parses the Handle Barred text with the replace helper name correctly`() {
+        // Arrange
+
+        val expectedToken = Token.HandleBarExpression(
+            value = "{{ replace data.key1.value \"arg1\" \"arg2\" }}",
+            keyword = Keyword.DATA,
+            helperName = HelperName.REPLACE,
+            helperArguments = listOf("arg1", "arg2"),
+            keys = listOf("key1", "value")
+        )
+
+        val input = ParserContext(
+            text = "{{ replace data.key1.value \"arg1\" \"arg2\" }} other text",
+            state = Unit,
+        )
+
+        val expected = Success(
+            match = Parser.Match(
+                expectedToken,
+                input.copy(
+                    position = expectedToken.value.length
+                )
+            ),
+        )
+
+        val parser = HandleBarParser<Unit>()
+
+        // Act
+        val actual = parser.parse(input)
+
+        val keys = (actual as? Success)?.match?.value?.keys
+
+        // Assert
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `Parses the Handle Barred text without helper name correctly`() {
         // Arrange
 
         val expectedToken = Token.HandleBarExpression(
@@ -188,8 +225,8 @@ class TheHandleBarParser {
         val expectedToken = Token.HandleBarExpression(
             value = "{{ date data.key1.value   \"YY-mm\" }}",
             keyword = Keyword.DATA,
-            functionName = FunctionName.DATE,
-            functionArgument = "YY-mm",
+            helperName = HelperName.DATE,
+            helperArguments = listOf("YY-mm"),
             keys = listOf("key1", "value")
         )
 

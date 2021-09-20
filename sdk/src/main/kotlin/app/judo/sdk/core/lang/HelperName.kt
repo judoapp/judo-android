@@ -17,8 +17,9 @@
 
 package app.judo.sdk.core.lang
 
-internal enum class FunctionName(val value: String) {
+internal enum class HelperName(val value: String) {
     DATE("date"),
-    UPPERCASE("uppercase"),
     LOWERCASE("lowercase"),
+    UPPERCASE("uppercase"),
+    REPLACE("replace"),
 }

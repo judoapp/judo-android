@@ -41,6 +41,9 @@ internal fun Carousel.computeSize(context: Context, treeNode: TreeNode, parentCo
         }
         is Dimension.Value -> {
             when {
+                pxFrame?.minHeight != null && pxFrame.maxHeight is MaxHeight.Finite -> {
+                    Dimension.Value(maxOf(minOf(intrinsicHeight.value, pxFrame.maxHeight.value), pxFrame.minHeight))
+                }
                 pxFrame?.minHeight != null -> Dimension.Value(maxOf(intrinsicHeight.value, pxFrame.minHeight))
                 pxFrame?.maxHeight is MaxHeight.Finite -> Dimension.Value(minOf(pxFrame.maxHeight.value, intrinsicHeight.value))
                 pxFrame?.maxHeight is MaxHeight.Infinite -> Dimension.Value(intrinsicHeight.value)
@@ -62,6 +65,9 @@ internal fun Carousel.computeSize(context: Context, treeNode: TreeNode, parentCo
         }
         is Dimension.Value -> {
             when {
+                pxFrame?.minWidth != null && pxFrame.maxWidth is MaxWidth.Finite -> {
+                    Dimension.Value(maxOf(minOf(intrinsicWidth.value, pxFrame.maxWidth.value), pxFrame.minWidth))
+                }
                 pxFrame?.minWidth != null -> Dimension.Value(maxOf(intrinsicWidth.value, pxFrame.minWidth))
                 pxFrame?.maxWidth is MaxWidth.Finite -> Dimension.Value(minOf(pxFrame.maxWidth.value, intrinsicWidth.value))
                 pxFrame?.maxWidth is MaxWidth.Infinite -> Dimension.Value(intrinsicWidth.value)

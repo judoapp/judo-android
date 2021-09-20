@@ -19,10 +19,11 @@ package app.judo.sdk.core.implementations
 
 import android.graphics.Typeface
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
+import app.judo.sdk.BuildConfig
 import app.judo.sdk.api.models.FontResource
 import app.judo.sdk.core.data.JsonParser
+import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.services.FontResourceService
 import app.judo.sdk.ui.extensions.toUri
 import okhttp3.Cache
@@ -32,7 +33,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
-import retrofit2.http.Header
+import retrofit2.http.Query
 import retrofit2.http.Url
 import java.io.File
 
@@ -44,7 +45,7 @@ internal class FontResourceServiceImpl(
 
     companion object {
         const val cacheName: String = "font_resource_http_cache"
-        const val maxCacheSize = 50L * 1024L * 1024L // 10 MiB
+        const val maxCacheSize = Environment.Sizes.FONT_CACHE_SIZE
         const val url: String = "https://127.0.0.1/"
     }
 
@@ -52,7 +53,7 @@ internal class FontResourceServiceImpl(
         @GET
         suspend fun getFile(
             @Url aURL: String,
-            @Header("Cache-Control") cacheControlHeader: String?,
+            @Query("apiVersion") apiVersion: Int = BuildConfig.API_VERSION,
         ): Response<ResponseBody>
     }
 
@@ -69,7 +70,8 @@ internal class FontResourceServiceImpl(
 
     private val api: ResourceAPI by lazy {
 
-        val base: String = this@FontResourceServiceImpl.baseURLSupplier()?.takeIf { it.isNotBlank() } ?: url
+        val base: String =
+            this@FontResourceServiceImpl.baseURLSupplier()?.takeIf { it.isNotBlank() } ?: url
 
         Retrofit.Builder().apply {
             baseUrl(base)
@@ -78,11 +80,12 @@ internal class FontResourceServiceImpl(
         }.build().create(ResourceAPI::class.java)
     }
 
-    override suspend fun getTypefacesFor(fonts: List<FontResource>, ignoreCache: Boolean): Map<String, Typeface> {
+    override suspend fun getTypefacesFor(
+        fonts: List<FontResource>,
+    ): Map<String, Typeface> {
 
         val result = mutableMapOf<String, Typeface>()
 
-        val cacheControlHeader = if (ignoreCache) "no-cache" else null
         fonts.forEach { resource ->
             when (resource) {
 
@@ -98,13 +101,14 @@ internal class FontResourceServiceImpl(
                                 result.putAll(typefacesFromTTCFile(localFile, resource))
                             }
                         } else {
-                            val response = api.getFile(resource.url, cacheControlHeader)
+                            val response = api.getFile(resource.url)
 
                             val body = response.body()?.bytes()
 
                             val pathname = cachePathSupplier()
 
-                            val file = File("$pathname/fontFamily.${resource.url.substringAfterLast(".")}")
+                            val file =
+                                File("$pathname/fontFamily.${resource.url.substringAfterLast(".")}")
 
                             body?.let { bytes ->
 
@@ -130,13 +134,14 @@ internal class FontResourceServiceImpl(
                         }
                     } else {
 
-                        val response = api.getFile(resource.url, cacheControlHeader)
+                        val response = api.getFile(resource.url)
 
                         val body = response.body()?.bytes()
 
                         val pathname = cachePathSupplier()
 
-                        val file = File("$pathname/${resource.name}.${resource.url.substringAfterLast(".")}")
+                        val file =
+                            File("$pathname/${resource.name}.${resource.url.substringAfterLast(".")}")
 
                         body?.let { bytes ->
                             file.writeBytes(bytes)
@@ -159,7 +164,10 @@ internal class FontResourceServiceImpl(
     private fun String.isLocalFileUri() = this.startsWith("file://")
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun typefacesFromTTCFile(file: File, resource: FontResource.Collection): Map<String, Typeface> {
+    private fun typefacesFromTTCFile(
+        file: File,
+        resource: FontResource.Collection
+    ): Map<String, Typeface> {
 
         val builder = Typeface.Builder(file)
 

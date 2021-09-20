@@ -5,30 +5,30 @@ import app.judo.sdk.api.models.Conditional
 import app.judo.sdk.api.models.Predicate.*
 import app.judo.sdk.core.data.DataContext
 import app.judo.sdk.core.data.fromKeyPath
+import app.judo.sdk.core.lang.Interpolator
 import org.json.JSONObject
 
-internal fun Conditional.resolve(dataContext: DataContext): Boolean {
-    return conditions.resolve(dataContext)
+internal fun Conditional.resolve(dataContext: DataContext, interpolator: Interpolator? = null): Boolean {
+    return conditions.resolve(dataContext, interpolator)
 }
 
-internal fun List<Condition>.resolve(dataContext: DataContext): Boolean {
+internal fun List<Condition>.resolve(dataContext: DataContext, interpolator: Interpolator? = null): Boolean {
 
     if (isEmpty()) return true
 
     return fold(initial = true) { accumulator, condition ->
         if (!accumulator) false else {
-            condition.resolve(dataContext)
+            condition.resolve(dataContext, interpolator)
         }
     }
 }
 
-internal fun Condition.resolve(dataContext: DataContext): Boolean {
+internal fun Condition.resolve(dataContext: DataContext, interpolator: Interpolator? = null): Boolean {
 
     val lhs = dataContext.fromKeyPath(keyPath)
-    // TODO: 2021-07-20 Interpolate the value
-    val rhs = /*(value as? String)?.let {
-        interpolator(it, dataContext)
-    } ?: return false*/ value ?: return false
+    val rhs = (value as? String)?.let {
+        interpolator?.interpolate(it, dataContext)
+    } ?: value
 
     return when (predicate) {
         EQUALS -> {

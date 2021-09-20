@@ -221,12 +221,13 @@ object Judo {
         activityClass: Class<*> = ExperienceActivity::class.java,
         screenId: String? = null,
         userInfo: Map<String, Any>? = null,
-        authorizers: List<Authorizer> = listOf()
+        authorizers: List<Authorizer> = listOf(),
+        urlQueryParameters: Map<String, String> = mapOf()
     ): Intent {
         return try {
             activityClass.asSubclass(activityClass)
 
-            controller.loadExperienceIntoMemory(experience, authorizers)
+            controller.loadExperienceIntoMemory(experience, authorizers, urlQueryParameters)
 
             Intent(context, activityClass).apply {
                 putExtra(Environment.Keys.LOAD_FROM_MEMORY, true)

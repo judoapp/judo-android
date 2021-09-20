@@ -17,6 +17,7 @@
 
 package app.judo.sdk.core.services
 
+import app.judo.sdk.BuildConfig
 import app.judo.sdk.core.cache.KeyValueCache
 import app.judo.sdk.core.data.JsonParser
 import app.judo.sdk.core.environment.Environment
@@ -171,6 +172,20 @@ class ExperienceServiceTests {
 
         // Assert
         Assert.assertTrue(actual?.contains(expected) == true)
+    }
+
+    @Test
+    fun `requests contain apiVersion headers`() = runBlocking {
+        // Arrange
+        val expected = "apiVersion=${BuildConfig.API_VERSION}"
+
+        service.getExperience(experienceURL)
+
+        // Act
+        val actual = serverDispatcher.actualRequest?.requestUrl?.query()?.endsWith(expected) ?: false
+
+        // Assert
+        Assert.assertTrue(actual)
     }
 
     @Test

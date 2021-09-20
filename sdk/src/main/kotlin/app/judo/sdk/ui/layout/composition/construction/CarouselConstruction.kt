@@ -53,7 +53,7 @@ internal fun Carousel.construct(
 
     val viewPager = ViewPager2(context).apply {
         id = View.generateViewId()
-        tag = UUID.fromString(this@construct.id)
+        tag = this@construct.id
         alpha = opacity ?: 1f
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) { forceHasOverlappingRendering(false) }
         clipToPadding = false
