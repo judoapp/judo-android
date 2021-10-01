@@ -24,6 +24,7 @@ import android.view.View
 import android.view.View.LAYER_TYPE_HARDWARE
 import android.widget.FrameLayout
 import app.judo.sdk.api.models.WebView
+import app.judo.sdk.api.models.WebViewSource
 import app.judo.sdk.ui.extensions.calculateDisplayableAreaFromMaskPath
 import app.judo.sdk.ui.extensions.setMaskPathFromMask
 import app.judo.sdk.ui.layout.Resolvers
@@ -52,7 +53,16 @@ internal fun WebView.construct(context: Context, treeNode: TreeNode, resolvers: 
         setLayerType(LAYER_TYPE_HARDWARE, null)
 
         scrollEnabled = isScrollEnabled
-        loadUrl(this@construct.interpolatedURL)
+
+        when (val theSource = interpolatedSource) {
+            is WebViewSource.HTML -> {
+                loadData(theSource.value, "text/html", "UTF-8")
+            }
+            is WebViewSource.URL -> {
+                loadUrl(theSource.value)
+            }
+        }
+
     }
 
     val background = this.background?.node?.toSingleLayerLayout(context, treeNode, resolvers, this.maskPath)

@@ -43,7 +43,7 @@ internal class SynchronizerImpl(
         private const val TAG = "Synchronizer"
     }
 
-    override suspend fun performSync(prefetchAssets: Boolean, onComplete: () -> Unit) {
+    override suspend fun performSync(onComplete: () -> Unit) {
         try {
             environment.syncRepository.retrieveSync(
                 environment.configuration.domain
@@ -56,7 +56,7 @@ internal class SynchronizerImpl(
                         )
                     }
                     is Resource.Success -> {
-                        handleSyncResponse(resource.data, prefetchAssets)
+                        handleSyncResponse(resource.data)
                     }
                     is Resource.Error -> {
                         environment.logger.e(
@@ -86,8 +86,7 @@ internal class SynchronizerImpl(
     }
 
     private suspend fun handleSyncResponse(
-        syncResponse: SyncResponse,
-        prefetchAssets: Boolean,
+        syncResponse: SyncResponse
     ) {
 
         // Extract the URLs of the Experiences that need to be synced
@@ -132,14 +131,12 @@ internal class SynchronizerImpl(
             experienceFlows.flatMap { flow: Flow<Experience> ->
                 flow.toList()
             }
-
-        if (prefetchAssets) {
-            fetchAssets(
-                ImageURLExtractor().extract(listOfExperiences)
-            )
-        }
     }
 
+    /**
+     * No longer used nor exposed, but maintained for reference until this feature is replaced with
+     * a new approach.
+     */
     private suspend fun fetchAssets(assetUrls: Set<String>) {
         assetUrls.filterNot { url ->
             url.contains(RegexPatterns.HANDLE_BAR_EXPRESSION_PATTERN)

@@ -22,7 +22,6 @@ import androidx.lifecycle.viewModelScope
 import app.judo.sdk.api.errors.ExperienceError
 import app.judo.sdk.api.events.Event
 import app.judo.sdk.api.models.*
-import app.judo.sdk.api.models.Collection
 import app.judo.sdk.core.data.*
 import app.judo.sdk.core.data.resolvers.resolveJson
 import app.judo.sdk.core.environment.Environment
@@ -38,7 +37,6 @@ import app.judo.sdk.ui.layout.NodesForScreenInfo
 import app.judo.sdk.ui.layout.RequestedImageDimensions
 import app.judo.sdk.ui.models.ExperienceState
 import app.judo.sdk.ui.models.ExperienceState.*
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
@@ -53,8 +51,6 @@ private typealias SideEffect = suspend Environment.(
 
 internal class ExperienceViewModel(
     private val environment: Environment,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Main,
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val nodeTransformationPipeline: NodeTransformationPipeline = NodeTransformationPipeline(
         environment
     ),
@@ -117,7 +113,7 @@ internal class ExperienceViewModel(
 
         publishEvent(event)
     }
-    
+
     private fun getUserInfo(): Map<String, Any> {
         return userInfoOverride ?: environment.profileService.userInfo
     }
@@ -152,7 +148,7 @@ internal class ExperienceViewModel(
     }
 
     private val loadCollectionValues: SideEffect = { tree, node, urlParams ->
-        if (node is Collection) {
+        if (node is app.judo.sdk.api.models.Collection) {
 
             val nearestDataSource: DataSource? =
                 tree.findNearestAncestor { it is DataSource } as? DataSource
@@ -172,7 +168,7 @@ internal class ExperienceViewModel(
 
     private val limitCollectionValues: SideEffect = { _, node, _ ->
 
-        if (node is Collection) {
+        if (node is app.judo.sdk.api.models.Collection) {
 
             node.limit()
 
@@ -182,7 +178,7 @@ internal class ExperienceViewModel(
     private val resolveCollectionForDirectConditionalValues: SideEffect = { tree, node, urlParams ->
 
         if (node is Conditional) {
-            (tree.parent?.value as? Collection)?.let { collection ->
+            (tree.parent?.value as? app.judo.sdk.api.models.Collection)?.let { collection ->
                 collection.items = collection.items?.filter { value ->
                     val dataContext = dataContextOf(
                         Keyword.USER.value to getUserInfo(),
@@ -199,22 +195,9 @@ internal class ExperienceViewModel(
 
     private val filterCollectionValues: SideEffect = { _, node, urlParams ->
 
-        if (node is Collection) {
+        if (node is app.judo.sdk.api.models.Collection) {
 
-            if (node.filters.isNotEmpty())
-                node.items = node.items?.filter { value ->
-
-                    val dataContext = dataContextOf(
-                        Keyword.USER.value to getUserInfo(),
-                        Keyword.DATA.value to value,
-                        Keyword.URL.value to urlParams
-                    )
-
-                    return@filter node.filters.resolve(dataContext, InterpolatorImpl(
-                        dataContext = dataContext
-                    ))
-
-                }
+            node.filter(getUserInfo(), urlParams)
 
         }
 
@@ -222,55 +205,11 @@ internal class ExperienceViewModel(
 
     private val sortCollectionValues: SideEffect = { _, node, urlParams ->
 
-        if (node is Collection) {
+        if (node is app.judo.sdk.api.models.Collection) {
 
             val userInfo = getUserInfo()
 
-            node.sortDescriptors.forEach { sortDescriptor ->
-
-                node.items = node.items?.sortedWith { o1, o2 ->
-
-                    val v1 = dataContextOf(
-                        Keyword.USER.value to userInfo,
-                        Keyword.DATA.value to o1,
-                        Keyword.USER.value to urlParams
-                    ).fromKeyPath(sortDescriptor.keyPath)
-
-                    val v2 = dataContextOf(
-                        Keyword.USER.value to userInfo,
-                        Keyword.DATA.value to o2,
-                        Keyword.USER.value to urlParams
-                    ).fromKeyPath(sortDescriptor.keyPath)
-
-                    if (sortDescriptor.ascending) {
-                        when (v1) {
-                            v2 -> {
-                                0
-                            }
-                            null -> {
-                                -1
-                            }
-                            else -> {
-                                1
-                            }
-                        }
-                    } else {
-                        when (v1) {
-                            v2 -> {
-                                0
-                            }
-                            null -> {
-                                1
-                            }
-                            else -> {
-                                -1
-                            }
-                        }
-                    }
-
-                }
-            }
-
+            node.sort(userInfo, urlParams)
         }
 
     }
@@ -303,28 +242,30 @@ internal class ExperienceViewModel(
                 screenVisited.add(screenId)
             }
             .combine(requestedImageFlow) { nodes, requestedImages -> nodes to requestedImages }
-            .flowOn(dispatcher)
+            .flowOn(environment.mainDispatcher)
             .map { (nodes, requestedImages) ->
                 nodeTransformationPipeline.transformScreenNodesForLayout(
-                    nodes,
-                    requestedImages,
-                    screenId,
-                    actionTargets[screenId],
-                    backingExperienceTree.value
+                    nodes = nodes,
+                    requestedImages = requestedImages,
+                    screenID = screenId,
+                    actionTargetData = actionTargets[screenId],
+                    experienceTree = backingExperienceTree.value,
+                    userInfo = getUserInfo()
                 )
             }
-            .flowOn(ioDispatcher)
+            .flowOn(environment.ioDispatcher)
             .onEach {
                 if (it.imagesWithoutSizes.isNotEmpty()) imagesToRequest.addAll(it.imagesWithoutSizes)
             }
             .filter { it.nodes.isNotEmpty() }
             .map {
-                NodesForScreenInfo(
+                val nodesForScreenInfo = NodesForScreenInfo(
                     it.nodes,
                     it.swipeToRefresh,
                     it.collectionNodeIDs,
                     it.canCache
                 )
+                nodesForScreenInfo
             }
     }
 
@@ -389,7 +330,7 @@ internal class ExperienceViewModel(
         screenId: String?,
         ignoreCache: Boolean = false
     ) {
-        viewModelScope.launch(dispatcher) {
+        viewModelScope.launch(environment.mainDispatcher) {
 
             environment.logger.d(
                 tag = TAG,
@@ -536,7 +477,7 @@ internal class ExperienceViewModel(
             data = "Loading experience from memory: $experienceKey\nScreen ID: $screenId"
         )
 
-        viewModelScope.launch(dispatcher) {
+        viewModelScope.launch(environment.mainDispatcher) {
             val experienceTree =
                 environment.experienceTreeRepository.retrieveTreeById(experienceKey)
 
@@ -616,7 +557,7 @@ internal class ExperienceViewModel(
     }
 
     private fun publishEvent(event: Any) {
-        viewModelScope.launch(dispatcher) {
+        viewModelScope.launch(environment.mainDispatcher) {
             environment.logger.d(
                 tag = TAG,
                 data = "Publishing event: ${event.javaClass.simpleName}"

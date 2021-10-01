@@ -126,15 +126,17 @@ object Judo {
         )
     }
 
-    /**
-     * Get the Anonymous ID for the current user in Judo.
-     *
-     * Use this method to harmonize Judo's AnonymousID with another
-     */
     @MainThread
-    fun getAnonymousID(anonymousId: String): String {
+    @Deprecated("Misnamed method has been deprecated", replaceWith = ReplaceWith("anonymousID"))
+    fun getAnonymousID(@Suppress("unused") anonymousId: String): String {
         return controller.anonymousId
     }
+
+    /**
+     * Get the Anonymous ID for the current user in Judo.
+     */
+    val anonymousId: String
+        get() = controller.anonymousId
 
     /**
      * Resets the user profile information previously identified to Judo, and also recycles the
@@ -158,11 +160,28 @@ object Judo {
     fun addScreenViewedCallback(callback: ScreenViewedCallback) {
         controller.addScreenViewedCallback(callback)
     }
-    
+
     @JvmStatic
-    fun performSync(prefetchAssets: Boolean = false, onComplete: () -> Unit = {}) {
+    @Deprecated(
+        message = "Manually pre-fetching assets is no longer supported",
+        replaceWith = ReplaceWith("Judo.performSync {}"),
+    )
+    fun performSync(
+        @Suppress("unused")
+        prefetchAssets: Boolean = false,
+        onComplete: () -> Unit = {}
+    ) {
         CoroutineScope(Dispatchers.IO).launch {
-            controller.performSync(prefetchAssets, onComplete)
+            controller.performSync(onComplete)
+        }
+    }
+
+    @JvmStatic
+    fun performSync(
+        onComplete: () -> Unit = {}
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            controller.performSync(onComplete = onComplete)
         }
     }
 

@@ -15,19 +15,24 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package app.judo.sdk.utils
+package app.judo.sdk.ui.robots
 
-import app.judo.sdk.api.models.Authorizer
-import app.judo.sdk.api.models.URLRequest
-import app.judo.sdk.core.services.DataSourceService
+import app.judo.sdk.api.models.Experience
+import app.judo.sdk.core.data.JsonParser
+import app.judo.sdk.core.robots.AbstractTestRobot
+import app.judo.sdk.json.FileNames
+import app.judo.sdk.utils.TestJSONLoader
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-internal class FakeDataSourceService : DataSourceService {
-    override suspend fun performRequest(
-        urlRequest: URLRequest,
-        authorizersOverride: List<Authorizer>?
-    ): DataSourceService.Result {
-        return DataSourceService.Result.Success(
-            body = TestJSON.data_source_experience
-        )
+@OptIn(ExperimentalCoroutinesApi::class)
+internal class TreeNodeExtensionsRobot : AbstractTestRobot() {
+
+    lateinit var experience: Experience
+
+    override fun onSetUp() {
+
+        experience = JsonParser.parseExperience(TestJSONLoader.load(fileName = FileNames.DataSourceExperience))!!
+
     }
+
 }

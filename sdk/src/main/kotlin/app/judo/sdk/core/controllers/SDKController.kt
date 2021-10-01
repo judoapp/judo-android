@@ -44,7 +44,7 @@ internal interface SDKController {
         configuration: Judo.Configuration
     )
 
-    suspend fun performSync(prefetchAssets: Boolean = false, onComplete: () -> Unit = {})
+    suspend fun performSync(onComplete: () -> Unit = {})
 
     suspend fun onFirebaseRemoteMessageReceived(data: Map<String, String>)
 

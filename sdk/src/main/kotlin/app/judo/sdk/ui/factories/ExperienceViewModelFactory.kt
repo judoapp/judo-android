@@ -22,10 +22,26 @@ import androidx.lifecycle.ViewModelProvider
 import app.judo.sdk.core.controllers.current
 import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.ui.ExperienceViewModel
+import app.judo.sdk.ui.models.ExperienceFragmentViewModel
+import java.lang.IllegalArgumentException
 
 @Suppress("UNCHECKED_CAST")
 internal class ExperienceViewModelFactory : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return ExperienceViewModel(Environment.current) as T
+        return when (modelClass) {
+
+            ExperienceViewModel::class.java -> {
+                ExperienceViewModel(Environment.current)
+            }
+
+            ExperienceFragmentViewModel::class.java -> {
+                ExperienceFragmentViewModel(Environment.current)
+            }
+
+            else -> {
+                throw IllegalArgumentException("Unsupported model class: ${modelClass.simpleName}")
+            }
+
+        } as T
     }
 }

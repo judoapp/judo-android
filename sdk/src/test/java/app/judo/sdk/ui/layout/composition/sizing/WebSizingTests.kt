@@ -48,7 +48,7 @@ internal class WebSizingTests {
     private val screenNode = TreeNode(screenFactory.makeScreenWithSize())
 
     private fun createWebWithFrame(frame: Frame? = null): WebView {
-        return WebView(id = "", isScrollEnabled = false, url = "", frame = frame)
+        return WebView(id = "", isScrollEnabled = false, source = WebViewSource.URL(), frame = frame)
     }
 
     @Test

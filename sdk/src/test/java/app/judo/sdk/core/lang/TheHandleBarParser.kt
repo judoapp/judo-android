@@ -181,6 +181,43 @@ class TheHandleBarParser {
     }
 
     @Test
+    fun `Second replace argument can be empty`() {
+        // Arrange
+
+        val expectedToken = Token.HandleBarExpression(
+            value = "{{ replace data.pid \",\" \"\" }}",
+            keyword = Keyword.DATA,
+            helperName = HelperName.REPLACE,
+            helperArguments = listOf(",", ""),
+            keys = listOf("pid")
+        )
+
+        val input = ParserContext(
+            text = "{{ replace data.pid \",\" \"\" }} other text",
+            state = Unit,
+        )
+
+        val expected = Success(
+            match = Parser.Match(
+                expectedToken,
+                input.copy(
+                    position = expectedToken.value.length
+                )
+            ),
+        )
+
+        val parser = HandleBarParser<Unit>()
+
+        // Act
+        val actual = parser.parse(input)
+
+        val keys = (actual as? Success)?.match?.value?.keys
+
+        // Assert
+        assertEquals(expected, actual)
+    }
+
+    @Test
     fun `Parses the Handle Barred text without helper name correctly`() {
         // Arrange
 
@@ -283,5 +320,6 @@ class TheHandleBarParser {
         assertEquals(expected, actual)
         assertEquals(expected2, actual2)
     }
+
 
 }

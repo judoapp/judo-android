@@ -326,6 +326,78 @@ ModelTests {
     }
 
     @Test
+    fun `URL WebViewSource can be de-serialized`() {
+        // Arrange
+        val adapter = JsonParser.moshi.adapter(WebViewSource::class.java)
+        var obj: Any? = null
+
+        // Act
+        try {
+            obj = adapter.fromJson(TestJSON.webViewSource_URL)
+        } catch (e: ExceptionInInitializerError) {
+            println(e.exception.message)
+        }
+
+        // Assert
+        assertTrue(obj is WebViewSource.URL)
+    }
+
+    @Test
+    fun `HTML WebViewSource can be de-serialized`() {
+        // Arrange
+        val adapter = JsonParser.moshi.adapter(WebViewSource::class.java)
+        var obj: Any? = null
+
+        // Act
+        try {
+            obj = adapter.fromJson(TestJSON.webViewSource_HTML)
+        } catch (e: ExceptionInInitializerError) {
+            println(e.exception.message)
+        }
+
+        // Assert
+        assertTrue(obj is WebViewSource.HTML)
+    }
+
+    @Test
+    fun `WebView with URL source can be de-serialized`() {
+        // Arrange
+        val adapter = JsonParser.moshi.adapter(WebView::class.java)
+        var obj: Any? = null
+
+        // Act
+        try {
+            obj = adapter.fromJson(TestJSON.webView_URL_source)
+        } catch (e: ExceptionInInitializerError) {
+            println(e.exception.message)
+        }
+
+        // Assert
+        println(obj)
+        assertTrue(obj is WebView)
+    }
+
+
+    @Test
+    fun `WebView with HTML source can be de-serialized`() {
+        // Arrange
+        val adapter = JsonParser.moshi.adapter(WebView::class.java)
+        var obj: Any? = null
+
+        // Act
+        try {
+            obj = adapter.fromJson(TestJSON.webView_HTML_source)
+        } catch (e: ExceptionInInitializerError) {
+            println(e.exception.message)
+        }
+
+        // Assert
+        println(obj)
+        assertTrue(obj is WebView)
+    }
+
+
+    @Test
     fun `DataSource can be de-serialized`() {
         // Arrange
         val adapter = JsonParser.moshi.adapter(DataSource::class.java)
@@ -472,7 +544,7 @@ ModelTests {
 
         // Act
         try {
-            obj = JsonParser.parseExperience(TestJSON.nav_test_judo)
+            obj = JsonParser.parseExperience(TestJSON.nav_test_experience)
         } catch (e: ExceptionInInitializerError) {
             println(e.exception.message)
         }

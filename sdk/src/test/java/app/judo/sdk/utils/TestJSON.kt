@@ -427,9 +427,42 @@ object TestJSON {
     const val webView = """{
     "id": "799AAF28-9ABB-476F-BD9D-1E2BA785FB4B",
     "__typeName": "WebView",
-    "url": "https://www.rover.io",
+    "source": {
+        "__typeName": "WebViewURLSource",
+        "value": "https://www.judo.app"
+    },
     "isScrollEnabled": false
 }"""
+
+    const val webView_URL_source = """{
+    "id": "799AAF28-9ABB-476F-BD9D-1E2BA785FB4B",
+    "__typeName": "WebView",
+    "source": {
+        "__typeName": "WebViewURLSource",
+        "value": "https://www.judo.app"
+    },
+    "isScrollEnabled": false
+}"""
+
+    const val webView_HTML_source = """{
+    "id": "799AAF28-9ABB-476F-BD9D-1E2BA785FB4B",
+    "__typeName": "WebView",
+    "source": {
+        "__typeName": "WebViewHTMLSource",
+        "value": "<!DOCTYPE html>"
+    },
+    "isScrollEnabled": false
+}"""
+
+    const val webViewSource_URL = """{
+    "__typeName": "WebViewURLSource",
+        "value": "https://www.rover.io"
+    }"""
+
+    const val webViewSource_HTML = """{
+    "__typeName": "WebViewHTMLSource",
+        "value": "<!DOCTYPE html>"
+    }"""
 
     val data_source = """{
   "id": "0F79A117-D509-4C50-95D2-9F23A3373C54",
@@ -2619,7 +2652,7 @@ object TestJSON {
   "initialScreenID": "3B19D34C-F859-42E6-90CE-0576DF70C13E"
 }""".trimMargin()
 
-    val nav_test_judo: String = """{
+    val nav_test_experience: String = """{
     "id": 149,
     "name": "Nav Test",
     "version": 1,
@@ -3662,140 +3695,6 @@ object TestJSON {
     "initialScreenID": "8B4A30F1-368A-4026-AD5D-B1F04BE1E7BF",
     "fonts": [],
     "localization": {}
-}""".trimMargin()
-
-
-    val data_source_experience = """{
-    "id": "256",
-    "name": "DataSources Test",
-    "version": 1,
-    "revisionID": "248",
-    "nodes": [
-        {
-            "id": "086DE36F-EEE4-482A-BD45-60124EC03CC7",
-            "__typeName": "Screen",
-            "childIDs": [
-                "0B2BA390-9C0A-4128-A34C-E132B9DB585C"
-            ],
-            "name": "Screen",
-            "backButtonStyle": {
-                "__typeName": "DefaultBackButtonStyle",
-                "title": "Screen"
-            },
-            "backgroundColor": {
-                "systemName": "systemBackground",
-                "default": {
-                    "red": 1,
-                    "green": 1,
-                    "blue": 1,
-                    "alpha": 1
-                },
-                "darkMode": {
-                    "red": 0,
-                    "green": 0,
-                    "blue": 0,
-                    "alpha": 1
-                }
-            },
-            "statusBarStyle": "default",
-            "androidStatusBarStyle": "default",
-            "androidStatusBarBackgroundColor": {
-                "systemName": "systemBackground",
-                "default": {
-                    "red": 1,
-                    "green": 1,
-                    "blue": 1,
-                    "alpha": 1
-                },
-                "darkMode": {
-                    "red": 0,
-                    "green": 0,
-                    "blue": 0,
-                    "alpha": 1
-                }
-            }
-        },
-        {
-            "id": "0B2BA390-9C0A-4128-A34C-E132B9DB585C",
-            "__typeName": "ScrollContainer",
-            "childIDs": [
-                "B8AA4599-DDC5-4AA7-BA7B-11A52603A71C"
-            ],
-            "name": "Scroll Container",
-            "axis": "vertical",
-            "disableScrollBar": false
-        },
-        {
-            "id": "B8AA4599-DDC5-4AA7-BA7B-11A52603A71C",
-            "__typeName": "DataSource",
-            "childIDs": [
-                "5FC3CE16-6BF6-4214-92C7-5F6FBB067409"
-            ],
-            "name": "Dummy Users",
-            "headers": [
-                {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                },
-                {
-                    "key": "app-id",
-                    "value": "609561d4e8fed0600a0a26b8"
-                }
-            ],
-            "httpMethod": "GET",
-            "url": "https://dummyapi.io/data/api/user?limit=10"
-        },
-        {
-            "id": "5FC3CE16-6BF6-4214-92C7-5F6FBB067409",
-            "__typeName": "Collection",
-            "childIDs": [
-                "53F6CBB6-050C-492C-A854-D01C9F5A1323"
-            ],
-            "name": "Collection",
-            "keyPath": "data",
-            "filters": [],
-            "sortDescriptors": []
-        },
-        {
-            "id": "53F6CBB6-050C-492C-A854-D01C9F5A1323",
-            "__typeName": "Text",
-            "childIDs": [],
-            "text": "Hello, {{data.firstName}}",
-            "font": {
-                "__typeName": "DynamicFont",
-                "textStyle": "body",
-                "isDynamic": true,
-                "emphases": []
-            },
-            "textColor": {
-                "systemName": "label",
-                "default": {
-                    "red": 0,
-                    "green": 0,
-                    "blue": 0,
-                    "alpha": 1
-                },
-                "darkMode": {
-                    "red": 1,
-                    "green": 1,
-                    "blue": 1,
-                    "alpha": 1
-                }
-            },
-            "textAlignment": "leading"
-        }
-    ],
-    "screenIDs": [
-        "086DE36F-EEE4-482A-BD45-60124EC03CC7"
-    ],
-    "initialScreenID": "086DE36F-EEE4-482A-BD45-60124EC03CC7",
-    "fonts": [],
-    "localization": {
-        "fr": {
-            "Hello, {{data.firstName}}": "Bonjour, {{data.firstName}}"
-        }
-    },
-    "appearance": "auto"
 }""".trimMargin()
 
     val data_source_experience_single_screen = """{

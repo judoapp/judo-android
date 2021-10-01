@@ -40,12 +40,12 @@ internal class NotificationHandlerImpl(
             data[Environment.Keys.MESSAGE]?.let { json ->
                 JsonParser.parseJudoMessage(json)?.let { judoMessage ->
 
-                    environment.logger.i(TAG, "Sync message received: $judoMessage")
+                    environment.logger.i(TAG, "bSync message received: $judoMessage")
 
                     when (judoMessage.action) {
                         ACTIONS.SYNC -> {
                             environment.logger.d(TAG, "Triggering action: ${ACTIONS.SYNC}")
-                            SynchronizerImpl(environment).performSync(prefetchAssets = true) {
+                            SynchronizerImpl(environment).performSync() {
                                 environment.logger.d(TAG, "Sync Completed")
                             }
                         }

@@ -125,51 +125,51 @@ internal class SDKControllerTests : AbstractRobotTest<SDKControllerTestRobot>() 
 
     }
 
-    @Test
-    fun `user can ask the sdk to perform a one off synchronisation`() = runBlocking(robot.environment.ioDispatcher) {
-
-        // Arrange
-        val accessToken = "token1"
-        val domain = "test1.judo.app"
-
-        robot.initializeControllerWith(
-            accessToken = accessToken,
-            domain = domain
-        )
-
-        // Act
-        robot.performSync()
-
-        // Assert
-        robot.assertThatASyncResponseAndAExperienceWereRetrieved()
-
-    }
-
-    @Test
-    fun `user can get called back when the sync is complete`() = runBlocking(robot.environment.ioDispatcher) {
-
-        // Arrange
-        val accessToken = "token1"
-        val domain = "test1.judo.app"
-
-        robot.initializeControllerWith(
-            accessToken = accessToken,
-            domain = domain
-        )
-
-        var callBackWasNeverCalled = true
-
-        // Act
-        robot.performSync() {
-            // Assert
-            robot.assertThatASyncResponseAndTwoExperiencesWereRetrieved()
-            callBackWasNeverCalled = false
-        }
-
-        // Assert
-        Assert.assertFalse(callBackWasNeverCalled)
-
-    }
+//    @Test
+//    fun `user can ask the sdk to perform a one off synchronisation`() = runBlocking(robot.environment.ioDispatcher) {
+//
+//        // Arrange
+//        val accessToken = "token1"
+//        val domain = "test1.judo.app"
+//
+//        robot.initializeControllerWith(
+//            accessToken = accessToken,
+//            domain = domain
+//        )
+//
+//        // Act
+//        robot.performSync()
+//
+//        // Assert
+//        robot.assertThatASyncResponseAndAExperienceWereRetrieved()
+//
+//    }
+//
+//    @Test
+//    fun `user can get called back when the sync is complete`() = runBlocking(robot.environment.ioDispatcher) {
+//
+//        // Arrange
+//        val accessToken = "token1"
+//        val domain = "test1.judo.app"
+//
+//        robot.initializeControllerWith(
+//            accessToken = accessToken,
+//            domain = domain
+//        )
+//
+//        var callBackWasNeverCalled = true
+//
+//        // Act
+//        robot.performSync() {
+//            // Assert
+//            robot.assertThatASyncResponseAndTwoExperiencesWereRetrieved()
+//            callBackWasNeverCalled = false
+//        }
+//
+//        // Assert
+//        Assert.assertFalse(callBackWasNeverCalled)
+//
+//    }
 
     @Test
     fun `DEVICE_ID is added to the cache upon initialization`() = runBlocking(robot.environment.ioDispatcher) {

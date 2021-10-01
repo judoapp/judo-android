@@ -18,15 +18,11 @@
 package app.judo.example
 
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.util.Log
 import androidx.multidex.MultiDexApplication
 import androidx.work.*
-import app.judo.sdk.BuildConfig
 import app.judo.sdk.api.Judo
 import app.judo.sdk.api.logs.LogLevel
-import app.judo.sdk.api.models.Action
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.logEvent
 import com.google.firebase.messaging.FirebaseMessaging
@@ -37,8 +33,6 @@ class ExampleApplication : MultiDexApplication() {
 
     companion object {
         private const val TAG = "ExampleApplication"
-        private const val RESULT_CODE_SUCCESS: Long = 1L
-        private const val RESULT_CODE_FAILURE: Long = 0L
     }
 
     private lateinit var analytics: FirebaseAnalytics

@@ -20,7 +20,6 @@ package app.judo.sdk.core.implementations
 import app.judo.sdk.core.data.DataContext
 import app.judo.sdk.core.data.dataContextOf
 import app.judo.sdk.core.data.resolvers.resolveJson
-import app.judo.sdk.core.interpolation.DateHelper
 import app.judo.sdk.core.lang.Interpolator
 import app.judo.sdk.core.lang.TokenizerImpl
 import app.judo.sdk.utils.TestJSON
@@ -61,6 +60,8 @@ internal class TheInterpolator {
   ]
   }
 """,
+                "pid" to "1,2,3,4567",
+                "pidNoComma" to "1234567",
             ),
             "user" to mapOf(
                 "first_name" to "Jane",
@@ -349,6 +350,30 @@ internal class TheInterpolator {
 
         // Assert
         Assert.assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `Can replace optional values`() {
+        // Arrange
+
+        val expected = "https://some/path/to/1234567.png"
+
+        val input = """https://some/path/to/{{replace data.pid "," "" }}.png"""
+        val input2 = """https://some/path/to/{{replace data.pidNoComma "," "" }}.png"""
+
+        // Act
+        val interpolator = InterpolatorImpl(
+            tokenizer = TokenizerImpl(),
+            dataContext = dataContext
+        )
+
+        val actual = interpolator.interpolate(theTextToInterpolate = input)
+
+        val actual2 = interpolator.interpolate(theTextToInterpolate = input2)
+
+        // Assert
+        Assert.assertEquals(expected, actual)
+        Assert.assertEquals(expected, actual2)
     }
 
 }

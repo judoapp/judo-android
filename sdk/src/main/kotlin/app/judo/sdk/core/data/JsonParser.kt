@@ -92,6 +92,17 @@ object JsonParser {
         .withSubtype(FontResource.Single::class.java, "FontResource")
         .withSubtype(FontResource.Collection::class.java, "FontCollectionResource")
 
+    private val webViewSourceAdapterFactory: PolymorphicJsonAdapterFactory<WebViewSource> = PolymorphicJsonAdapterFactory.of(
+        WebViewSource::class.java, "__typeName"
+    )
+        .withSubtype(WebViewSource.URL::class.java, "WebViewURLSource")
+        .withSubtype(WebViewSource.HTML::class.java, "WebViewHTMLSource")
+
+    private val analyticsEventAdapter = PolymorphicJsonAdapterFactory.of(AnalyticsEvent::class.java, "type")
+        .withSubtype(AnalyticsEvent.Register::class.java, "register")
+        .withSubtype(AnalyticsEvent.Identify::class.java, "identify")
+        .withSubtype(AnalyticsEvent.Screen::class.java, "screen")
+
     private val fontWeightAdapter = FontWeightJsonAdapter()
     private val horizontalAlignmentAdapter = HorizontalAlignmentJsonAdapter()
     private val verticalAlignmentAdapter = VerticalAlignmentJsonAdapter()
@@ -112,10 +123,7 @@ object JsonParser {
     private val menuItemVisibilityAdapter = MenuItemVisibilityJsonAdapter()
     private val appearanceAdapter = AppearanceAdapter()
     private val predicateJsonAdapter = PredicateJsonAdapter()
-    private val analyticsEventAdapter = PolymorphicJsonAdapterFactory.of(AnalyticsEvent::class.java, "type")
-        .withSubtype(AnalyticsEvent.Register::class.java, "register")
-        .withSubtype(AnalyticsEvent.Identify::class.java, "identify")
-        .withSubtype(AnalyticsEvent.Screen::class.java, "screen")
+
 
     val moshi: Moshi = Moshi.Builder()
         .add(fontAdapterFactory)
@@ -145,6 +153,7 @@ object JsonParser {
         .add(httpMethodAdapter)
         .add(predicateJsonAdapter)
         .add(analyticsEventAdapter)
+        .add(webViewSourceAdapterFactory)
         .build()
 
     private val adapter = moshi.adapter(Experience::class.java)

@@ -20,8 +20,10 @@ package app.judo.sdk.core.services
 import app.judo.sdk.BuildConfig
 import app.judo.sdk.core.data.SyncData
 import app.judo.sdk.core.data.SyncResponse
+import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.implementations.SyncServiceImpl
 import app.judo.sdk.core.web.Http
+import app.judo.sdk.core.web.JudoCallInterceptor
 import app.judo.sdk.utils.TestLoggerImpl
 import app.judo.sdk.utils.TestServerDispatcher
 import app.judo.sdk.utils.shouldEqual
@@ -72,10 +74,19 @@ class SyncServiceTests {
         baseURL = server.url("/").toString()
 
         client = Http.coreClient(
-            accessTokenSupplier = { accessToken },
-            deviceIdSupplier = { deviceId },
             loggerSupplier = { logger }
-        )
+        ).newBuilder().apply {
+            addInterceptor(
+                JudoCallInterceptor(
+                    accessTokenSupplier = { accessToken },
+                    deviceIdSupplier = { deviceId },
+                    loggerSupplier = { logger },
+                    httpAgent = System.getProperty("http.agent") ?: "",
+                    clientPackageName = { "com.client.test" },
+                    appVersion = { "1.0.0" },
+                )
+            )
+        }.build()
 
         service = SyncServiceImpl(
             baseClientSupplier = { client },

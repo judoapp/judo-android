@@ -36,7 +36,7 @@ internal class ProfileServiceImpl(
     private val mainDispatcher get() = environment.mainDispatcher
 
     companion object {
-        private const val TAG = "ProfileServiceImpl"
+        private const val TAG = "ProfileService"
         private const val ANONYMOUS_ID_KEY = "profile-anonymous-id"
         private const val TRAITS_KEY = "profile-traits"
         private const val USER_ID_KEY = "profile-user-id"
@@ -84,7 +84,7 @@ internal class ProfileServiceImpl(
                     JsonParser.parseDictionaryMap(jsonString)
                 } ?: emptyMap()
             } catch (exception:  Exception) {
-                logger.e(TAG, "Invalid user traits data in storage, yielding empty user traits (reason: ${exception.message}.")
+                logger.e(TAG, "Invalid user traits data in storage, yielding empty user traits (reason: ${exception.message}).")
                 emptyMap()
             }
         }

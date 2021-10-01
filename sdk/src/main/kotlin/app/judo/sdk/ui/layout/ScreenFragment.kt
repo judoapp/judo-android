@@ -17,19 +17,17 @@
 
 package app.judo.sdk.ui.layout
 
-import android.graphics.Typeface
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import androidx.appcompat.widget.AppCompatTextView
-import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import app.judo.sdk.R
-import android.view.MenuItem as AndroidMenuItem
+import app.judo.sdk.BuildConfig
 import app.judo.sdk.api.models.*
 import app.judo.sdk.core.data.resolvers.ColorResolver
 import app.judo.sdk.core.data.resolvers.GradientResolver
@@ -40,13 +38,16 @@ import app.judo.sdk.ui.extensions.*
 import app.judo.sdk.ui.factories.ExperienceViewModelFactory
 import app.judo.sdk.ui.layout.composition.*
 import app.judo.sdk.ui.layout.composition.positioning.computePosition
+import app.judo.sdk.ui.state.ScreenFragmentState
 import app.judo.sdk.ui.views.ExperienceMediaPlayerView
 import app.judo.sdk.ui.views.ExperienceScrollView
 import app.judo.sdk.ui.views.HorizontalExperienceScrollView
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.util.*
 
 internal class ScreenFragment : Fragment() {
@@ -65,9 +66,13 @@ internal class ScreenFragment : Fragment() {
     private val binding: JudoSdkScreenFragmentLayoutBinding
         get() = _binding!!
 
-    private val model: ExperienceViewModel by viewModels({ requireParentFragment() }) {
+    private val model: ExperienceViewModel by viewModels(::requireParentFragment) {
         ExperienceViewModelFactory()
     }
+
+    private val useRenderTree = BuildConfig.USE_RENDER_TREE
+
+    private lateinit var screenFragmentViewModel: ScreenFragmentViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -85,10 +90,48 @@ internal class ScreenFragment : Fragment() {
         return binding.root
     }
 
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        if (useRenderTree) {
+            arguments?.getString(KEY_SCREEN_ID)?.let { screenId ->
+
+                screenFragmentViewModel = ViewModelProvider(this)
+                    .get(ScreenFragmentViewModel::class.java)
+
+                screenFragmentViewModel.viewState
+                    .onSubscription {
+                        screenFragmentViewModel.load(screenId)
+                    }.onEach(::display)
+                    .launchIn(lifecycleScope)
+            }
+        }
+    }
+
     override fun onDestroyView() {
         releaseMedia()
         super.onDestroyView()
         _binding = null
+    }
+
+    private suspend fun display(screenFragmentState: ScreenFragmentState) {
+        // TODO: 2021-07-15 Ensure correct Lifecycle State
+        when (screenFragmentState) {
+            is ScreenFragmentState.Empty -> {
+                // TODO: 2021-07-15 Render
+            }
+
+            is ScreenFragmentState.Loading -> {
+                // TODO: 2021-07-15 Render
+            }
+
+            is ScreenFragmentState.Error -> {
+                // TODO: 2021-07-29 Render
+            }
+
+            is ScreenFragmentState.Loaded -> {
+                // TODO: 2021-07-15 Render
+            }
+        }
     }
 
     private fun releaseMedia() {
@@ -106,30 +149,36 @@ internal class ScreenFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         screen?.let { model.informScreenViewed(it) }
+        if (useRenderTree)
+            screenFragmentViewModel.onViewed()
     }
 
     private fun setupAppBar(appBar: AppBar, menuItems: List<MenuItem>, resolvers: Resolvers) {
-        binding.toolbar.setupJudoAppBar(appBar, menuItems, screen, resolvers) { requireActivity().onBackPressed() }
+        binding.toolbar.setupJudoAppBar(
+            appBar, menuItems,
+            screen,
+            resolvers
+        ) { requireActivity().onBackPressed() }
     }
 
     private fun initializeComponent(screenID: String) {
         binding.screenFrame.removeAllViews()
         binding.screenFrame2.removeAllViews()
 
-        screen = model.getNodeByID<Screen>(screenID)
+        screen = model.getNodeByID(screenID)
 
         val screen = this.screen ?: return
         val appearance = model.getAppearance()
         val colorResolver = ColorResolver(requireContext(), appearance)
 
-        screen?.let {
+        screen.let {
             with(requireActivity().window) {
                 statusBarColor =
                     colorResolver.resolveForColorInt(it.androidStatusBarBackgroundColor)
                 setStatusBarIconTint(it.androidStatusBarStyle, appearance)
             }
         }
-        screen?.backgroundColor?.let {
+        screen.backgroundColor.let {
             val color = colorResolver.resolveForColorInt(screen.backgroundColor)
             (requireParentFragment() as? ExperienceFragment)?.view?.setBackgroundColor(color)
             binding.screenFrame.setBackgroundColor(color)
@@ -193,7 +242,11 @@ internal class ScreenFragment : Fragment() {
                     binding.screenFrame.doOnLayout {
                         launch {
                             mutex.withLock {
-                                setSwipeToRefresh(nodesForScreenInfo.swipeToRefresh) { model.refreshNodes(screenID) }
+                                setSwipeToRefresh(nodesForScreenInfo.swipeToRefresh) {
+                                    model.refreshNodes(
+                                        screenID
+                                    )
+                                }
                                 render(screenID, appearance, resolvers, nodesForScreenInfo, false)
                             }
                         }
@@ -246,7 +299,8 @@ internal class ScreenFragment : Fragment() {
             if (!fromCache) computeSizeAndPositioning(screenNode, appBar != null)
 
             // remove nodes that can be lazily loaded and group by their nearest scroll ancestor
-            val scrollIDsToRemovedNodes = nodesToBeLazilyLoaded(nodes, collectionChildIDs, screenNode)
+            val scrollIDsToRemovedNodes =
+                nodesToBeLazilyLoaded(nodes, collectionChildIDs, screenNode)
             val verticalScrollIDsToRemovedNodes =
                 scrollIDsToRemovedNodes.filter { removedGroup ->
                     (nodes.find { it.id == removedGroup.first } as? ScrollContainer)?.axis == Axis.VERTICAL
@@ -257,7 +311,8 @@ internal class ScreenFragment : Fragment() {
                 }
 
             // construct views
-            val views = screenNode.children.reversed().flatMap { it.toLayout(requireContext(), resolvers) }
+            val views =
+                screenNode.children.reversed().flatMap { it.toLayout(requireContext(), resolvers) }
             val toCache = if (canCache) NodesForScreenInfo(
                 nodes,
                 swipeToRefresh,
@@ -271,15 +326,26 @@ internal class ScreenFragment : Fragment() {
 
             // add views when frame laid out, restore scroll state and setup scroll views for lazy loading
             withContext(Dispatchers.Main) {
-                if (!fromCache) model.readyToUpdate(screenID, toCache)
+
                 views.forEach { incomingFrame.addView(it) }
                 incomingFrame.doOnLayout {
                     incomingFrame.visibility = View.VISIBLE
                     outgoingFrame.visibility = View.INVISIBLE
                     outgoingFrame.removeAllViews()
+                    if (!fromCache) model.readyToUpdate(screenID, toCache)
 
-                    setupVerticalLazyLoading(verticalScrollIDsToRemovedNodes, mediaNodeIDs, incomingFrame, resolvers)
-                    setupHorizontalLazyLoading(horizontalScrollIDsToRemovedNodes, mediaNodeIDs, incomingFrame, resolvers)
+                    setupVerticalLazyLoading(
+                        verticalScrollIDsToRemovedNodes,
+                        mediaNodeIDs,
+                        incomingFrame,
+                        resolvers
+                    )
+                    setupHorizontalLazyLoading(
+                        horizontalScrollIDsToRemovedNodes,
+                        mediaNodeIDs,
+                        incomingFrame,
+                        resolvers
+                    )
 
                     restoreVerticalScrollState(verticalScrollIDsToPosition, incomingFrame)
                     restoreHorizontalScrollState(horizontalScrollIDsToPosition, incomingFrame)
@@ -291,7 +357,8 @@ internal class ScreenFragment : Fragment() {
                         }
                     }
 
-                    currentLifecycleObserver = MediaAwareLifecycleObserver(mediaNodeIDs, incomingFrame)
+                    currentLifecycleObserver =
+                        MediaAwareLifecycleObserver(mediaNodeIDs, incomingFrame)
                 }
             }
         }
@@ -368,7 +435,13 @@ internal class ScreenFragment : Fragment() {
                 scrollView.doOnPreDraw {
                     lifecycleScope.launchWhenResumed {
                         val scrollFrame = ((scrollView as? ViewGroup)?.getChildAt(0) as? ViewGroup)
-                        val views = groupToCoordinates.flatMap { it.first.toLayout(requireContext(), resolvers) }
+                        val views = groupToCoordinates.flatMap {
+                            it.first.toLayout(
+                                requireContext(),
+                                resolvers
+                            )
+                        }
+
                         views.forEach { scrollFrame?.addView(it) }
                     }
                 }
@@ -430,7 +503,8 @@ internal class ScreenFragment : Fragment() {
         incomingFrame: FrameLayout
     ) {
         horizontalScrollIDsToPosition.forEach {
-            val scrollView = incomingFrame.findViewWithTag<HorizontalExperienceScrollView>(UUID.fromString(it.first))
+            val scrollView =
+                incomingFrame.findViewWithTag<HorizontalExperienceScrollView>(UUID.fromString(it.first))
             scrollView?.scrollX = it.second
         }
     }
@@ -440,7 +514,8 @@ internal class ScreenFragment : Fragment() {
         incomingFrame: FrameLayout
     ) {
         verticalScrollIDsToPosition.forEach {
-            val scrollView = incomingFrame.findViewWithTag<ExperienceScrollView>(UUID.fromString(it.first))
+            val scrollView =
+                incomingFrame.findViewWithTag<ExperienceScrollView>(UUID.fromString(it.first))
             scrollView?.scrollY = it.second
         }
     }

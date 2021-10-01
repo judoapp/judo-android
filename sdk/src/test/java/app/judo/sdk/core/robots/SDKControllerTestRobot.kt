@@ -56,8 +56,8 @@ internal class SDKControllerTestRobot : AbstractTestRobot() {
         responses += responseAndBody
     }
 
-    suspend fun performSync(prefetchAssets: Boolean = false, onComplete: () -> Unit = {}) {
-        controller.performSync(prefetchAssets, onComplete)
+    suspend fun performSync(onComplete: () -> Unit = {}) {
+        controller.performSync(onComplete)
     }
 
     fun assertThatASyncResponseAndTwoExperiencesWereRetrieved() {

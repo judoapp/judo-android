@@ -34,8 +34,7 @@ class TheConditionResolver {
     @Test
     fun resolve() {
 
-        val condition =
-            JsonParser.moshi.adapter(Condition::class.java).fromJson(TestJSON.condition)!!
+        val condition = JsonParser.moshi.adapter(Condition::class.java).fromJson(TestJSON.condition)!!
 
         val dataContext = dataContextOf(
             "data" to 1.0

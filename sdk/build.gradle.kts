@@ -9,8 +9,9 @@ plugins {
 
 val judoGroupId = "app.judo"
 val judoArtifactId = "judo-sdk"
-val judoVersion = "1.3.3"
-val judoApiVersion = "1"
+val judoVersion = "1.4.0"
+val judoApiVersion = "2"
+val useRenderTree = false
 
 android {
     compileSdkVersion(30)
@@ -20,6 +21,8 @@ android {
         multiDexEnabled = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("int", "API_VERSION", judoApiVersion)
+        buildConfigField("String", "LIBRARY_VERSION", "\"$judoVersion\"")
+        buildConfigField("boolean", "USE_RENDER_TREE", "Boolean.parseBoolean(\"$useRenderTree\")")
     }
 
     buildTypes {

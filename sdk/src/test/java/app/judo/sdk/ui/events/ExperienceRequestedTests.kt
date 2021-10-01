@@ -17,10 +17,6 @@
 
 package app.judo.sdk.ui.events
 
-import android.content.Intent
-import android.net.Uri
-import app.judo.sdk.api.Judo
-import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.utils.shouldEqual
 import org.junit.Test
 import java.util.*

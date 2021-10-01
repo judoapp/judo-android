@@ -18,6 +18,10 @@
 package app.judo.sdk.core.extensions
 
 import app.judo.sdk.api.models.Collection
+import app.judo.sdk.core.data.dataContextOf
+import app.judo.sdk.core.data.fromKeyPath
+import app.judo.sdk.core.implementations.InterpolatorImpl
+import app.judo.sdk.core.lang.Keyword
 
 internal fun Collection.limit() {
 
@@ -31,4 +35,53 @@ internal fun Collection.limit() {
         )
         .take(amountToDisplay)
 
+}
+
+internal fun Collection.filter(userInfo: Map<String, Any>, urlParams: Map<String, String>) {
+    if (filters.isNotEmpty()) {
+        this.items = this.items?.filter { value ->
+            val itemDataContext = dataContextOf(
+                Keyword.USER.value to userInfo,
+                Keyword.DATA.value to value,
+                Keyword.URL.value to urlParams
+            )
+
+            return@filter this.filters.resolve(
+                itemDataContext, InterpolatorImpl(dataContext = itemDataContext)
+            )
+        }
+    }
+}
+
+internal fun Collection.sort(userInfo: Map<String, Any>, urlParams: Map<String, String>) {
+    this.sortDescriptors.forEach { sortDescriptor ->
+        this.items = this.items?.sortedWith { o1, o2 ->
+
+            val v1 = dataContextOf(
+                Keyword.USER.value to userInfo,
+                Keyword.DATA.value to o1,
+                Keyword.USER.value to urlParams
+            ).fromKeyPath(sortDescriptor.keyPath)
+
+            val v2 = dataContextOf(
+                Keyword.USER.value to userInfo,
+                Keyword.DATA.value to o2,
+                Keyword.USER.value to urlParams
+            ).fromKeyPath(sortDescriptor.keyPath)
+
+            if (sortDescriptor.ascending) {
+                when (v1) {
+                    v2 -> 0
+                    null -> -1
+                    else -> 1
+                }
+            } else {
+                when (v1) {
+                    v2 -> 0
+                    null -> 1
+                    else -> -1
+                }
+            }
+        }
+    }
 }

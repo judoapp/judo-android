@@ -21,6 +21,7 @@ import app.judo.sdk.api.Judo
 import app.judo.sdk.api.android.ExperienceFragmentFactory
 import app.judo.sdk.core.cache.KeyValueCache
 import app.judo.sdk.core.events.EventBus
+import app.judo.sdk.core.interpolation.ProtoInterpolator
 import app.judo.sdk.core.log.Logger
 import app.judo.sdk.core.repositories.ExperienceRepository
 import app.judo.sdk.core.repositories.ExperienceTreeRepository
@@ -47,6 +48,8 @@ internal interface MutableEnvironment: Environment {
     override var profileService: ProfileService
 
     override var keyValueCache: KeyValueCache
+
+    override var interpolator: ProtoInterpolator
 
     override var imageService: ImageService
 

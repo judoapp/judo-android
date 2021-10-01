@@ -38,7 +38,7 @@ internal class NoOpSDKController : SDKController {
         /* no-op */
     }
 
-    override suspend fun performSync(prefetchAssets: Boolean, onComplete: () -> Unit) {
+    override suspend fun performSync(onComplete: () -> Unit) {
         onComplete()
     }
 

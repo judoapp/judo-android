@@ -25,6 +25,7 @@ import app.judo.sdk.core.cache.KeyValueCache
 import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.environment.MutableEnvironment
 import app.judo.sdk.core.events.EventBus
+import app.judo.sdk.core.interpolation.ProtoInterpolator
 import app.judo.sdk.core.lang.Tokenizer
 import app.judo.sdk.core.lang.TokenizerImpl
 import app.judo.sdk.core.log.Logger
@@ -33,6 +34,7 @@ import app.judo.sdk.core.repositories.ExperienceTreeRepository
 import app.judo.sdk.core.repositories.SyncRepository
 import app.judo.sdk.core.services.*
 import app.judo.sdk.core.web.Http
+import app.judo.sdk.core.web.JudoCallInterceptor
 import app.judo.sdk.ui.ExperienceFragment
 import app.judo.sdk.ui.ExperienceFragment.Companion.applyArguments
 import app.judo.sdk.ui.implementations.EventBusImpl
@@ -66,11 +68,16 @@ internal class EnvironmentImpl(
         context = context
     )
 
-    override var tokenizer: Tokenizer = TokenizerImpl()
+    val packageInfo = context.packageManager.getPackageInfo(
+        context.packageName,
+        0
+    )
+
+    var packageName = packageInfo.packageName
+
+    var appVersion = packageInfo.versionName
 
     var baseClient = Http.coreClient(
-        accessTokenSupplier = { configuration.accessToken },
-        deviceIdSupplier = { keyValueCache.retrieveString(Environment.Keys.DEVICE_ID) ?: "TODO" },
         loggerSupplier = { logger },
         cookieJarSupplier = {
             CookieJarImpl(
@@ -81,8 +88,19 @@ internal class EnvironmentImpl(
                     keyValueCache
                 }
             )
-        }
+        },
     )
+
+    var judoClient = baseClient.newBuilder().apply {
+       addInterceptor(JudoCallInterceptor(
+           accessTokenSupplier = { configuration.accessToken },
+           deviceIdSupplier = { keyValueCache.retrieveString(Environment.Keys.DEVICE_ID) ?: "TODO" },
+           loggerSupplier = { logger },
+           httpAgent = System.getProperty("http.agent") ?: "",
+           clientPackageName = { packageName },
+           appVersion = { appVersion },
+       ))
+    }.build()
 
     override var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 
@@ -90,16 +108,23 @@ internal class EnvironmentImpl(
 
     override var defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
 
+    override var tokenizer: Tokenizer = TokenizerImpl()
+
+    override var interpolator: ProtoInterpolator = InterpolatorImpl(
+        tokenizer,
+        loggerSupplier = { logger },
+    )
+
     override var imageService: ImageService = ImageServiceImpl(
         context = context,
-        clientSupplier = { baseClient },
+        clientSupplier = { judoClient },
         baseURLSupplier = { baseURL },
         imageCachePathSupplier = { cachePath },
         cacheSizeSupplier = { imageCacheSize }
     )
 
     override var pushTokenService: PushTokenService = PushTokenServiceImpl(
-        baseClientSupplier = { baseClient },
+        baseClientSupplier = { judoClient },
         keyValueCacheSupplier = { keyValueCache },
         ioDispatcherSupplier = { ioDispatcher },
         eventBusSupplier = { eventBus }
@@ -107,19 +132,19 @@ internal class EnvironmentImpl(
 
     override var experienceService: ExperienceService = ExperienceServiceImpl(
         cachePathSupplier = { cachePath },
-        clientSupplier = { baseClient },
+        clientSupplier = { judoClient },
         baseURLSupplier = { baseURL },
         cacheSizeSupplier = { experienceCacheSize }
     )
 
     override var fontResourceService: FontResourceService = FontResourceServiceImpl(
         cachePathSupplier = { cachePath },
-        clientSupplier = { baseClient },
+        clientSupplier = { judoClient },
         baseURLSupplier = { baseURL }
     )
 
     override var syncService: SyncService = SyncServiceImpl(
-        baseClientSupplier = { baseClient },
+        baseClientSupplier = { judoClient },
         baseURLSupplier = { baseURL }
     )
 
@@ -131,7 +156,7 @@ internal class EnvironmentImpl(
     )
 
     override var ingestService: IngestService = IngestServiceImpl(
-        baseClientSupplier = { baseClient },
+        baseClientSupplier = { judoClient },
         loggerSupplier = { logger },
         ioDispatcherSupplier = { ioDispatcher }
     )
@@ -161,4 +186,5 @@ internal class EnvironmentImpl(
         deviceIdSupplier = { keyValueCache.retrieveString(Environment.Keys.DEVICE_ID) ?: "TODO" },
         processLifecycleSupplier = { ProcessLifecycleOwner.get() }
     )
+
 }

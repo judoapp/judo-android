@@ -45,8 +45,6 @@ internal class ExperienceViewModelRobot : AbstractTestRobot() {
     private val model by lazy {
         ExperienceViewModel(
             environment = environment,
-            dispatcher = environment.mainDispatcher,
-            ioDispatcher = environment.ioDispatcher,
         )
     }
 

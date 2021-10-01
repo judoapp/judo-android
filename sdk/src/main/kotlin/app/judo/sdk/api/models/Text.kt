@@ -45,8 +45,6 @@ data class Text(
     override val overlay: Overlay? = null,
     val mask: Node? = null,
     override var action: Action? = null,
-    val skeleton: Boolean? = null,
-    val visible: Boolean? = null,
     val accessibility: Accessibility? = null,
 ) : Layer,
     Backgroundable,

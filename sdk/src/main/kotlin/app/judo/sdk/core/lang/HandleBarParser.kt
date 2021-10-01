@@ -100,9 +100,15 @@ internal class HandleBarParser<U> : AbstractParser<U, Token.HandleBarExpression>
     // TODO: 2021-05-23 Replace with StringLiteralParser
     private val quoteParser = CharParser<Token.HandleBarExpression>('"')
 
-    private val anythingButAQuotationParser = IdentifierParser<Token.HandleBarExpression>(
-        invalidCharacters = listOf('"')
-    )
+    private val anythingButAQuotationParser = MapParser(
+        MaybeParser(
+            IdentifierParser<Token.HandleBarExpression>(
+                invalidCharacters = listOf('"')
+            )
+        )
+    ) {
+        it ?: ""
+    }
 
     private val helperArgument: Parser<Token.HandleBarExpression, String> = MapParser(
         MapStateParser(
@@ -114,7 +120,9 @@ internal class HandleBarParser<U> : AbstractParser<U, Token.HandleBarExpression>
         ) { oldState, argument ->
 
             val newState = oldState.copy(
-                helperArguments = oldState.helperArguments?.plus(argument) ?: listOf(argument)
+                helperArguments = oldState.helperArguments?.plus(argument) ?: listOf(
+                    argument
+                )
             )
 
             val newValue = "\"$argument\""

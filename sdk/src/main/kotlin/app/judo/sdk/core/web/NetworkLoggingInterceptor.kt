@@ -41,6 +41,7 @@ internal class NetworkLoggingInterceptor(
                     $request
                     BODY: ${request.body()}
                     URL: ${request.url()}
+                    USER AGENT: ${request.header("User-Agent")}
                 """.trimIndent()
         )
 

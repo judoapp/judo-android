@@ -1,0 +1,129 @@
+{
+  "id": "414",
+  "name": "Collection Test",
+  "version": 1,
+  "revisionID": "608",
+  "nodes": [
+    {
+      "id": "813A6466-19C6-4983-9B0C-39364B6E2585",
+      "__typeName": "Screen",
+      "childIDs": [
+        "5C69539B-8C6E-4B13-A76B-B13046EBF102"
+      ],
+      "name": "Screen",
+      "backButtonStyle": {
+        "__typeName": "DefaultBackButtonStyle",
+        "title": "Screen"
+      },
+      "backgroundColor": {
+        "systemName": "systemBackground",
+        "default": {
+          "red": 1,
+          "green": 1,
+          "blue": 1,
+          "alpha": 1
+        },
+        "darkMode": {
+          "red": 0,
+          "green": 0,
+          "blue": 0,
+          "alpha": 1
+        }
+      },
+      "statusBarStyle": "default",
+      "androidStatusBarStyle": "light",
+      "androidStatusBarBackgroundColor": {
+        "default": {
+          "red": 0.21568627450980393,
+          "alpha": 1,
+          "blue": 0.7019607843137254,
+          "green": 0
+        }
+      }
+    },
+    {
+      "id": "5C69539B-8C6E-4B13-A76B-B13046EBF102",
+      "__typeName": "ScrollContainer",
+      "childIDs": [
+        "6B486F85-B4B8-413F-9E60-FFF00C0F115D"
+      ],
+      "axis": "vertical",
+      "disableScrollBar": false
+    },
+    {
+      "id": "6B486F85-B4B8-413F-9E60-FFF00C0F115D",
+      "__typeName": "DataSource",
+      "childIDs": [
+        "9B4501B7-3450-46AC-84F6-218858CBABA9"
+      ],
+      "headers": [],
+      "httpMethod": "GET",
+      "url": "https://reqres.in/api/users"
+    },
+    {
+      "id": "9B4501B7-3450-46AC-84F6-218858CBABA9",
+      "__typeName": "VStack",
+      "childIDs": [
+        "029633F8-1090-4DC9-8973-2B61E0849951"
+      ],
+      "alignment": "leading",
+      "spacing": 8
+    },
+    {
+      "id": "029633F8-1090-4DC9-8973-2B61E0849951",
+      "__typeName": "Collection",
+      "childIDs": [
+        "8A676DA3-F55C-45A0-A830-6604256590A3"
+      ],
+      "name": "Collection",
+      "keyPath": "data.data",
+      "filters": [],
+      "sortDescriptors": [
+        {
+          "keyPath": "data.first_name",
+          "ascending": false
+        }
+      ],
+      "limit": {
+        "show": 3,
+        "startAt": 2
+      }
+    },
+    {
+      "id": "8A676DA3-F55C-45A0-A830-6604256590A3",
+      "__typeName": "Text",
+      "childIDs": [],
+      "text": "Hello {{data.first_name}}",
+      "font": {
+        "__typeName": "DynamicFont",
+        "textStyle": "body",
+        "isDynamic": true,
+        "emphases": []
+      },
+      "textColor": {
+        "systemName": "label",
+        "default": {
+          "red": 0,
+          "green": 0,
+          "blue": 0,
+          "alpha": 1
+        },
+        "darkMode": {
+          "red": 1,
+          "green": 1,
+          "blue": 1,
+          "alpha": 1
+        }
+      },
+      "textAlignment": "leading"
+    }
+  ],
+  "screenIDs": [
+    "813A6466-19C6-4983-9B0C-39364B6E2585"
+  ],
+  "initialScreenID": "813A6466-19C6-4983-9B0C-39364B6E2585",
+  "fonts": [],
+  "localization": {},
+  "appearance": "auto",
+  "prefetchImages": "none"
+}

@@ -24,6 +24,7 @@ import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.implementations.CookieJarImpl
 import app.judo.sdk.core.implementations.ExperienceServiceImpl
 import app.judo.sdk.core.web.Http
+import app.judo.sdk.core.web.JudoCallInterceptor
 import app.judo.sdk.utils.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -101,11 +102,20 @@ class ExperienceServiceTests {
         )
 
         baseClient = Http.coreClient(
-            accessTokenSupplier = { accessToken },
-            deviceIdSupplier = { deviceId },
             loggerSupplier = { logger },
             cookieJarSupplier = { cookieJar }
-        )
+        ).newBuilder().apply {
+            addInterceptor(
+                JudoCallInterceptor(
+                accessTokenSupplier = { accessToken },
+                deviceIdSupplier = { deviceId },
+                loggerSupplier = { logger },
+                httpAgent = System.getProperty("http.agent") ?: "",
+                clientPackageName = { "com.client.test" },
+                appVersion = { "1.0.0" },
+            )
+            )
+        }.build()
 
         val baseURL = server.url("/")
 

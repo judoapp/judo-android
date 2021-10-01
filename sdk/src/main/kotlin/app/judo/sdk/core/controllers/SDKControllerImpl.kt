@@ -18,6 +18,10 @@
 package app.judo.sdk.core.controllers
 
 import android.app.Application
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.ProcessLifecycleOwner
 import app.judo.sdk.api.Judo
 import app.judo.sdk.api.android.ExperienceFragmentFactory
 import app.judo.sdk.api.errors.ExperienceError
@@ -25,14 +29,10 @@ import app.judo.sdk.api.events.Event
 import app.judo.sdk.api.events.ScreenViewedCallback
 import app.judo.sdk.api.models.Authorizer
 import app.judo.sdk.api.models.Experience
-import app.judo.sdk.api.models.URLRequest
 import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.environment.MutableEnvironment
 import app.judo.sdk.core.errors.ErrorMessages
 import app.judo.sdk.core.implementations.*
-import app.judo.sdk.core.implementations.EnvironmentImpl
-import app.judo.sdk.core.implementations.NotificationHandlerImpl
-import app.judo.sdk.core.implementations.SynchronizerImpl
 import app.judo.sdk.core.log.Logger
 import app.judo.sdk.core.sync.Synchronizer
 import kotlinx.coroutines.CoroutineScope
@@ -43,7 +43,7 @@ import java.util.*
 /**
  * Coordinates the underlying pieces of the SDK's components.
  */
-internal class SDKControllerImpl : SDKController {
+internal class SDKControllerImpl : SDKController, LifecycleObserver {
 
     companion object {
         private const val TAG = "SDKController"
@@ -95,15 +95,30 @@ internal class SDKControllerImpl : SDKController {
             this.configuration = configuration
 
             environment.eventQueue.start()
+
         }
+
+        ProcessLifecycleOwner.get().lifecycle.addObserver(
+            this
+        )
+
     }
 
-    override suspend fun performSync(prefetchAssets: Boolean, onComplete: () -> Unit) {
-        if (!this@SDKControllerImpl::synchronizer.isInitialized)
-            synchronizer = SynchronizerImpl(
-                environment
+    override suspend fun performSync(onComplete: () -> Unit) {
+        if (!this@SDKControllerImpl::synchronizer.isInitialized) {
+
+            synchronizer = LoggingSynchronizer(
+                delegate = QueuingSynchronizer(
+                    ioDispatcher = environment.ioDispatcher,
+                    delegate = SynchronizerImpl(
+                        environment
+                    )
+                ),
+                logger = logger
             )
-        synchronizer.performSync(prefetchAssets, onComplete)
+
+        }
+        synchronizer.performSync(onComplete)
     }
 
     override suspend fun onFirebaseRemoteMessageReceived(data: Map<String, String>) {
@@ -124,7 +139,11 @@ internal class SDKControllerImpl : SDKController {
         }
     }
 
-    override fun loadExperienceIntoMemory(experience: Experience, authorizers: List<Authorizer>, urlQueryParameters: Map<String, String>) {
+    override fun loadExperienceIntoMemory(
+        experience: Experience,
+        authorizers: List<Authorizer>,
+        urlQueryParameters: Map<String, String>
+    ) {
         if (this::environment.isInitialized) {
             environment.experienceRepository.put(
                 experience,
@@ -159,7 +178,7 @@ internal class SDKControllerImpl : SDKController {
     }
 
     override fun addScreenViewedCallback(callback: ScreenViewedCallback) {
-        if(this::environment.isInitialized) {
+        if (this::environment.isInitialized) {
             CoroutineScope(environment.mainDispatcher).launch {
                 environment.eventBus.eventFlow.collect { event ->
                     if (event is Event.ScreenViewed) {
@@ -167,6 +186,13 @@ internal class SDKControllerImpl : SDKController {
                     }
                 }
             }
+        }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    fun onResume() {
+        CoroutineScope(environment.ioDispatcher).launch {
+            performSync { /* no-op */ }
         }
     }
 }

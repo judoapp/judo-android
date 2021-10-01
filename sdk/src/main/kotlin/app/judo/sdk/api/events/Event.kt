@@ -34,15 +34,22 @@ sealed class Event {
      * parameters on the URL used to open the Experience), and `user` (the user info supplied to
      * the Experience by your app code).
      */
-    internal data class ActionReceived(val experience: Experience, val screen: Screen, val node: Node, val action: Action, val dataContext: Map<String, Any?>): Event()
-
-    internal object PushTokenUpdated: Event()
+    internal data class ActionReceived(
+        val experience: Experience,
+        val screen: Screen,
+        val node: Node,
+        val action: Action,
+        val dataContext: Map<String, Any?>
+    ): Event()
 
     /**
      * This event is fired when ProfileService sees an update to user profile (ids, traits, etc.)
      * information.
      */
     internal object Identified: Event()
+
+    internal object PushTokenUpdated: Event()
+
 }
 
 fun interface ScreenViewedCallback {

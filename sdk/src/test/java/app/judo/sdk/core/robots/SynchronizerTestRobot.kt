@@ -38,8 +38,8 @@ internal class SynchronizerTestRobot : AbstractTestRobot() {
 
     }
 
-    suspend fun performSync(prefetchAssets: Boolean = false, onComplete: () -> Unit = {}) {
-        synchronizer.performSync(prefetchAssets, onComplete)
+    suspend fun performSync(onComplete: () -> Unit = {}) {
+        synchronizer.performSync(onComplete)
     }
 
     fun assertTheLastURLPathToBeFetchedWas(expected: String) {

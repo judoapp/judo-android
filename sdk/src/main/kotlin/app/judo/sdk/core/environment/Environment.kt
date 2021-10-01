@@ -17,11 +17,11 @@
 
 package app.judo.sdk.core.environment
 
-import app.judo.sdk.BuildConfig
 import app.judo.sdk.api.Judo
 import app.judo.sdk.api.android.ExperienceFragmentFactory
 import app.judo.sdk.core.cache.KeyValueCache
 import app.judo.sdk.core.events.EventBus
+import app.judo.sdk.core.interpolation.ProtoInterpolator
 import app.judo.sdk.core.lang.Tokenizer
 import app.judo.sdk.core.log.Logger
 import app.judo.sdk.core.repositories.ExperienceRepository
@@ -31,6 +31,8 @@ import app.judo.sdk.core.services.*
 import kotlinx.coroutines.CoroutineDispatcher
 
 internal interface Environment {
+
+    companion object;
 
     object Keys {
         const val IGNORE_CACHE: String = "ignore-cache"
@@ -55,7 +57,11 @@ internal interface Environment {
         const val FONT_CACHE_SIZE: Long = 50L * 1024L * 1024L // 50 MB
     }
 
-    companion object
+    val ioDispatcher: CoroutineDispatcher
+
+    val mainDispatcher: CoroutineDispatcher
+
+    val defaultDispatcher: CoroutineDispatcher
 
     val configuration: Judo.Configuration
 
@@ -74,6 +80,10 @@ internal interface Environment {
     val profileService: ProfileService
 
     val keyValueCache: KeyValueCache
+
+    val interpolator: ProtoInterpolator
+
+    var tokenizer: Tokenizer
 
     val imageService: ImageService
 
@@ -98,13 +108,5 @@ internal interface Environment {
     val experienceFragmentFactory: ExperienceFragmentFactory
 
     val eventQueue: AnalyticsServiceScope
-
-    val ioDispatcher: CoroutineDispatcher
-
-    val mainDispatcher: CoroutineDispatcher
-
-    val defaultDispatcher: CoroutineDispatcher
-
-    var tokenizer: Tokenizer
 
 }

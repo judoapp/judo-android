@@ -27,7 +27,7 @@ data class WebView(
     override val id: String,
     override val name: String? = null,
     override val metadata: Metadata? = null,
-    val url: String,
+    val source: WebViewSource,
     val isScrollEnabled: Boolean,
     val aspectRatio: Float? = null,
     val padding: Padding? = null,
@@ -59,9 +59,18 @@ data class WebView(
     @Transient
     override var interpolator: Interpolator? = null
 
-    internal val interpolatedURL: String
+    internal val interpolatedSource: WebViewSource
         get() {
-            return interpolator?.interpolate(url) ?: url
+            return when (source) {
+                is WebViewSource.HTML -> {
+                    source
+                }
+                is WebViewSource.URL -> {
+                    source.copy(
+                        value = interpolator?.interpolate(source.value) ?: source.value
+                    )
+                }
+            }
         }
 
 }

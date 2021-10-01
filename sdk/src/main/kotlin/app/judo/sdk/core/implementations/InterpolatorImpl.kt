@@ -23,8 +23,10 @@ import app.judo.sdk.core.data.emptyDataContext
 import app.judo.sdk.core.data.fromKeyPath
 import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.environment.Environment.RegexPatterns
+import app.judo.sdk.core.interpolation.*
 import app.judo.sdk.core.interpolation.DateHelper
 import app.judo.sdk.core.interpolation.LowercaseHelper
+import app.judo.sdk.core.interpolation.ProtoInterpolator
 import app.judo.sdk.core.interpolation.ReplaceHelper
 import app.judo.sdk.core.interpolation.SpaceReplacerHelper
 import app.judo.sdk.core.interpolation.UppercaseHelper
@@ -39,11 +41,14 @@ internal class InterpolatorImpl(
     private val tokenizer: Tokenizer = Environment.current.tokenizer,
     private val loggerSupplier: () -> Logger? = { null },
     private val dataContext: DataContext = emptyDataContext()
-) : Interpolator {
+) : Interpolator, ProtoInterpolator {
 
     companion object {
-        private const val TAG = "InterpolatorImpl"
+        private const val TAG = "Interpolator"
     }
+
+    override fun invoke(theTextToInterpolate: String, dataContext: DataContext): String? =
+        interpolate(theTextToInterpolate, dataContext)
 
     override fun interpolate(theTextToInterpolate: String): String? =
         interpolate(theTextToInterpolate, dataContext)
@@ -106,11 +111,11 @@ internal class InterpolatorImpl(
             LOWERCASE -> {
                 LowercaseHelper()
             }
-            UPPERCASE -> {
-                UppercaseHelper()
-            }
             REPLACE -> {
                 ReplaceHelper()
+            }
+            UPPERCASE -> {
+                UppercaseHelper()
             }
         }
 

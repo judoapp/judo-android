@@ -31,12 +31,16 @@ import androidx.annotation.MainThread
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import app.judo.sdk.BuildConfig
 import app.judo.sdk.R
 import app.judo.sdk.api.errors.ExperienceError
+import app.judo.sdk.api.events.Event
 import app.judo.sdk.api.models.Action
 import app.judo.sdk.api.models.Action.*
 import app.judo.sdk.api.models.Experience
+import app.judo.sdk.api.models.Screen
 import app.judo.sdk.api.models.SegueStyle
 import app.judo.sdk.core.controllers.current
 import app.judo.sdk.core.environment.Environment
@@ -46,10 +50,11 @@ import app.judo.sdk.databinding.JudoSdkUnsupportedVersionLayoutBinding
 import app.judo.sdk.ui.events.ExperienceRequested
 import app.judo.sdk.ui.extensions.toCustomTabsIntent
 import app.judo.sdk.ui.extensions.toUri
-import app.judo.sdk.ui.extensions.viewModels
 import app.judo.sdk.ui.factories.ExperienceViewModelFactory
 import app.judo.sdk.ui.layout.ScreenFragment
+import app.judo.sdk.ui.models.ExperienceFragmentViewModel
 import app.judo.sdk.ui.models.ExperienceState
+import app.judo.sdk.ui.state.ExperienceFragmentState
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filterIsInstance
 
@@ -80,13 +85,14 @@ open class ExperienceFragment : Fragment() {
     private val unsupportedBinding: JudoSdkUnsupportedVersionLayoutBinding
         get() = _unsupportedBinding!!
 
-    private val model: ExperienceViewModel by viewModels {
-        ExperienceViewModelFactory()
-    }
+    private lateinit var model: ExperienceViewModel
+    private lateinit var viewModel: ExperienceFragmentViewModel
 
     private var hostStatusBarState: StatusBarState? = null
 
     private val roots = ArrayDeque<String>()
+
+    private val useRenderTree = BuildConfig.USE_RENDER_TREE
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -103,10 +109,28 @@ open class ExperienceFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            hostStatusBarState = if (!isEmbeddedFragment()) captureHostStatusBarState() else null
+
+            if (useRenderTree) {
+                viewModel =
+                    ViewModelProvider(
+                        this,
+                        ExperienceViewModelFactory()
+                    ).get(ExperienceFragmentViewModel::class.java)
+            } else {
+                model =
+                    ViewModelProvider(
+                        this,
+                        ExperienceViewModelFactory()
+                    ).get(ExperienceViewModel::class.java)
+            }
+
+            hostStatusBarState =
+                if (!isEmbeddedFragment()) captureHostStatusBarState() else null
+
             listenForActions()
             listenForStateChanges()
             requestExperience()
+
         } else {
             onUnsupportedAndroidPlatformVersion()
         }
@@ -150,25 +174,52 @@ open class ExperienceFragment : Fragment() {
     }
 
     private fun requestExperience() {
+
         val parcelable = arguments?.getParcelable<Intent>(EXPERIENCE_INTENT)
+
         val intent = activity?.intent
-        (parcelable ?: intent)?.let {
-            model.onEvent(
-                ExperienceRequested(
-                    it
+
+        if (useRenderTree) {
+            (parcelable ?: intent)?.let {
+                viewModel.onEvent(
+                    ExperienceRequested(
+                        it
+                    )
                 )
-            )
+            }
+        } else {
+            (parcelable ?: intent)?.let {
+                model.onEvent(
+                    ExperienceRequested(
+                        it
+                    )
+                )
+            }
         }
     }
 
     private fun listenForStateChanges() {
 
-        render(model.stateFlow.value)
+        if (useRenderTree) {
 
-        lifecycleScope.launchWhenStarted {
-            model.stateFlow.collect { state ->
-                render(state)
+            render(viewModel.stateFlow.value)
+
+            lifecycleScope.launchWhenStarted {
+                viewModel.stateFlow.collect { state ->
+                    render(state)
+                }
             }
+
+        } else {
+
+            render(model.stateFlow.value)
+
+            lifecycleScope.launchWhenStarted {
+                model.stateFlow.collect { state ->
+                    render(state)
+                }
+            }
+
         }
     }
 
@@ -192,10 +243,38 @@ open class ExperienceFragment : Fragment() {
         }
     }
 
+    private fun render(state: ExperienceFragmentState) {
+        when (state) {
+            is ExperienceFragmentState.Empty -> onEmpty()
+
+            is ExperienceFragmentState.Loading -> onLoading()
+
+            is ExperienceFragmentState.Error -> onError(error = state.error)
+
+            is ExperienceFragmentState.Retrieved -> {
+                onRetrieved(experience = state.experience)
+                container.removeAllViews()
+                navigate(
+                    destination = state.screenId ?: state.experience.initialScreenID,
+                    style = SegueStyle.MODAL,
+                    addToBackStack = false
+                )
+            }
+        }
+    }
+
     private fun listenForActions() {
-        lifecycleScope.launchWhenStarted {
-            model.eventFlow.filterIsInstance<Action>().collect { action ->
-                handleAction(action)
+        if (useRenderTree) {
+            lifecycleScope.launchWhenStarted {
+                model.eventFlow.filterIsInstance<Event.ActionReceived>().collect { event ->
+                    handleAction(event.action)
+                }
+            }
+        } else {
+            lifecycleScope.launchWhenStarted {
+                model.eventFlow.filterIsInstance<Action>().collect { action ->
+                    handleAction(action)
+                }
             }
         }
     }
@@ -313,14 +392,20 @@ open class ExperienceFragment : Fragment() {
 
     private fun initializeScreenFragment(screenID: String): ScreenFragment {
 
-        val screens =
+        val screens: List<Screen> = if (useRenderTree) {
+
+            (viewModel.stateFlow.value as? ExperienceFragmentState.Retrieved)
+                ?.experience
+                ?.nodes()
+                ?: emptyList()
+        } else {
+
             (model.stateFlow.value as? ExperienceState.RetrievedTree)
                 ?.experienceTree
-                ?.screenNodes
-                ?.values
-                ?.map { screenNode ->
-                    screenNode.screen
-                } ?: emptyList()
+                ?.experience
+                ?.nodes()
+                ?: emptyList()
+        }
 
         val initialScreen = screens.find { node -> node.id == screenID }!!
         return ScreenFragment.newInstance(initialScreen.id)
@@ -340,9 +425,9 @@ open class ExperienceFragment : Fragment() {
                 if (action.dismissExperience) onDismiss()
                 try {
 
-                    val uri = action.run {
-                        (interpolator?.interpolate(url) ?: url).toUri()
-                    }
+                    val uri = action.url.let { theURL ->
+                        action.interpolator?.interpolate(theURL) ?: theURL
+                    }.toUri()
 
                     startActivity(Intent(Intent.ACTION_VIEW, uri))
 
@@ -354,18 +439,17 @@ open class ExperienceFragment : Fragment() {
 
             is PresentWebsite -> {
                 //TODO: enable changing toolbar color
+                val theURL = action.url
                 try {
 
-                    action.run {
-                        (interpolator?.interpolate(url) ?: url)
-                            .toUri()
-                            .toCustomTabsIntent()
-                            .also(::startActivity)
-                    }
+                    (action.interpolator?.interpolate(theURL) ?: theURL)
+                        .toUri()
+                        .toCustomTabsIntent()
+                        .also(::startActivity)
 
                 } catch (error: Throwable) {
                     Environment.current
-                        .logger.e(TAG, "Failed to present website for URL: ${action.url}", error)
+                        .logger.e(TAG, "Failed to present website for URL: $theURL", error)
                 }
             }
             is Custom -> {

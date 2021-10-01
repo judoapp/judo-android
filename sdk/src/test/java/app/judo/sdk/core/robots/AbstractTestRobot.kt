@@ -87,11 +87,24 @@ internal abstract class AbstractTestRobot {
         baseURL = this@AbstractTestRobot.baseURL
 
         baseClient = Http.coreClient(
-            accessTokenSupplier = { configuration.accessToken },
-            deviceIdSupplier = { keyValueCache.retrieveString(Environment.Keys.DEVICE_ID) ?: "TODO" },
             loggerSupplier = { logger },
-            cookieJarSupplier = { cookieJar }
+            cookieJarSupplier = { cookieJar },
         )
+
+        packageName = "com.client.test"
+
+        appVersion = "1.0.0"
+
+        judoClient = baseClient.newBuilder().apply {
+            addInterceptor(JudoCallInterceptor(
+                accessTokenSupplier = { configuration.accessToken },
+                deviceIdSupplier = { keyValueCache.retrieveString(Environment.Keys.DEVICE_ID) ?: "TODO" },
+                loggerSupplier = { logger },
+                httpAgent = System.getProperty("http.agent") ?: "",
+                clientPackageName = { packageName },
+                appVersion = { appVersion },
+            ))
+        }.build()
 
         fontResourceService = FakeFontResourceService()
 

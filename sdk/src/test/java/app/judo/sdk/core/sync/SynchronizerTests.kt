@@ -66,26 +66,4 @@ internal class SynchronizerTests : AbstractRobotTest<SynchronizerTestRobot>() {
         Assert.assertFalse(callBackWasNeverCalled)
 
     }
-
-    @Test
-    fun `Images can be prefetched at sync time`() = runBlocking(robot.environment.ioDispatcher) {
-        // Arrange
-        val expected = "/content.judo.app/images/"
-
-        var callBackWasNeverCalled = true
-
-        // Act
-        robot.performSync(prefetchAssets = true) {
-            // Assert
-            robot.assertTheLastURLPathToBeFetchedStartsWith(
-                expected
-            )
-            callBackWasNeverCalled = false
-        }
-
-        // Assert
-        Assert.assertFalse(callBackWasNeverCalled)
-
-    }
-
 }
