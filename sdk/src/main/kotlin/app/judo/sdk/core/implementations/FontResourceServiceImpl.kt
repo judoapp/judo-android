@@ -53,7 +53,6 @@ internal class FontResourceServiceImpl(
         @GET
         suspend fun getFile(
             @Url aURL: String,
-            @Query("apiVersion") apiVersion: Int = BuildConfig.API_VERSION,
         ): Response<ResponseBody>
     }
 

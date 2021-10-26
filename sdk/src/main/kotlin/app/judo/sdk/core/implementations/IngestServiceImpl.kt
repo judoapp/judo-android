@@ -17,6 +17,7 @@
 
 package app.judo.sdk.core.implementations
 
+import app.judo.sdk.BuildConfig
 import app.judo.sdk.api.analytics.AnalyticsEvent
 import app.judo.sdk.core.data.JsonParser
 import app.judo.sdk.core.log.Logger
@@ -30,6 +31,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.POST
+import retrofit2.http.Query
 import java.io.IOException
 
 class IngestServiceImpl(
@@ -45,8 +47,9 @@ class IngestServiceImpl(
     interface IngestAPI {
         @POST("/batch")
         suspend fun postBatch(
-            @Body body: BatchBody
-        ): Response<Void>
+            @Body body: BatchBody,
+            @Query("apiVersion") apiVersion: Int = BuildConfig.API_VERSION,
+            ): Response<Void>
     }
 
     @JsonClass(generateAdapter = true)

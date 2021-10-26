@@ -60,7 +60,7 @@ internal class JudoCallInterceptor(
 
             addHeader(
                 "User-Agent",
-                "$httpAgent $clientPackageName/$appVersion JudoSDK/${BuildConfig.LIBRARY_VERSION}"
+                "$httpAgent ${clientPackageName()}/${appVersion()} JudoSDK/${BuildConfig.LIBRARY_VERSION}"
             )
 
         }.build()

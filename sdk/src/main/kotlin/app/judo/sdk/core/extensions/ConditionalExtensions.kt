@@ -90,11 +90,11 @@ internal fun Condition.resolve(dataContext: DataContext, interpolator: Interpola
         }
 
         IS_SET -> {
-            lhs != "null" && lhs != JSONObject.NULL
+            lhs != "null" && lhs != JSONObject.NULL && lhs != null
         }
 
         IS_NOT_SET -> {
-            lhs == "null" || lhs == JSONObject.NULL
+            lhs == "null" || lhs == JSONObject.NULL || lhs == null
         }
 
         IS_TRUE -> {

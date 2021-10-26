@@ -22,6 +22,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.annotation.MainThread
+import app.judo.sdk.BuildConfig
 import app.judo.sdk.api.android.ExperienceFragmentFactory
 import app.judo.sdk.api.events.ScreenViewedCallback
 import app.judo.sdk.api.logs.LogLevel
@@ -65,6 +66,11 @@ object Judo {
         set(value) {
             controller.logger.logLevel = value
         }
+
+    /**
+     * The current version of the Judo SDK.
+     */
+    const val sdkVersion: String = BuildConfig.LIBRARY_VERSION
 
     /**
      * Initializes the Judo SDK.

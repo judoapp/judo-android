@@ -25,6 +25,7 @@ import app.judo.sdk.core.implementations.InterpolatorImpl
 import app.judo.sdk.core.lang.TokenizerImpl
 import app.judo.sdk.utils.TestJSON
 import app.judo.sdk.utils.TestLoggerImpl
+import org.json.JSONObject
 import org.junit.Assert
 
 import org.junit.Test
@@ -129,6 +130,77 @@ class TheConditionResolver {
 
         Assert.assertTrue(
             condition.resolve(
+                dataContext, interpolator
+            )
+        )
+    }
+
+    @Test
+    fun `IS_SET and IS_NOT_SET check for multiple null types`() {
+        val userData = mapOf(
+            "aJsonNull" to JSONObject.NULL,
+            "aKotlinNull" to null,
+            "aRealValue" to 42
+        )
+
+        val dataContext = dataContextOf(
+            "user" to userData
+        )
+
+        val interpolator = InterpolatorImpl(
+            tokenizer = TokenizerImpl(),
+            loggerSupplier = { TestLoggerImpl() },
+            dataContext = dataContext
+        )
+
+        // IS SET
+
+        Assert.assertFalse(
+            Condition("user.aJsonNull", Predicate.IS_SET, null).resolve(
+                dataContext, interpolator
+            )
+        )
+
+        Assert.assertFalse(
+            Condition("user.aKotlinNull", Predicate.IS_SET, null).resolve(
+                dataContext, interpolator
+            )
+        )
+
+        Assert.assertFalse(
+            Condition("user.aStringNull", Predicate.IS_SET, null).resolve(
+                dataContext, interpolator
+            )
+        )
+
+        Assert.assertTrue(
+            Condition("user.aRealValue", Predicate.IS_SET, null).resolve(
+                dataContext, interpolator
+            )
+        )
+
+        // IS NOT SET
+
+        Assert.assertTrue(
+            Condition("user.aJsonNull", Predicate.IS_NOT_SET, null).resolve(
+                dataContext, interpolator
+            )
+        )
+
+        Assert.assertTrue(
+            Condition("user.aKotlinNull", Predicate.IS_NOT_SET, null).resolve(
+                dataContext, interpolator
+            )
+        )
+
+        Assert.assertTrue(
+            Condition("user.aStringNull", Predicate.IS_NOT_SET, null).resolve(
+                dataContext, interpolator
+            )
+        )
+
+        Assert.assertFalse(
+            Condition("user.aRealValue", Predicate.IS_NOT_SET, null).resolve(
                 dataContext, interpolator
             )
         )
