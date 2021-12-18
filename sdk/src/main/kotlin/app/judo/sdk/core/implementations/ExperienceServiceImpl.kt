@@ -21,7 +21,8 @@ import app.judo.sdk.BuildConfig
 import app.judo.sdk.api.models.Experience
 import app.judo.sdk.core.data.JsonParser
 import app.judo.sdk.core.services.ExperienceService
-import okhttp3.*
+import okhttp3.Cache
+import okhttp3.OkHttpClient
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -56,13 +57,19 @@ internal class ExperienceServiceImpl(
         ): Response<Experience>
     }
 
+    private val cache by lazy {
+
+        Cache(
+            File(File(cachePathSupplier()), cacheName),
+            cacheSizeSupplier()
+        )
+
+    }
+
     private val client: OkHttpClient by lazy {
         clientSupplier().newBuilder().apply {
             cache(
-                Cache(
-                    File(File(cachePathSupplier()), cacheName),
-                    cacheSizeSupplier()
-                )
+                cache
             )
         }.build()
     }
@@ -90,4 +97,32 @@ internal class ExperienceServiceImpl(
 
         return api.getExperience(sanitizedURL, cacheControlHeader)
     }
+
+    override suspend fun delete(aURL: String) {
+
+        @Suppress(
+            "BlockingMethodInNonBlockingContext"
+        )
+        val iterator =
+            cache.urls()
+
+        var notRemoved = true
+
+        while (notRemoved && iterator.hasNext()) {
+
+            val nextURL =
+                iterator.next()
+
+            if (nextURL == aURL) {
+
+                iterator.remove()
+
+                notRemoved = false
+
+            }
+
+        }
+
+    }
+
 }

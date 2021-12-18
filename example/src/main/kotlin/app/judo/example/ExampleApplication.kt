@@ -61,7 +61,7 @@ class ExampleApplication : MultiDexApplication() {
             configuration = config.build()
         )
 
-        Judo.performSync(prefetchAssets = false) {
+        Judo.performSync() {
             Log.d(TAG, "Experience sync completed")
         }
 

@@ -68,7 +68,7 @@ internal class EnvironmentImpl(
         context = context
     )
 
-    val packageInfo = context.packageManager.getPackageInfo(
+    private val packageInfo = context.packageManager.getPackageInfo(
         context.packageName,
         0
     )

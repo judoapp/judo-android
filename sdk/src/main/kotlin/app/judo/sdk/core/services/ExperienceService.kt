@@ -24,4 +24,6 @@ internal interface ExperienceService {
 
     suspend fun getExperience(aURL: String, skipCache: Boolean = false): Response<Experience>
 
+    suspend fun delete(aURL: String)
+
 }

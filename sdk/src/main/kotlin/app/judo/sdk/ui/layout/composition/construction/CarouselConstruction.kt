@@ -25,9 +25,10 @@ import android.widget.FrameLayout
 import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
-import app.judo.sdk.api.models.*
+import app.judo.sdk.api.models.Carousel
 import app.judo.sdk.api.models.Layer
-import app.judo.sdk.ui.extensions.*
+import app.judo.sdk.api.models.Padding
+import app.judo.sdk.api.models.PlaysMedia
 import app.judo.sdk.ui.extensions.dp
 import app.judo.sdk.ui.extensions.setMaskPath
 import app.judo.sdk.ui.extensions.setMaskPathFromMask
@@ -40,7 +41,6 @@ import app.judo.sdk.ui.layout.composition.toSingleLayerLayout
 import app.judo.sdk.ui.views.ExperienceMediaPlayerView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import java.util.*
 import kotlin.math.roundToInt
 
 internal fun Carousel.construct(
@@ -117,20 +117,45 @@ internal class CarouselPagerAdapter(private val context: Context, private val re
                 }
                 parent.clipChildren = true
                 parent.clipToPadding = true
+                @Suppress("NewApi")
                 parent.clipToOutline = true
                 return CarouselViewHolder(container)
             }
         }
     }
+
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int) = CarouselViewHolder.create(viewGroup, padding)
-    override fun onBindViewHolder(viewHolder: CarouselViewHolder, position: Int) {
+
+    override fun onBindViewHolder(
+        viewHolder: CarouselViewHolder,
+        position: Int
+    ) {
         runBlocking(Dispatchers.Main.immediate) {
-            val node = if (loop) nodes[position.rem(nodes.size)] else nodes[position]
-            val nodes = node.toLayout(context, resolvers)
+            val index = if (loop) {
+                if (nodes.isEmpty()) {
+                    0
+                } else {
+                    position % nodes.size
+                }
+            } else {
+                position
+            }
+
+            val node = nodes.getOrNull(index)
+
+            val views = node?.toLayout(
+                    context = context,
+                    resolvers = resolvers
+                ) ?: emptyList()
+
             viewHolder.container.removeAllViews()
-            nodes.forEach { viewHolder.container.addView(it) }
+
+            views.forEach { view ->
+                viewHolder.container.addView(view)
+            }
         }
     }
+
     override fun getItemCount() = if (loop) Int.MAX_VALUE else nodes.size
 
     fun getUniqueItemCount() = nodes.size

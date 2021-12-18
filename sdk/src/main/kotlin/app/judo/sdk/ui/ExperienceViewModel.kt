@@ -80,24 +80,38 @@ internal class ExperienceViewModel(
     )
 
     private val loadInterpolator: SideEffect = { tree, node, urlParams ->
+        val closestDataSource = tree.findNearestAncestor { it is DataSource } as? DataSource
+
+        val parentDataContext = dataContextOf(
+            Keyword.USER.value to getUserInfo(),
+            Keyword.DATA.value to closestDataSource?.data,
+            Keyword.URL.value to urlParams
+        )
 
         if (node is SupportsInterpolation && node !is DataSource) {
-
-            val closestDataSource = tree.findNearestAncestor { it is DataSource } as? DataSource
-
-            val parentDataContext = dataContextOf(
-                Keyword.USER.value to getUserInfo(),
-                Keyword.DATA.value to closestDataSource?.data,
-                Keyword.URL.value to urlParams
-            )
-
             node.interpolator = InterpolatorImpl(
                 tokenizer = environment.tokenizer,
                 dataContext = parentDataContext,
             )
-
         }
 
+        if (node is Actionable) {
+            val action = node.action
+            when(action) {
+                is Action.OpenURL -> {
+                    action.interpolator = InterpolatorImpl(
+                        tokenizer = environment.tokenizer,
+                        dataContext = parentDataContext,
+                    )
+                }
+                is Action.PresentWebsite -> {
+                    action.interpolator = InterpolatorImpl(
+                        tokenizer = environment.tokenizer,
+                        dataContext = parentDataContext,
+                    )
+                }
+            }
+        }
     }
 
     fun informScreenViewed(screen: Screen) {

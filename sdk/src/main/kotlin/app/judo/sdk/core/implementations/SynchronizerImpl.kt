@@ -24,7 +24,6 @@ import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.environment.Environment.RegexPatterns
 import app.judo.sdk.core.services.ImageService
 import app.judo.sdk.core.sync.Synchronizer
-import app.judo.sdk.core.utils.ImageURLExtractor
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -48,16 +47,20 @@ internal class SynchronizerImpl(
             environment.syncRepository.retrieveSync(
                 environment.configuration.domain
             ).collect { resource ->
+
                 when (resource) {
+
                     is Resource.Loading -> {
                         environment.logger.v(
                             tag = TAG,
                             data = "Loading Sync Data"
                         )
                     }
+
                     is Resource.Success -> {
                         handleSyncResponse(resource.data)
                     }
+
                     is Resource.Error -> {
                         environment.logger.e(
                             tag = TAG,
@@ -65,8 +68,11 @@ internal class SynchronizerImpl(
                             error = resource.error
                         )
                     }
+
                 }
+
             }
+
         } catch (error: Throwable) {
             environment.logger.e(
                 tag = TAG,
@@ -89,48 +95,61 @@ internal class SynchronizerImpl(
         syncResponse: SyncResponse
     ) {
 
-        // Extract the URLs of the Experiences that need to be synced
-        val urls: List<String> = syncResponse.data.map { syncData -> syncData.url }
+        syncResponse.data.forEach { syncData ->
 
-        // Sync the experiences and extract the successful results
-        val experienceFlows: List<Flow<Experience>> = urls.map { url ->
-            environment.experienceRepository.retrieveExperience(
-                aURL = url,
-                ignoreCache = true
-            ).mapNotNull { experienceResource: Resource<Experience, Throwable> ->
-                // Transform the Flow<Resource> into a Flow<Experience>
-                // Then strip out the nulls to get a clean list
-                when (experienceResource) {
-                    is Resource.Loading -> {
-                        environment.logger.v(
-                            tag = TAG,
-                            data = "Loading experience for:\n$url"
-                        )
-                        null
+            val (url, removed) = syncData
+
+            if (removed) {
+
+                environment.experienceService.delete(
+                    syncData.url
+                )
+
+            } else {
+                
+                environment.experienceRepository.retrieveExperience(
+                    aURL = url,
+                    ignoreCache = true
+                ).collect { experienceResource: Resource<Experience, Throwable> ->
+
+                    when (experienceResource) {
+
+                        is Resource.Loading -> {
+
+                            environment.logger.v(
+                                tag = TAG,
+                                data = "Loading experience for:\n$url"
+                            )
+
+                        }
+
+                        is Resource.Success -> {
+
+                            environment.logger.v(
+                                tag = TAG,
+                                data = "Fetched experience:\n${experienceResource.data}"
+                            )
+
+                        }
+
+                        is Resource.Error -> {
+
+                            environment.logger.e(
+                                tag = TAG,
+                                message = "Error loading experience:\nURL: $url\nError: ${experienceResource.error.message}",
+                                error = experienceResource.error
+                            )
+
+                        }
+
                     }
-                    is Resource.Success -> {
-                        environment.logger.v(
-                            tag = TAG,
-                            data = "Fetched experience:\n${experienceResource.data}"
-                        )
-                        experienceResource.data
-                    }
-                    is Resource.Error -> {
-                        environment.logger.e(
-                            tag = TAG,
-                            message = "Error loading experience:\nURL: $url\nError: ${experienceResource.error.message}",
-                            error = experienceResource.error
-                        )
-                        null
-                    }
+
                 }
+
             }
+
         }
 
-        val listOfExperiences: List<Experience> =
-            experienceFlows.flatMap { flow: Flow<Experience> ->
-                flow.toList()
-            }
     }
 
     /**

@@ -53,10 +53,12 @@ internal fun Collection.filter(userInfo: Map<String, Any>, urlParams: Map<String
     }
 }
 
-internal fun Collection.sort(userInfo: Map<String, Any>, urlParams: Map<String, String>) {
-    this.sortDescriptors.forEach { sortDescriptor ->
-        this.items = this.items?.sortedWith { o1, o2 ->
-
+internal fun Collection.sort(
+    userInfo: Map<String, Any>,
+    urlParams: Map<String, String>
+) {
+    sortDescriptors.forEach { sortDescriptor ->
+        items = items?.sortedWith { o1, o2 ->
             val v1 = dataContextOf(
                 Keyword.USER.value to userInfo,
                 Keyword.DATA.value to o1,
@@ -72,14 +74,15 @@ internal fun Collection.sort(userInfo: Map<String, Any>, urlParams: Map<String, 
             if (sortDescriptor.ascending) {
                 when (v1) {
                     v2 -> 0
-                    null -> -1
-                    else -> 1
+                    null -> 1
+                    else -> -1
                 }
+
             } else {
                 when (v1) {
                     v2 -> 0
-                    null -> 1
-                    else -> -1
+                    null -> -1
+                    else -> 1
                 }
             }
         }
