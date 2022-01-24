@@ -58,6 +58,8 @@ internal interface SDKController {
 
     val anonymousId: String
 
+    val userId: String?
+
     @MainThread
     fun setExperienceFragmentFactory(factory: ExperienceFragmentFactory)
 

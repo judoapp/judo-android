@@ -34,7 +34,7 @@ import kotlin.math.roundToInt
 internal fun Video.construct(context: Context, treeNode: TreeNode, resolvers: Resolvers): List<View> {
     setMaskPathFromMask(context, mask, treeNode.appearance)
     val maskPath = calculateDisplayableAreaFromMaskPath(context)
-    val video = ExperienceMediaPlayerView(context, maskPath, looping, autoPlay, sourceURL, showControls, this.resizingMode, removeAudio, posterImageURL).apply {
+    val video = ExperienceMediaPlayerView(context, maskPath, looping, autoPlay, interpolatedSourceURL, showControls, this.resizingMode, removeAudio, posterImageURL).apply {
         id = View.generateViewId()
         tag = this@construct.id
         clipToOutline = true

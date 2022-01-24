@@ -66,6 +66,9 @@ internal class NoOpSDKController : SDKController {
     override val anonymousId: String
         get() = "no-op"
 
+    override val userId: String?
+        get() = null
+
     override fun setExperienceFragmentFactory(factory: ExperienceFragmentFactory) {
         /* no-op */
     }

@@ -145,6 +145,12 @@ object Judo {
         get() = controller.anonymousId
 
     /**
+     * Get the User ID most recently given to Identify().
+     */
+    val userId: String?
+        get() = controller.userId
+
+    /**
      * Resets the user profile information previously identified to Judo, and also recycles the
      * Anonymous ID.
      */

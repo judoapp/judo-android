@@ -171,6 +171,9 @@ internal class SDKControllerImpl : SDKController, LifecycleObserver {
     override val anonymousId: String
         get() = (environment as? MutableEnvironment)?.profileService?.anonymousId ?: ""
 
+    override val userId: String?
+        get() = (environment as? MutableEnvironment)?.profileService?.userId
+
     override fun setExperienceFragmentFactory(factory: ExperienceFragmentFactory) {
         if (this::environment.isInitialized) {
             (environment as? MutableEnvironment)?.experienceFragmentFactory = factory

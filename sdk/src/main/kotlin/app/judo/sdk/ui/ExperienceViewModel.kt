@@ -564,7 +564,7 @@ internal class ExperienceViewModel(
             } else {
                 experienceURLForRequest?.let { experienceURLForRequest ->
                     userInfoOverride = userInfo
-                    initializeFromUrl(event.experienceURL, experienceURLForRequest, screenId)
+                    initializeFromUrl(event.experienceURL, experienceURLForRequest, screenId, ignoreCache = event.ignoreCache)
                 }
             }
         } ?: publishEvent(event)

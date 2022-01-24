@@ -170,12 +170,14 @@ internal class ScreenFragment : Fragment() {
         val screen = this.screen ?: return
         val appearance = model.getAppearance()
         val colorResolver = ColorResolver(requireContext(), appearance)
-
-        screen.let {
-            with(requireActivity().window) {
-                statusBarColor =
-                    colorResolver.resolveForColorInt(it.androidStatusBarBackgroundColor)
-                setStatusBarIconTint(it.androidStatusBarStyle, appearance)
+        
+        if (!isEmbeddedFragment()) {
+            screen.let {
+                with(requireActivity().window) {
+                    statusBarColor =
+                        colorResolver.resolveForColorInt(it.androidStatusBarBackgroundColor)
+                    setStatusBarIconTint(it.androidStatusBarStyle, appearance)
+                }
             }
         }
         screen.backgroundColor.let {
@@ -565,4 +567,8 @@ internal class ScreenFragment : Fragment() {
             binding.swipeToRefresh.isEnabled = false
         }
     }
+}
+
+internal fun Fragment.isEmbeddedFragment(): Boolean {
+    return this.activity !is ExperienceActivity
 }

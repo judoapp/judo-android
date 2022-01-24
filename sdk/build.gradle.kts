@@ -9,7 +9,7 @@ plugins {
 
 val judoGroupId = "app.judo"
 val judoArtifactId = "judo-sdk"
-val judoVersion = "1.6.0"
+val judoVersion = "1.6.1"
 val judoApiVersion = "2"
 val useRenderTree = false
 
@@ -87,8 +87,8 @@ dependencies {
     // endregion Coil
 
     // region Square
-    kapt("com.squareup.moshi:moshi-kotlin-codegen:1.9.3")
-    implementation("com.squareup.moshi:moshi-adapters:1.9.3")
+    kapt("com.squareup.moshi:moshi-kotlin-codegen:1.12.0")
+    implementation("com.squareup.moshi:moshi-adapters:1.12.0")
     implementation("com.squareup.retrofit2:retrofit:2.6.3")
     implementation("com.squareup.retrofit2:converter-moshi:2.6.3")
     // endregion Square
