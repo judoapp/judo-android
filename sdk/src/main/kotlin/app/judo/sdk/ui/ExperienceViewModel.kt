@@ -123,7 +123,14 @@ internal class ExperienceViewModel(
             Keyword.URL.value to experience.urlQueryParameters
         )
 
-        val event = Event.ScreenViewed(experience, screen, dataContext)
+        val event = Event.ScreenViewed(
+            experience,
+            screen,
+            dataContext,
+            actionTargets[screen.id],
+            experience.urlQueryParameters ?: emptyMap(),
+            getUserInfo()
+        )
 
         publishEvent(event)
     }
@@ -548,6 +555,20 @@ internal class ExperienceViewModel(
 
             publishEvent(action)
             publishEvent(event)
+
+            if(action is Action.Custom) {
+                val customActionEvent = Event.CustomActionActivationInternal(
+                    node = node,
+                    screen = screen,
+                    experience = experience,
+                    node.metadata,
+                    dataContext.data,
+                    dataContext.urlParameters,
+                    dataContext.userInfo
+                )
+
+                publishEvent(customActionEvent)
+            }
         }
     }
 

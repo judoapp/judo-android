@@ -25,6 +25,7 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import app.judo.sdk.api.Judo
 import app.judo.sdk.api.android.ExperienceFragmentFactory
 import app.judo.sdk.api.errors.ExperienceError
+import app.judo.sdk.api.events.CustomActionCallback
 import app.judo.sdk.api.events.Event
 import app.judo.sdk.api.events.ScreenViewedCallback
 import app.judo.sdk.api.models.Authorizer
@@ -186,6 +187,18 @@ internal class SDKControllerImpl : SDKController, LifecycleObserver {
                 environment.eventBus.eventFlow.collect { event ->
                     if (event is Event.ScreenViewed) {
                         callback.screenViewed(event)
+                    }
+                }
+            }
+        }
+    }
+
+    override fun addCustomActionCallback(callback: CustomActionCallback) {
+        if (this::environment.isInitialized) {
+            CoroutineScope(environment.mainDispatcher).launch {
+                environment.eventBus.eventFlow.collect { event ->
+                    if (event is Event.CustomActionActivationEvent) {
+                        callback.customActionActivated(event)
                     }
                 }
             }

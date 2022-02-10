@@ -20,6 +20,7 @@ package app.judo.sdk.core.controllers
 import android.app.Application
 import app.judo.sdk.api.Judo
 import app.judo.sdk.api.android.ExperienceFragmentFactory
+import app.judo.sdk.api.events.CustomActionCallback
 import app.judo.sdk.api.events.ScreenViewedCallback
 import app.judo.sdk.api.models.Authorizer
 import app.judo.sdk.api.models.Experience
@@ -74,6 +75,10 @@ internal class NoOpSDKController : SDKController {
     }
 
     override fun addScreenViewedCallback(callback: ScreenViewedCallback) {
+        /* no-op */
+    }
+
+    override fun addCustomActionCallback(callback: CustomActionCallback) {
         /* no-op */
     }
 }

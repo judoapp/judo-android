@@ -18,7 +18,11 @@
 package app.judo.example
 
 import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
+import android.net.Uri
 import android.util.Log
+import androidx.appcompat.app.AlertDialog
 import androidx.multidex.MultiDexApplication
 import androidx.work.*
 import app.judo.sdk.api.Judo
@@ -63,6 +67,30 @@ class ExampleApplication : MultiDexApplication() {
 
         Judo.performSync() {
             Log.d(TAG, "Experience sync completed")
+        }
+
+        // you can register a callback to be fired whenever a user taps/activates an Action
+        // with the Custom type set on a layer.
+        Judo.addCustomActionCallback { actionEvent ->
+            // you can use the metadata associated with the layer that has the action to select
+            // which behaviour you'd like. In this example we delegate to two different behaviours:
+            if(actionEvent.metadata?.properties?.get("behavior") == "open-website") {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://judo.app/"))
+                actionEvent.activity?.startActivity(intent)
+            } else {
+                val activity = actionEvent.activity ?: return@addCustomActionCallback
+                val builder = AlertDialog.Builder(activity)
+                builder.apply {
+                    setTitle("Judo Example")
+                    setMessage("Custom Action fired! Thanks, ${actionEvent.userInfo["name"] ?: "buddy"}!")
+                    setPositiveButton("OK") { dialog, id ->
+                        // User clicked OK button
+                    }
+                    setNegativeButton("Cancel", null)
+                }
+
+                builder.create().show()
+            }
         }
 
         messaging.token.addOnCompleteListener { task ->

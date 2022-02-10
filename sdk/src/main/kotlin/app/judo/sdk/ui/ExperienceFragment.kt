@@ -276,6 +276,26 @@ open class ExperienceFragment : Fragment() {
                     handleAction(action)
                 }
             }
+
+            lifecycleScope.launchWhenStarted {
+                // re-emit the custom action event with the activity reference added.
+                model.eventFlow.collect { action ->
+                    if(action is Event.CustomActionActivationInternal) {
+                        Environment.current.eventBus.publish(
+                            Event.CustomActionActivationEvent(
+                                action.node,
+                                action.screen,
+                                action.experience,
+                                action.metadata,
+                                action.data,
+                                action.urlParameters,
+                                action.userInfo,
+                                this@ExperienceFragment.activity
+                            )
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -456,7 +476,6 @@ open class ExperienceFragment : Fragment() {
                 if (action.dismissExperience) onDismiss()
             }
         }
-
     }
 
     /**

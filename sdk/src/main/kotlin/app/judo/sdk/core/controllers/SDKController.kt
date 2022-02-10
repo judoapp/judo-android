@@ -21,6 +21,8 @@ import android.app.Application
 import androidx.annotation.MainThread
 import app.judo.sdk.api.Judo
 import app.judo.sdk.api.android.ExperienceFragmentFactory
+import app.judo.sdk.api.events.CustomActionCallback
+import app.judo.sdk.api.events.Event
 import app.judo.sdk.api.events.ScreenViewedCallback
 import app.judo.sdk.api.models.Authorizer
 import app.judo.sdk.api.models.Experience
@@ -64,4 +66,6 @@ internal interface SDKController {
     fun setExperienceFragmentFactory(factory: ExperienceFragmentFactory)
 
     fun addScreenViewedCallback(callback: ScreenViewedCallback)
+
+    fun addCustomActionCallback(callback: CustomActionCallback)
 }

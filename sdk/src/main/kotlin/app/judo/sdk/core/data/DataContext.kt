@@ -65,3 +65,17 @@ internal fun dataContextOf(
 ): DataContext = mapOf(*pairs)
 
 internal fun emptyDataContext(): DataContext = emptyMap()
+
+
+internal val DataContext.urlParameters: Map<String, String>
+    get() {
+        @Suppress("UNCHECKED_CAST")
+        return (this["url"] as? Map<String, String>) ?: emptyMap()
+    }
+
+internal val DataContext.data: Any?
+    get() = this["data"]
+
+internal val DataContext.userInfo: Map<String, Any>
+    @Suppress("UNCHECKED_CAST")
+    get() = (this["user"] as? Map<String, Any>) ?: emptyMap()

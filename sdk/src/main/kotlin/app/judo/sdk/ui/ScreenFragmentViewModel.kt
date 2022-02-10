@@ -21,8 +21,12 @@ import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.judo.sdk.api.events.Event
+import app.judo.sdk.api.models.Action
 import app.judo.sdk.api.models.Screen
 import app.judo.sdk.core.controllers.current
+import app.judo.sdk.core.data.data
+import app.judo.sdk.core.data.urlParameters
+import app.judo.sdk.core.data.userInfo
 import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.extensions.*
 import app.judo.sdk.core.implementations.TranslatorImpl
@@ -132,9 +136,7 @@ internal class ScreenFragmentViewModel(
                         renderTree.setImageGetters(environment.imageService)
 
                         renderTree.setActionHandlers { node, action, dataContext ->
-
                             viewModelScope.launch(environment.defaultDispatcher) {
-
                                 val event = Event.ActionReceived(
                                     experience = experience,
                                     screen = screen,
@@ -143,27 +145,23 @@ internal class ScreenFragmentViewModel(
                                     dataContext = dataContext
                                 )
 
-                                environment.eventBus.publish(
-                                    event
-                                )
-
+                                environment.eventBus.publish(event)
                             }
-
                         }
 
                         onViewedHandler = {
-
                             viewModelScope.launch(environment.defaultDispatcher) {
-
                                 val event = Event.ScreenViewed(
                                     experience = experience,
                                     screen = screen,
-                                    dataContext = response.dataContext
+                                    dataContext = response.dataContext,
+                                    data = response.dataContext.data,
+                                    urlParameters = response.dataContext.urlParameters,
+                                    userInfo = response.dataContext.userInfo
                                 )
 
                                 environment.eventBus.publish(event)
                             }
-
                         }
 
                         _viewState.emit(

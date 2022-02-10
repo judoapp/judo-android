@@ -24,6 +24,7 @@ import android.os.Build
 import androidx.annotation.MainThread
 import app.judo.sdk.BuildConfig
 import app.judo.sdk.api.android.ExperienceFragmentFactory
+import app.judo.sdk.api.events.CustomActionCallback
 import app.judo.sdk.api.events.ScreenViewedCallback
 import app.judo.sdk.api.logs.LogLevel
 import app.judo.sdk.api.models.Authorizer
@@ -43,7 +44,7 @@ import java.net.URL
 
 
 /**
- * TODO DOCUMENT
+ * This object is the main singleton entry point for most of the Judo SDK's functionality.
  */
 object Judo {
 
@@ -171,6 +172,16 @@ object Judo {
 
     fun addScreenViewedCallback(callback: ScreenViewedCallback) {
         controller.addScreenViewedCallback(callback)
+    }
+
+    /**
+     * Register a callback that the Judo SDK will call when the user taps on a layer with an action
+     * type of "custom". Use this to implement the behavior for custom buttons and the like.
+     *
+     * The callback is given a [[CustomActionActivationEvent]] value.
+     */
+    fun addCustomActionCallback(callback: CustomActionCallback) {
+        controller.addCustomActionCallback(callback)
     }
 
     @JvmStatic

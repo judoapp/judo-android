@@ -18,18 +18,22 @@
 package app.judo.sdk.ui.implementations
 
 import app.judo.sdk.core.events.EventBus
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 
 class EventBusImpl : EventBus {
 
-    private val backingEventFlow = MutableSharedFlow<Any>()
+    /// This MutableSharedFlow is the heart of the event bus itself.
+    ///
+    /// However, as a workaround for what we perceive as misbehaviour where the MSF appears
+    /// to hang on certain events. It is unclear why.
+    private val backingEventFlow = MutableSharedFlow<Any>(onBufferOverflow = BufferOverflow.DROP_OLDEST, extraBufferCapacity = 1)
 
     override val eventFlow: SharedFlow<Any> = backingEventFlow.asSharedFlow()
 
     override suspend fun publish(event: Any) {
         backingEventFlow.emit(event)
     }
-
 }
