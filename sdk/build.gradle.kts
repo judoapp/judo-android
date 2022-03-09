@@ -9,7 +9,7 @@ plugins {
 
 val judoGroupId = "app.judo"
 val judoArtifactId = "judo-sdk"
-val judoVersion = "1.7.0"
+val judoVersion = "1.7.1"
 val judoApiVersion = "2"
 val useRenderTree = false
 

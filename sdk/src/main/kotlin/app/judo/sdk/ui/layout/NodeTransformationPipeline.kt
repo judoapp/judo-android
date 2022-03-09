@@ -413,7 +413,10 @@ internal class NodeTransformationPipeline(
                         node.interpolator = InterpolatorImpl(
                             dataContext = dataContext
                         )
+                    }
 
+                    if (node is Actionable) {
+                        node.action = copyActionToActionWithDataContext(node.action, dataContext)
                     }
 
                 }

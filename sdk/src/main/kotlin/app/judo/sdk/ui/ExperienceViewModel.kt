@@ -436,7 +436,6 @@ internal class ExperienceViewModel(
 
             val refreshSideEffects = arrayOf(
                 loadDataSource,
-                loadInterpolator,
                 loadCollectionValues,
                 filterCollectionValues,
                 sortCollectionValues,

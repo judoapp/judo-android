@@ -1,0 +1,202 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "app.judo",
+    "module": "judo-sdk",
+    "version": "1.7.1",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.0.2"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "androidx.databinding",
+          "module": "viewbinding",
+          "version": {
+            "requires": "7.0.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "judo-sdk-1.7.1.aar",
+          "url": "judo-sdk-1.7.1.aar",
+          "size": 4145116,
+          "sha512": "da4e664c2118912194960066b49a473eff6b3e526e4500871ec4395850af135ac397e25bf9617c4e19d6177498327e6b6ea09da7393eb9517d1c4d5e885372c2",
+          "sha256": "285b4151aff6be89dc58372601de8d4029387f8a40ca27ad015524dbc07702c0",
+          "sha1": "42281a61390436c6784c148b5661c6273acbff7f",
+          "md5": "5069871be367e2b3e1b5c340ca5a2dd6"
+        }
+      ]
+    },
+    {
+      "name": "releaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "androidx.databinding",
+          "module": "viewbinding",
+          "version": {
+            "requires": "7.0.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "1.4.32"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlinx",
+          "module": "kotlinx-coroutines-android",
+          "version": {
+            "requires": "1.4.3"
+          }
+        },
+        {
+          "group": "app.judo.libs",
+          "module": "exoplayer-core",
+          "version": {
+            "requires": "2.12.0"
+          }
+        },
+        {
+          "group": "app.judo.libs",
+          "module": "exoplayer-hls",
+          "version": {
+            "requires": "2.12.0"
+          }
+        },
+        {
+          "group": "app.judo.libs",
+          "module": "exoplayer-dash",
+          "version": {
+            "requires": "2.12.0"
+          }
+        },
+        {
+          "group": "app.judo.libs",
+          "module": "exoplayer-ui",
+          "version": {
+            "requires": "2.12.0"
+          }
+        },
+        {
+          "group": "androidx.swiperefreshlayout",
+          "module": "swiperefreshlayout",
+          "version": {
+            "requires": "1.1.0"
+          }
+        },
+        {
+          "group": "androidx.appcompat",
+          "module": "appcompat",
+          "version": {
+            "requires": "1.2.0"
+          }
+        },
+        {
+          "group": "androidx.lifecycle",
+          "module": "lifecycle-viewmodel-ktx",
+          "version": {
+            "requires": "2.3.1"
+          }
+        },
+        {
+          "group": "androidx.lifecycle",
+          "module": "lifecycle-runtime-ktx",
+          "version": {
+            "requires": "2.3.1"
+          }
+        },
+        {
+          "group": "androidx.lifecycle",
+          "module": "lifecycle-process",
+          "version": {
+            "requires": "2.3.1"
+          }
+        },
+        {
+          "group": "androidx.browser",
+          "module": "browser",
+          "version": {
+            "requires": "1.2.0"
+          }
+        },
+        {
+          "group": "androidx.viewpager2",
+          "module": "viewpager2",
+          "version": {
+            "requires": "1.0.0"
+          }
+        },
+        {
+          "group": "io.coil-kt",
+          "module": "coil-base",
+          "version": {
+            "requires": "1.0.0"
+          }
+        },
+        {
+          "group": "io.coil-kt",
+          "module": "coil-gif",
+          "version": {
+            "requires": "1.0.0"
+          }
+        },
+        {
+          "group": "com.squareup.moshi",
+          "module": "moshi-adapters",
+          "version": {
+            "requires": "1.12.0"
+          }
+        },
+        {
+          "group": "com.squareup.retrofit2",
+          "module": "retrofit",
+          "version": {
+            "requires": "2.6.3"
+          }
+        },
+        {
+          "group": "com.squareup.retrofit2",
+          "module": "converter-moshi",
+          "version": {
+            "requires": "2.6.3"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "judo-sdk-1.7.1.aar",
+          "url": "judo-sdk-1.7.1.aar",
+          "size": 4145116,
+          "sha512": "da4e664c2118912194960066b49a473eff6b3e526e4500871ec4395850af135ac397e25bf9617c4e19d6177498327e6b6ea09da7393eb9517d1c4d5e885372c2",
+          "sha256": "285b4151aff6be89dc58372601de8d4029387f8a40ca27ad015524dbc07702c0",
+          "sha1": "42281a61390436c6784c148b5661c6273acbff7f",
+          "md5": "5069871be367e2b3e1b5c340ca5a2dd6"
+        }
+      ]
+    }
+  ]
+}
