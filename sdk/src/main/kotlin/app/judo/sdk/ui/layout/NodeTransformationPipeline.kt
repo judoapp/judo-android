@@ -418,12 +418,9 @@ internal class NodeTransformationPipeline(
                     if (node is Actionable) {
                         node.action = copyActionToActionWithDataContext(node.action, dataContext)
                     }
-
                 }
             }
-
         }
-
     }
 
     private fun resolveNonCollectionConditionals (
@@ -1120,5 +1117,18 @@ internal class NodeTransformationPipeline(
 }
 
 internal data class NodesTransformInfo(val nodes: List<Node>, val imagesWithoutSizes: Set<String> = emptySet(), val collectionNodeIDs: List<String>, val swipeToRefresh: Boolean = false, val canCache: Boolean = false)
-internal data class NodesForScreenInfo(val nodes: List<Node>, val swipeToRefresh: Boolean = false, val collectionNodeIDs: List<String>, val canCache: Boolean = false)
+
+internal data class NodesForScreenInfo(
+    val nodes: List<Node>,
+    val swipeToRefresh: Boolean = false,
+    val collectionNodeIDs: List<String>,
+    val canCache: Boolean = false,
+
+    // By including these two details, then when NodesForScreenInfo values are compared
+    // by distinctUntilChanged() in ScreenFragment, refreshes can be properly handled and not
+    // erroneously screened out.
+    val completedDataSources: Set<DataSource>,
+    val refreshRequestSequenceNumber: Int
+)
+
 internal data class RequestedImageDimensions(val url: String, val width: Int, val height: Int)

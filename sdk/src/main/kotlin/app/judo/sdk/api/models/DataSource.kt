@@ -27,6 +27,7 @@ data class DataSource(
     val headers: List<Header>,
     val httpBody: String? = null,
     val httpMethod: HttpMethod,
+    val pollInterval: Int? = null,
     override val id: String,
     override val name: String? = null,
     override val metadata: Metadata? = null,

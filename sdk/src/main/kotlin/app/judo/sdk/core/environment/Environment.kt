@@ -22,7 +22,6 @@ import app.judo.sdk.api.android.ExperienceFragmentFactory
 import app.judo.sdk.core.cache.KeyValueCache
 import app.judo.sdk.core.events.EventBus
 import app.judo.sdk.core.interpolation.ProtoInterpolator
-import app.judo.sdk.core.lang.Tokenizer
 import app.judo.sdk.core.log.Logger
 import app.judo.sdk.core.repositories.ExperienceRepository
 import app.judo.sdk.core.repositories.ExperienceTreeRepository
@@ -82,8 +81,6 @@ internal interface Environment {
     val keyValueCache: KeyValueCache
 
     val interpolator: ProtoInterpolator
-
-    var tokenizer: Tokenizer
 
     val imageService: ImageService
 

@@ -26,8 +26,6 @@ import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.environment.MutableEnvironment
 import app.judo.sdk.core.events.EventBus
 import app.judo.sdk.core.interpolation.ProtoInterpolator
-import app.judo.sdk.core.lang.Tokenizer
-import app.judo.sdk.core.lang.TokenizerImpl
 import app.judo.sdk.core.log.Logger
 import app.judo.sdk.core.repositories.ExperienceRepository
 import app.judo.sdk.core.repositories.ExperienceTreeRepository
@@ -108,12 +106,7 @@ internal class EnvironmentImpl(
 
     override var defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
 
-    override var tokenizer: Tokenizer = TokenizerImpl()
-
-    override var interpolator: ProtoInterpolator = InterpolatorImpl(
-        tokenizer,
-        loggerSupplier = { logger },
-    )
+    override var interpolator: ProtoInterpolator = InterpolatorImpl(loggerSupplier = { logger })
 
     override var imageService: ImageService = ImageServiceImpl(
         context = context,

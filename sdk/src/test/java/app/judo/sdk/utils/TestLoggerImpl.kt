@@ -21,7 +21,7 @@ import app.judo.sdk.api.logs.LogLevel
 import app.judo.sdk.core.log.Logger
 
 class TestLoggerImpl : Logger {
-
+    var errorLoggedCallback: ((tag: String?, error: Throwable?) -> Unit)? = null
     override var logLevel: LogLevel = LogLevel.Verbose
 
     override fun d(tag: String?, data: Any?) {
@@ -37,11 +37,12 @@ class TestLoggerImpl : Logger {
     override fun e(tag: String?, message: String?, error: Throwable?) {
         if (logLevel is LogLevel.Verbose)
             println("$tag: $message\nERROR: $error")
+
+        errorLoggedCallback?.invoke(tag, error)
     }
 
     override fun i(tag: String?, data: Any?, error: Throwable?) {
         if (logLevel is LogLevel.Verbose)
             println("$tag: $data\nERROR: $error")
     }
-
 }

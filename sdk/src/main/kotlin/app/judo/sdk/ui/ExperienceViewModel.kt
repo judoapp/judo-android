@@ -17,6 +17,7 @@
 
 package app.judo.sdk.ui
 
+import android.os.CountDownTimer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.judo.sdk.api.errors.ExperienceError
@@ -79,19 +80,25 @@ internal class ExperienceViewModel(
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
 
-    private val loadInterpolator: SideEffect = { tree, node, urlParams ->
+    /**
+     * Any active timers for refreshing polling datasources.
+     */
+    private val pollingDataSourceTimers: HashSet<CountDownTimer> = HashSet()
+
+    private fun loadInterpolatorEffect(screenId: String): SideEffect = { tree, node, urlParams ->
         val closestDataSource = tree.findNearestAncestor { it is DataSource } as? DataSource
+
+        val previousScreenData = this@ExperienceViewModel.actionTargets[screenId]
 
         val parentDataContext = dataContextOf(
             Keyword.USER.value to getUserInfo(),
-            Keyword.DATA.value to closestDataSource?.data,
+            Keyword.DATA.value to (closestDataSource?.data ?: previousScreenData),
             Keyword.URL.value to urlParams
         )
 
         if (node is SupportsInterpolation && node !is DataSource) {
             node.interpolator = InterpolatorImpl(
-                tokenizer = environment.tokenizer,
-                dataContext = parentDataContext,
+                dataContext = parentDataContext
             )
         }
 
@@ -100,14 +107,12 @@ internal class ExperienceViewModel(
             when(action) {
                 is Action.OpenURL -> {
                     action.interpolator = InterpolatorImpl(
-                        tokenizer = environment.tokenizer,
-                        dataContext = parentDataContext,
+                        dataContext = parentDataContext
                     )
                 }
                 is Action.PresentWebsite -> {
                     action.interpolator = InterpolatorImpl(
-                        tokenizer = environment.tokenizer,
-                        dataContext = parentDataContext,
+                        dataContext = parentDataContext
                     )
                 }
             }
@@ -151,7 +156,6 @@ internal class ExperienceViewModel(
             )
 
             val interpolator = InterpolatorImpl(
-                tokenizer = environment.tokenizer,
                 dataContext = dataContext
             )
 
@@ -162,6 +166,9 @@ internal class ExperienceViewModel(
             node.interpolator = interpolator
 
             val json = loadDataSourceJsonFromService(node, environment.dataSourceService)
+
+            // track some out-of-band state to indicate this data source has been loaded:
+            this@ExperienceViewModel.completedDataSources.add(node)
 
             node.data = json?.let(jsonResolver)
 
@@ -235,8 +242,26 @@ internal class ExperienceViewModel(
 
     }
 
-    init {
+    private fun schedulePollingDataSourcesEffect(screenId: String): SideEffect = { _, node, urlParams ->
+        if (node is DataSource) {
+            // set up a timer for this node and add it to the set.
+            node.pollInterval?.let { pollInterval ->
+                val timer = object : CountDownTimer(pollInterval * 1000L, pollInterval * 1000L) {
+                    override fun onTick(millisUntilFinished: Long) {
+                        /* no-op */
+                    }
 
+                    override fun onFinish() {
+                        this@ExperienceViewModel.refreshNodes(screenId, true)
+                    }
+                }.start()
+
+                this@ExperienceViewModel.pollingDataSourceTimers.add(timer)
+            }
+        }
+    }
+
+    init {
         stateFlow
             .filterIsInstance<RetrievedTree>()
             .map { (experienceTree, screenId) ->
@@ -246,14 +271,11 @@ internal class ExperienceViewModel(
                 backingExperienceTree.emit(experienceTree)
             }
             .map { (experienceTree, screenId) ->
-
                 renderNodes(environment, experienceTree, screenId)
-
             }
             .flowOn(environment.ioDispatcher)
             .onEach(backingNodesFlow::emit)
             .launchIn(viewModelScope)
-
     }
 
     fun nodesFlowForScreen(screenId: String): Flow<NodesForScreenInfo> {
@@ -284,7 +306,10 @@ internal class ExperienceViewModel(
                     it.nodes,
                     it.swipeToRefresh,
                     it.collectionNodeIDs,
-                    it.canCache
+                    it.canCache,
+                    // using HashSet() constructor to ensure a copy is made.
+                    HashSet(this@ExperienceViewModel.completedDataSources),
+                    this@ExperienceViewModel.refreshRequestSequence
                 )
                 nodesForScreenInfo
             }
@@ -293,6 +318,11 @@ internal class ExperienceViewModel(
     private val requestedImageFlow = MutableStateFlow<List<RequestedImageDimensions>>(emptyList())
 
     private val imagesToRequest = mutableSetOf<String>()
+
+    // These two bits of state are used to detect when an emitted list of nodes represents new data
+    // and should be submitted to layout, allowing refresh to work correctly.
+    internal val completedDataSources = mutableSetOf<DataSource>()
+    internal var refreshRequestSequence = 0
 
     /**
      * Map of ScreenID -> Data Context
@@ -306,7 +336,7 @@ internal class ExperienceViewModel(
         nodesForScreenInfo?.let {
             screenLayoutCache.put(screenId, nodesForScreenInfo)
         }
-        refreshNodes(screenId)
+        refreshNodes(screenId, false)
         requestImages(imagesToRequest)
     }
 
@@ -331,8 +361,13 @@ internal class ExperienceViewModel(
         }
     }
 
-    fun refreshNodes(screenId: String) {
+    fun refreshNodes(screenId: String, requestedByUser: Boolean = false) {
         viewModelScope.launch {
+            if(requestedByUser) {
+                this@ExperienceViewModel.completedDataSources.clear()
+                this@ExperienceViewModel.refreshRequestSequence++
+
+            }
             backingExperienceTree.value?.let { tree ->
                 val nodes = renderNodes(
                     environment,
@@ -423,10 +458,14 @@ internal class ExperienceViewModel(
 
         val urlParams = experienceTree.experience.urlQueryParameters ?: emptyMap()
 
+        // cancel any previous timers.
+        this.pollingDataSourceTimers.forEach { it.cancel() }
+        this.pollingDataSourceTimers.clear()
+
         tree?.run {
 
             val sideEffects = arrayOf(
-                loadInterpolator,
+                loadInterpolatorEffect(screenId),
                 loadCollectionValues,
                 filterCollectionValues,
                 sortCollectionValues,
@@ -436,11 +475,13 @@ internal class ExperienceViewModel(
 
             val refreshSideEffects = arrayOf(
                 loadDataSource,
+                loadInterpolatorEffect(screenId),
                 loadCollectionValues,
                 filterCollectionValues,
                 sortCollectionValues,
                 limitCollectionValues,
-                resolveCollectionForDirectConditionalValues
+                resolveCollectionForDirectConditionalValues,
+                schedulePollingDataSourcesEffect(screenId),
             )
 
             executeSideEffects(

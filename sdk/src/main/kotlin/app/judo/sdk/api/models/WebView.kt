@@ -63,7 +63,9 @@ data class WebView(
         get() {
             return when (source) {
                 is WebViewSource.HTML -> {
-                    source
+                    source.copy(
+                        value = interpolator?.interpolate(source.value) ?: source.value
+                    )
                 }
                 is WebViewSource.URL -> {
                     source.copy(

@@ -246,7 +246,8 @@ internal class ScreenFragment : Fragment() {
                             mutex.withLock {
                                 setSwipeToRefresh(nodesForScreenInfo.swipeToRefresh) {
                                     model.refreshNodes(
-                                        screenID
+                                        screenID,
+                                        true
                                     )
                                 }
                                 render(screenID, appearance, resolvers, nodesForScreenInfo, false)
@@ -319,7 +320,9 @@ internal class ScreenFragment : Fragment() {
                 nodes,
                 swipeToRefresh,
                 collectionChildIDs,
-                false
+                false,
+                HashSet(this@ScreenFragment.model.completedDataSources),
+                this@ScreenFragment.model.refreshRequestSequence
             ) else null
 
             // capture old vertical scroll state
@@ -354,7 +357,7 @@ internal class ScreenFragment : Fragment() {
 
                     if (fromCache) {
                         setSwipeToRefresh(nodesForScreenInfo.swipeToRefresh) {
-                            model.refreshNodes(screenID)
+                            model.refreshNodes(screenID, true)
                             listenForUpdates(screenID, appearance, resolvers)
                         }
                     }

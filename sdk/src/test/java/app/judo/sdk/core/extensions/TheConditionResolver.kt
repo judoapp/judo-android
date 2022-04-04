@@ -22,7 +22,6 @@ import app.judo.sdk.api.models.Predicate
 import app.judo.sdk.core.data.JsonParser
 import app.judo.sdk.core.data.dataContextOf
 import app.judo.sdk.core.implementations.InterpolatorImpl
-import app.judo.sdk.core.lang.TokenizerImpl
 import app.judo.sdk.utils.TestJSON
 import app.judo.sdk.utils.TestLoggerImpl
 import org.json.JSONObject
@@ -118,9 +117,8 @@ class TheConditionResolver {
         )
 
         val interpolator = InterpolatorImpl(
-            tokenizer = TokenizerImpl(),
-            loggerSupplier = { TestLoggerImpl() },
-            dataContext = dataContext
+            dataContext = dataContext,
+            loggerSupplier = { TestLoggerImpl() }
         )
 
         val rhs = interpolator.interpolate(
@@ -148,9 +146,8 @@ class TheConditionResolver {
         )
 
         val interpolator = InterpolatorImpl(
-            tokenizer = TokenizerImpl(),
-            loggerSupplier = { TestLoggerImpl() },
-            dataContext = dataContext
+            dataContext = dataContext,
+            loggerSupplier = { TestLoggerImpl() }
         )
 
         // IS SET

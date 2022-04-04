@@ -7,9 +7,9 @@ plugins {
     id("maven-publish")
 }
 
+val judoVersion: String by rootProject.extra
 val judoGroupId = "app.judo"
 val judoArtifactId = "judo-sdk"
-val judoVersion = "1.7.1"
 val judoApiVersion = "2"
 val useRenderTree = false
 
