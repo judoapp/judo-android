@@ -115,6 +115,9 @@ internal class ExperienceViewModel(
                         dataContext = parentDataContext
                     )
                 }
+                is Action.Custom -> {
+                    action.data = parentDataContext
+                }
             }
         }
     }
@@ -585,9 +588,15 @@ internal class ExperienceViewModel(
     fun onAction(action: Action, screenID: String, node: Node) {
         val experience = backingExperienceTree.value?.experience ?: return
         (backingExperienceTree.value?.experience?.nodes?.find { it.id == screenID } as? Screen)?.let { screen ->
+            val data = when(action) {
+                is Action.Custom -> action.data
+                is Action.PerformSegue -> action.data
+                else -> null
+            }
+
             val dataContext = dataContextOf(
                 Keyword.USER.value to getUserInfo(),
-                Keyword.DATA.value to actionTargets[screen.id],
+                Keyword.DATA.value to data,
                 Keyword.URL.value to experience.urlQueryParameters
             )
 

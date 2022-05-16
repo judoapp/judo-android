@@ -62,6 +62,9 @@ sealed class Action {
     @JsonClass(generateAdapter = true)
     data class Custom(
         val dismissExperience: Boolean,
-    ) : Action()
+    ) : Action() {
+        @Transient
+        var data: Any? = null
+    }
 }
 

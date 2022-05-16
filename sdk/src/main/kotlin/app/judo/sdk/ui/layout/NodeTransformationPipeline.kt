@@ -279,7 +279,11 @@ internal class NodeTransformationPipeline(
                 }
             }
             is Action.Close -> action
-            is Action.Custom -> action
+            is Action.Custom -> {
+                action.copy().apply {
+                    this.data = dataContext[Keyword.DATA.value]
+                }
+            }
             null -> null
         }
     }
