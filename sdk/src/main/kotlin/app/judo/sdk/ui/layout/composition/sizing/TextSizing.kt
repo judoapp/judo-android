@@ -126,7 +126,7 @@ internal fun Text.computeSize(context: Context, treeNode: TreeNode, parentConstr
     val horizontalPadding = (padding?.leading?.dp?.toPx(context) ?: 0f) + (padding?.trailing?.dp?.toPx(context) ?: 0f)
     val verticalPadding = (padding?.top?.dp?.toPx(context) ?: 0f) + (padding?.bottom?.dp?.toPx(context) ?: 0f)
 
-    val layout = staticLayout ?: StaticLayout.Builder.obtain(text, 0, text.length, paint, ceil(widthForMeasure).toInt())
+    val layout = staticLayout ?: StaticLayout.Builder.obtain(text, 0, text.length, paint, maxOf(0f, ceil(widthForMeasure)).toInt())
         .setAlignment(textLayoutAlign)
         .setLineSpacing(0f, 1f)
         .setIncludePad(false)
