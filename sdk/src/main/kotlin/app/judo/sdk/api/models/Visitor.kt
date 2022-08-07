@@ -68,4 +68,5 @@ interface Visitor<R> {
     fun visit(host: Video): R = getDefault()
     fun visit(host: Icon): R = getDefault()
     fun visit(host: Shadow): R = getDefault()
+    fun visit(host: ErasedNode): R = getDefault()
 }

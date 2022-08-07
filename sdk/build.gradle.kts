@@ -2,7 +2,7 @@
 
 plugins {
     id("com.android.library")
-    kotlin("android")
+    id("org.jetbrains.kotlin.android")
     id("kotlin-kapt")
     id("maven-publish")
 }
@@ -11,13 +11,18 @@ val judoVersion: String by rootProject.extra
 val judoGroupId = "app.judo"
 val judoArtifactId = "judo-sdk"
 val judoApiVersion = "2"
+val judoComposeVersion = "1.0.0"
+val useLocalJudoCompose = false
+
+// holdover from a previous attempt to rewrite the renderer, do not use.
 val useRenderTree = false
 
 android {
-    compileSdkVersion(30)
+    compileSdk = 32
 
     defaultConfig {
-        minSdkVersion(19)
+        minSdk = 26
+        targetSdk = 32
         multiDexEnabled = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("int", "API_VERSION", judoApiVersion)
@@ -52,16 +57,21 @@ android {
             isReturnDefaultValues = true
         }
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.2.0"
+    }
 
     buildFeatures {
         viewBinding = true
+        compose = true
     }
+    namespace = "app.judo.sdk"
 }
 
 dependencies {
     // region Jetbrains
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.4.32")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.3")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.7.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1")
     // endregion Jetbrains
 
     // region Judo Exoplayer
@@ -73,28 +83,28 @@ dependencies {
 
     // region AndroidX
     implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-    implementation("androidx.appcompat:appcompat:1.2.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")
-    implementation("androidx.lifecycle:lifecycle-process:2.3.1")
-    implementation("androidx.browser:browser:1.2.0")
+    implementation("androidx.appcompat:appcompat:1.4.2")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.0")
+    implementation("androidx.lifecycle:lifecycle-process:2.5.0")
+    implementation("androidx.browser:browser:1.4.0")
     implementation("androidx.viewpager2:viewpager2:1.0.0")
     // endregion AndroidX
 
     // region Coil
-    implementation("io.coil-kt:coil-base:1.0.0")
-    implementation("io.coil-kt:coil-gif:1.0.0")
+    implementation("io.coil-kt:coil-base:2.1.0")
+    implementation("io.coil-kt:coil-gif:2.1.0")
     // endregion Coil
 
     // region Square
-    kapt("com.squareup.moshi:moshi-kotlin-codegen:1.12.0")
-    implementation("com.squareup.moshi:moshi-adapters:1.12.0")
-    implementation("com.squareup.retrofit2:retrofit:2.6.3")
+    kapt("com.squareup.moshi:moshi-kotlin-codegen:1.13.0")
+    implementation("com.squareup.moshi:moshi-adapters:1.13.0")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-moshi:2.6.3")
     // endregion Square
 
     // region Sugar
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.5")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.2.0")
     // endregion Sugar
 
     // region Testing
@@ -108,6 +118,20 @@ dependencies {
     testImplementation("androidx.test.ext:junit-ktx:1.1.2")
     // endregion Testing
 
+
+    // region Compose
+    implementation("androidx.compose.ui:ui:1.2.0")
+    implementation("androidx.compose.foundation:foundation:1.2.0")
+    implementation("androidx.compose.material:material:1.2.0")
+    implementation("androidx.activity:activity-compose:1.5.1")
+    if (useLocalJudoCompose) {
+        // when developers are working on their local workstations, we use a sibling directory with the SDK. Use that if present.
+        implementation(project(":judo-compose"))
+    } else {
+        // when running a build elsewhere (such as App Center/CI) build with the released version.
+        implementation("app.judo:compose:$judoComposeVersion")
+    }
+    // endregion Compose
 }
 
 // region Deployment

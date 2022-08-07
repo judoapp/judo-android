@@ -7,12 +7,12 @@ plugins {
 }
 
 android {
-    compileSdkVersion(30)
+    compileSdk = 32
 
     defaultConfig {
         applicationId = "app.judo.example"
-        minSdkVersion(19)
-        targetSdkVersion(30)
+        minSdk = 26
+        targetSdk = 32
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -43,16 +43,17 @@ android {
     buildFeatures {
         viewBinding = true
     }
+    namespace = "app.judo.example"
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.4.30")
-    implementation("androidx.core:core-ktx:1.3.2")
-    implementation("androidx.appcompat:appcompat:1.2.0")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.7.0")
+    implementation("androidx.core:core-ktx:1.8.0")
+    implementation("androidx.appcompat:appcompat:1.4.2")
     implementation("com.android.support:multidex:1.0.3")
     implementation(project(":sdk"))
-    implementation("com.google.firebase:firebase-messaging-ktx:21.0.1")
-    implementation("com.google.firebase:firebase-analytics-ktx:18.0.2")
-    implementation("androidx.constraintlayout:constraintlayout:2.0.4")
-    implementation("androidx.work:work-runtime:2.5.0")
+    implementation("com.google.firebase:firebase-messaging-ktx:23.0.6")
+    implementation("com.google.firebase:firebase-analytics-ktx:21.1.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("androidx.work:work-runtime:2.7.1")
 }

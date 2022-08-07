@@ -61,19 +61,22 @@ internal class ImageServiceImpl(
     private val loader: ImageLoader by lazy {
         ImageLoader.Builder(context)
             .okHttpClient(imageClient)
-            .availableMemoryPercentage(1.0)
-            .componentRegistry {
-                if (Build.VERSION.SDK_INT >= 28)
-                    add(ImageDecoderDecoder())
-                else
-                    add(GifDecoder())
+//            .availableMemoryPercentage(1.0)
+            .components {
+                add(
+                    if (Build.VERSION.SDK_INT >= 28)
+                        ImageDecoderDecoder.Factory()
+                    else
+                        GifDecoder.Factory()
+                )
+
             }
             .crossfade(true)
             .build()
     }
 
     override fun isImageCached(imageUrl: String): Boolean {
-        val urlIterator = imageClient.cache()?.urls()
+        val urlIterator = imageClient.cache?.urls()
         urlIterator?.let {
             while (it.hasNext()) {
                 if (urlIterator.next() == imageUrl) {
@@ -109,7 +112,7 @@ internal class ImageServiceImpl(
                                 ImageService.Result.Error(
                                     request = request,
                                     drawable = null,
-                                    error = error
+                                    error = error.throwable
                                 )
                             )
                         },

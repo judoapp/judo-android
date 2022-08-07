@@ -23,6 +23,7 @@ import app.judo.sdk.api.models.URLRequest
 import app.judo.sdk.core.log.Logger
 import app.judo.sdk.core.services.DataSourceService
 import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
@@ -117,7 +118,7 @@ internal class DataSourceServiceImpl(
                 if (body == null) {
                     api.put(sanitizedURL, modifiedRequest.headers)
                 } else {
-                    val contentType = MediaType.parse("text/plain")
+                    val contentType = "text/plain".toMediaTypeOrNull()
                     val requestBody = RequestBody.create(contentType, body)
 
                     api.putWithBody(sanitizedURL, modifiedRequest.headers, requestBody)
@@ -128,7 +129,7 @@ internal class DataSourceServiceImpl(
                 if (body == null) {
                     api.post(sanitizedURL, modifiedRequest.headers)
                 } else {
-                    val contentType = MediaType.parse("text/plain")
+                    val contentType = "text/plain".toMediaTypeOrNull()
                     val requestBody = RequestBody.create(contentType, body)
 
                     api.postWithBody(sanitizedURL, modifiedRequest.headers, requestBody)

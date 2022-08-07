@@ -118,6 +118,9 @@ internal class ExperienceViewModel(
                 is Action.Custom -> {
                     action.data = parentDataContext
                 }
+                else -> {
+                    // not handled here.
+                }
             }
         }
     }

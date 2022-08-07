@@ -573,5 +573,5 @@ internal class ScreenFragment : Fragment() {
 }
 
 internal fun Fragment.isEmbeddedFragment(): Boolean {
-    return this.activity !is ExperienceActivity
+    return this.activity !is LegacyExperienceActivity
 }

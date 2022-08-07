@@ -189,6 +189,9 @@ internal class ExperienceImageView @JvmOverloads constructor(
 
                             scaledShadowBitmap = shadowMapAndOffset.first
                         }
+                        null -> {
+                            // unhandled.
+                        }
                     }
                 }
         }

@@ -317,6 +317,9 @@ open class ExperienceFragment : Fragment() {
                 window.decorView.systemUiVisibility = state.windowSystemVisibility
                 window.statusBarColor = state.color
             }
+            null -> {
+                // no-op
+            }
         }
     }
 
@@ -570,5 +573,5 @@ private sealed class StatusBarState {
 }
 
 internal fun Fragment.isEmbeddedFragment(): Boolean {
-    return this.activity !is ExperienceActivity
+    return this.activity !is LegacyExperienceActivity
 }

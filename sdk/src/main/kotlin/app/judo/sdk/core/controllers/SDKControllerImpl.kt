@@ -193,6 +193,7 @@ internal class SDKControllerImpl : SDKController, LifecycleObserver {
         }
     }
 
+
     override fun addCustomActionCallback(callback: CustomActionCallback) {
         if (this::environment.isInitialized) {
             CoroutineScope(environment.mainDispatcher).launch {

@@ -45,7 +45,7 @@ class ExampleMainActivity : AppCompatActivity() {
             // try using any of the three sample show*() methods given below!
             showStockExperienceActivityFromURL(
                 // Change the experience URL below
-                "<JUDO-EXPERIENCE-URL>"
+                "<EXPERIENCE-URL>"
             )
         }
 
