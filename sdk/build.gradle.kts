@@ -11,7 +11,7 @@ val judoVersion: String by rootProject.extra
 val judoGroupId = "app.judo"
 val judoArtifactId = "judo-sdk"
 val judoApiVersion = "2"
-val judoComposeVersion = "1.0.0"
+val judoComposeVersion = "1.0.1"
 val useLocalJudoCompose = false
 
 // holdover from a previous attempt to rewrite the renderer, do not use.

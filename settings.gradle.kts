@@ -17,6 +17,15 @@ dependencyResolutionManagement {
         maven {
             url = java.net.URI.create("https://judoapp.github.io/judo-compose/sdk/maven")
         }
+        // since we are (temporarily) now shipping the judo-compose library directly
+        // in the sdk/maven subdir maven repo in this git repo directly (until judo-maven comes
+        // online and customers are instructed to move to it), to solve the chicken-and-egg
+        // problem that emerges when trying to build judo-android against the built copy
+        // of judo-compose that has been delivered into that subdir, we have to add our own
+        // maven subdir as a repository.
+        maven {
+            url = File(settingsDir, "sdk/maven").toURI()
+        }
     }
 }
 

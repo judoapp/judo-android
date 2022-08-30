@@ -1,6 +1,6 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-    val judoVersion by extra("1.13.0")
+    val judoVersion by extra("1.13.1")
 
     // just needed to link against judo-compose locally
     val judoComposeVersion by extra("placeholder")
