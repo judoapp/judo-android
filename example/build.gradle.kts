@@ -3,16 +3,15 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    id("com.google.gms.google-services")
 }
 
 android {
-    compileSdk = 32
+    compileSdk = 33
 
     defaultConfig {
         applicationId = "app.judo.example"
         minSdk = 26
-        targetSdk = 32
+        targetSdk = 33
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -52,8 +51,5 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.4.2")
     implementation("com.android.support:multidex:1.0.3")
     implementation(project(":sdk"))
-    implementation("com.google.firebase:firebase-messaging-ktx:23.0.6")
-    implementation("com.google.firebase:firebase-analytics-ktx:21.1.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("androidx.work:work-runtime:2.7.1")
 }

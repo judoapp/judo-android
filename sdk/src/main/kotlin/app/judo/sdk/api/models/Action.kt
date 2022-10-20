@@ -17,7 +17,6 @@
 
 package app.judo.sdk.api.models
 
-import app.judo.sdk.core.lang.Interpolator
 import com.squareup.moshi.JsonClass
 
 sealed class Action {
@@ -37,34 +36,21 @@ sealed class Action {
     data class PerformSegue(
         val screenID: String,
         val segueStyle: SegueStyle
-    ) : Action() {
-        @Transient
-        var data: Any? = null
-    }
+    ) : Action()
 
     @JsonClass(generateAdapter = true)
     data class OpenURL(
         val url: String,
         val dismissExperience: Boolean
-    ) : Action(), SupportsInterpolation {
-        @Transient
-        override var interpolator: Interpolator? = null
-    }
+    ) : Action()
 
     @JsonClass(generateAdapter = true)
     data class PresentWebsite(
-        val url: String,
-    ) : Action(), SupportsInterpolation {
-        @Transient
-        override var interpolator: Interpolator? = null
-    }
+        val url: String
+    ) : Action()
 
     @JsonClass(generateAdapter = true)
     data class Custom(
-        val dismissExperience: Boolean,
-    ) : Action() {
-        @Transient
-        var data: Any? = null
-    }
+        val dismissExperience: Boolean
+    ) : Action()
 }
-

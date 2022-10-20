@@ -20,10 +20,8 @@ package app.judo.example
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
-import app.judo.example.core.functions.InMemoryExperience
 import app.judo.example.databinding.ActivityExampleMainBinding
 import app.judo.sdk.api.Judo
-import java.util.*
 
 class ExampleMainActivity : AppCompatActivity() {
 
@@ -91,31 +89,4 @@ class ExampleMainActivity : AppCompatActivity() {
             ignoreCache = true
         ).run { startActivity(this) }
     }
-
-    /**
-     * You can also provide an in-memory definition of a Judo experience.
-     */
-    private fun showCustomExperienceActivityWithAnInMemoryExperience() {
-        val initialScreenId = UUID.randomUUID().toString()
-
-        val initialScreenIdOverride = initialScreenId.takeIf { listOf(1, 2).random() == 2 }
-        Judo.makeIntent(
-            context = this,
-            activityClass = ExampleCustomExperienceActivity::class.java,
-            experience = InMemoryExperience(initialScreenId),
-            screenId = initialScreenIdOverride
-        ).run { startActivity(this) }
-    }
-
-    private fun showStockExperienceActivityWithAnInMemoryExperience() {
-        val initialScreenId = UUID.randomUUID().toString()
-
-        val initialScreenIdOverride = initialScreenId.takeIf { listOf(1, 2).random() == 2 }
-        Judo.makeIntent(
-            context = this,
-            experience = InMemoryExperience(initialScreenId),
-            screenId = initialScreenIdOverride
-        ).run { startActivity(this) }
-    }
-
 }

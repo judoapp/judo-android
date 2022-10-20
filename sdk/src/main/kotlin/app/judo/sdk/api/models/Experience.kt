@@ -27,11 +27,8 @@ data class Experience(
     val name: String,
     val nodes: List<Node>,
     val screenIDs: List<String>,
-    val initialScreenID: String,
-    val appearance: Appearance,
-    val fonts: List<FontResource> = emptyList(),
-    val localization: Map<String, Map<String, String>> = emptyMap()
-) : Visitable {
+    val initialScreenID: String
+) {
 
     @Transient
     internal var urlQueryParameters: Map<String, String>? = null
@@ -45,9 +42,4 @@ data class Experience(
     inline fun <reified NODE_TYPE> nodes(): List<NODE_TYPE> {
         return nodes.filterIsInstance<NODE_TYPE>()
     }
-
-    override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visit(this)
-    }
-
 }

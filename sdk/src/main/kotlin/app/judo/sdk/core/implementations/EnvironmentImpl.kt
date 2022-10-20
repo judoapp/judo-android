@@ -25,12 +25,10 @@ import app.judo.sdk.core.cache.KeyValueCache
 import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.environment.MutableEnvironment
 import app.judo.sdk.core.events.EventBus
-import app.judo.sdk.core.interpolation.ProtoInterpolator
 import app.judo.sdk.core.log.Logger
-import app.judo.sdk.core.repositories.ExperienceRepository
-import app.judo.sdk.core.repositories.ExperienceTreeRepository
-import app.judo.sdk.core.repositories.SyncRepository
-import app.judo.sdk.core.services.*
+import app.judo.sdk.core.services.AnalyticsServiceScope
+import app.judo.sdk.core.services.IngestService
+import app.judo.sdk.core.services.ProfileService
 import app.judo.sdk.core.web.Http
 import app.judo.sdk.core.web.JudoCallInterceptor
 import app.judo.sdk.ui.ExperienceFragment
@@ -76,28 +74,20 @@ internal class EnvironmentImpl(
     var appVersion = packageInfo.versionName
 
     var baseClient = Http.coreClient(
-        loggerSupplier = { logger },
-        cookieJarSupplier = {
-            CookieJarImpl(
-                loggerSupplier = {
-                    logger
-                },
-                keyValueCacheSupplier = {
-                    keyValueCache
-                }
-            )
-        },
+        loggerSupplier = { logger }
     )
 
     var judoClient = baseClient.newBuilder().apply {
-       addInterceptor(JudoCallInterceptor(
-           accessTokenSupplier = { configuration.accessToken },
-           deviceIdSupplier = { keyValueCache.retrieveString(Environment.Keys.DEVICE_ID) ?: "TODO" },
-           loggerSupplier = { logger },
-           httpAgent = System.getProperty("http.agent") ?: "",
-           clientPackageName = { packageName },
-           appVersion = { appVersion },
-       ))
+        addInterceptor(
+            JudoCallInterceptor(
+                accessTokenSupplier = { configuration.accessToken },
+                deviceIdSupplier = { keyValueCache.retrieveString(Environment.Keys.DEVICE_ID) ?: "TODO" },
+                loggerSupplier = { logger },
+                httpAgent = System.getProperty("http.agent") ?: "",
+                clientPackageName = { packageName },
+                appVersion = { appVersion }
+            )
+        )
     }.build()
 
     override var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
@@ -106,67 +96,9 @@ internal class EnvironmentImpl(
 
     override var defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
 
-    override var interpolator: ProtoInterpolator = InterpolatorImpl(loggerSupplier = { logger })
-
-    override var imageService: ImageService = ImageServiceImpl(
-        context = context,
-        clientSupplier = { judoClient },
-        baseURLSupplier = { baseURL },
-        imageCachePathSupplier = { cachePath },
-        cacheSizeSupplier = { imageCacheSize }
-    )
-
-    override var pushTokenService: PushTokenService = PushTokenServiceImpl(
-        baseClientSupplier = { judoClient },
-        keyValueCacheSupplier = { keyValueCache },
-        ioDispatcherSupplier = { ioDispatcher },
-        eventBusSupplier = { eventBus }
-    )
-
-    override var experienceService: ExperienceService = ExperienceServiceImpl(
-        cachePathSupplier = { cachePath },
-        clientSupplier = { judoClient },
-        baseURLSupplier = { baseURL },
-        cacheSizeSupplier = { experienceCacheSize }
-    )
-
-    override var fontResourceService: FontResourceService = FontResourceServiceImpl(
-        cachePathSupplier = { cachePath },
-        clientSupplier = { judoClient },
-        baseURLSupplier = { baseURL }
-    )
-
-    override var syncService: SyncService = SyncServiceImpl(
-        baseClientSupplier = { judoClient },
-        baseURLSupplier = { baseURL }
-    )
-
-    override var dataSourceService: DataSourceService = DataSourceServiceImpl(
-        baseClientSupplier = { baseClient },
-        baseURLSupplier = { baseURL },
-        loggerSupplier = { logger },
-        authorizersSupplier = { configuration.authorizers },
-    )
-
     override var ingestService: IngestService = IngestServiceImpl(
         baseClientSupplier = { judoClient },
         loggerSupplier = { logger },
-        ioDispatcherSupplier = { ioDispatcher }
-    )
-
-    private val experienceRepositoryImpl = ExperienceRepositoryImpl(
-        experienceServiceSupplier = { experienceService }
-    ) {
-        fontResourceService
-    }
-
-    override var experienceRepository: ExperienceRepository = experienceRepositoryImpl
-
-    override var experienceTreeRepository: ExperienceTreeRepository = experienceRepositoryImpl
-
-    override var syncRepository: SyncRepository = SyncRepositoryImpl(
-        syncServiceSupplier = { syncService },
-        keyValueCacheSupplier = { keyValueCache },
         ioDispatcherSupplier = { ioDispatcher }
     )
 
@@ -179,5 +111,4 @@ internal class EnvironmentImpl(
         deviceIdSupplier = { keyValueCache.retrieveString(Environment.Keys.DEVICE_ID) ?: "TODO" },
         processLifecycleSupplier = { ProcessLifecycleOwner.get() }
     )
-
 }

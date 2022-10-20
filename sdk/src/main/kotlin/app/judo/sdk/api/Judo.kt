@@ -20,28 +20,20 @@ package app.judo.sdk.api
 import android.app.Application
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import androidx.annotation.MainThread
 import app.judo.sdk.BuildConfig
+import app.judo.sdk.api.Judo.Configuration.Builder
 import app.judo.sdk.api.android.ExperienceFragmentFactory
 import app.judo.sdk.api.events.CustomActionCallback
 import app.judo.sdk.api.events.ScreenViewedCallback
 import app.judo.sdk.api.logs.LogLevel
 import app.judo.sdk.api.models.Authorizer
-import app.judo.sdk.api.models.Experience
-import app.judo.sdk.api.models.HttpMethod
 import app.judo.sdk.api.models.URLRequest
-import app.judo.sdk.core.controllers.NoOpSDKController
 import app.judo.sdk.core.controllers.SDKController
 import app.judo.sdk.core.controllers.SDKControllerImpl
 import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.errors.ErrorMessages
 import app.judo.sdk.ui.ExperienceActivity
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import java.net.URL
-
 
 /**
  * This object is the main singleton entry point for most of the Judo SDK's functionality.
@@ -49,11 +41,7 @@ import java.net.URL
 object Judo {
 
     internal val controller: SDKController =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            SDKControllerImpl()
-        } else {
-            NoOpSDKController()
-        }
+        SDKControllerImpl()
 
     /**
      * The type of logs the SDK will put out in the console
@@ -186,38 +174,38 @@ object Judo {
 
     @JvmStatic
     @Deprecated(
-        message = "Manually pre-fetching assets is no longer supported",
-        replaceWith = ReplaceWith("Judo.performSync {}"),
+        message = "Manually pre-fetching assets is no longer supported"
     )
     fun performSync(
         @Suppress("unused")
         prefetchAssets: Boolean = false,
         onComplete: () -> Unit = {}
     ) {
-        CoroutineScope(Dispatchers.IO).launch {
-            controller.performSync(onComplete)
-        }
+        // no-op - until sync is potentially reimplemented.
     }
 
     @JvmStatic
+    @Deprecated(
+        "Judo sync deprecated."
+    )
     fun performSync(
         onComplete: () -> Unit = {}
     ) {
-        CoroutineScope(Dispatchers.IO).launch {
-            controller.performSync(onComplete = onComplete)
-        }
+        // no-op
     }
 
+    @Deprecated(
+        "Judo sync deprecated."
+    )
     fun onFirebaseRemoteMessageReceived(data: Map<String, String>) {
-        CoroutineScope(Dispatchers.IO).launch {
-            controller.onFirebaseRemoteMessageReceived(data)
-        }
+        // no-op
     }
 
+    @Deprecated(
+        "Judo sync deprecated."
+    )
     fun setPushToken(fcmToken: String) {
-        CoroutineScope(Dispatchers.IO).launch {
-            controller.setPushToken(fcmToken)
-        }
+        // no-op
     }
 
     /**
@@ -239,41 +227,6 @@ object Judo {
             Intent(context, activityClass).apply {
                 putExtra(Environment.Keys.EXPERIENCE_URL, url)
                 putExtra(Environment.Keys.IGNORE_CACHE, ignoreCache)
-                screenId?.let { id ->
-                    putExtra(Environment.Keys.SCREEN_ID, id)
-                }
-                userInfo?.let {
-                    putExtra(Environment.Keys.USER_INFO_OVERRIDE, HashMap(userInfo))
-                }
-            }
-        } catch (t: Throwable) {
-            throw IllegalArgumentException(ErrorMessages.EXTEND_EXPERIENCE_ACTIVITY(activityClass))
-        }
-    }
-
-    /**
-     * @throws IllegalArgumentException When [activityClass] is not, or does not extend, [ExperienceActivity].
-     * @param screenId Overrides the initial screen that is displayed.
-     * */
-    @JvmStatic
-    @JvmOverloads
-    fun makeIntent(
-        context: Context,
-        experience: Experience,
-        activityClass: Class<*> = ExperienceActivity::class.java,
-        screenId: String? = null,
-        userInfo: Map<String, Any>? = null,
-        authorizers: List<Authorizer> = listOf(),
-        urlQueryParameters: Map<String, String> = mapOf()
-    ): Intent {
-        return try {
-            activityClass.asSubclass(activityClass)
-
-            controller.loadExperienceIntoMemory(experience, authorizers, urlQueryParameters)
-
-            Intent(context, activityClass).apply {
-                putExtra(Environment.Keys.LOAD_FROM_MEMORY, true)
-                putExtra(Environment.Keys.EXPERIENCE_KEY, experience.id)
                 screenId?.let { id ->
                     putExtra(Environment.Keys.SCREEN_ID, id)
                 }
@@ -313,10 +266,12 @@ object Judo {
         var authorizers: List<Authorizer> = emptyList()
     ) {
         init {
-            authorizers = (authorizers + listOf(
-                // add an implicit default authorizer for first-party Judo data sources.
-                Authorizer("data.judo.app") { it.headers["Judo-Access-Token"] = accessToken }
-            )).distinct()
+            authorizers = (
+                authorizers + listOf(
+                    // add an implicit default authorizer for first-party Judo data sources.
+                    Authorizer("data.judo.app") { it.headers["Judo-Access-Token"] = accessToken }
+                )
+                ).distinct()
         }
 
         enum class AnalyticsMode {

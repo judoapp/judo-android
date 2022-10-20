@@ -1,6 +1,5 @@
 package app.judo.sdk.api.models
 
-import android.net.Uri
 import java.net.URL
 
 class Authorizer(

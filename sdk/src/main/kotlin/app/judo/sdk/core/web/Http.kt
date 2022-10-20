@@ -18,16 +18,12 @@
 package app.judo.sdk.core.web
 
 import app.judo.sdk.core.log.Logger
-import okhttp3.CookieJar
-import okhttp3.Interceptor
 import okhttp3.OkHttpClient
-import kotlin.math.log
 
 internal object Http {
 
     fun coreClient(
-        loggerSupplier: () -> Logger,
-        cookieJarSupplier: () -> CookieJar? = { null },
+        loggerSupplier: () -> Logger
     ): OkHttpClient {
 
         return OkHttpClient.Builder().apply {
@@ -39,9 +35,7 @@ internal object Http {
                     loggerSupplier
                 )
             )
-            cookieJarSupplier()?.let(::cookieJar)
         }.build()
-
     }
 
 }

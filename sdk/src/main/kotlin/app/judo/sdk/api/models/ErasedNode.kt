@@ -25,8 +25,4 @@ data class ErasedNode(
     override val name: String?,
     override val metadata: Metadata?,
     override val typeName: String = "ErasedNode"
-) : Node {
-    override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visit(this)
-    }
-}
+) : Node

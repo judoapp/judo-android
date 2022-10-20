@@ -19,7 +19,7 @@ package app.judo.sdk.api.models
 
 import com.squareup.moshi.Json
 
-interface Node : Visitable {
+interface Node {
     val id: String
     val name: String?
     val metadata: Metadata?

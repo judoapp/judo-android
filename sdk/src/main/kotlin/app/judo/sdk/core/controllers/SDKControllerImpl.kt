@@ -18,9 +18,7 @@
 package app.judo.sdk.core.controllers
 
 import android.app.Application
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ProcessLifecycleOwner
 import app.judo.sdk.api.Judo
 import app.judo.sdk.api.android.ExperienceFragmentFactory
@@ -28,16 +26,12 @@ import app.judo.sdk.api.errors.ExperienceError
 import app.judo.sdk.api.events.CustomActionCallback
 import app.judo.sdk.api.events.Event
 import app.judo.sdk.api.events.ScreenViewedCallback
-import app.judo.sdk.api.models.Authorizer
-import app.judo.sdk.api.models.Experience
 import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.environment.MutableEnvironment
 import app.judo.sdk.core.errors.ErrorMessages
 import app.judo.sdk.core.implementations.*
 import app.judo.sdk.core.log.Logger
-import app.judo.sdk.core.sync.Synchronizer
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -61,8 +55,6 @@ internal class SDKControllerImpl : SDKController, LifecycleObserver {
      */
     lateinit var environment: Environment
 
-    private lateinit var synchronizer: Synchronizer
-
     override fun initialize(application: Application, configuration: Judo.Configuration) {
         require(configuration.accessToken.isNotBlank()) {
             ErrorMessages.ACCESS_TOKEN_NOT_BLANK
@@ -82,7 +74,6 @@ internal class SDKControllerImpl : SDKController, LifecycleObserver {
         }
 
         (environment as? MutableEnvironment)?.apply {
-
             this.experienceCacheSize = experienceCacheSize
 
             this.imageCacheSize = imageCacheSize
@@ -96,62 +87,11 @@ internal class SDKControllerImpl : SDKController, LifecycleObserver {
             this.configuration = configuration
 
             environment.eventQueue.start()
-
         }
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(
             this
         )
-
-    }
-
-    override suspend fun performSync(onComplete: () -> Unit) {
-        if (!this@SDKControllerImpl::synchronizer.isInitialized) {
-
-            synchronizer = LoggingSynchronizer(
-                delegate = QueuingSynchronizer(
-                    ioDispatcher = environment.ioDispatcher,
-                    delegate = SynchronizerImpl(
-                        environment
-                    )
-                ),
-                logger = logger
-            )
-
-        }
-        synchronizer.performSync(onComplete)
-    }
-
-    override suspend fun onFirebaseRemoteMessageReceived(data: Map<String, String>) {
-        if (this::environment.isInitialized) {
-            NotificationHandlerImpl(
-                environment = environment
-            ).handleRemoteMessagingData(data)
-        } else {
-            logger.e(TAG, null, IllegalStateException(ErrorMessages.SDK_NOT_INITIALIZED))
-        }
-    }
-
-    override fun setPushToken(fcmToken: String) {
-        if (this::environment.isInitialized) {
-            environment.pushTokenService.register(fcmToken)
-        } else {
-            logger.e(TAG, null, IllegalStateException(ErrorMessages.SDK_NOT_INITIALIZED))
-        }
-    }
-
-    override fun loadExperienceIntoMemory(
-        experience: Experience,
-        authorizers: List<Authorizer>,
-        urlQueryParameters: Map<String, String>
-    ) {
-        if (this::environment.isInitialized) {
-            environment.experienceRepository.put(
-                experience,
-                authorizers = authorizers,
-                urlQueryParams = urlQueryParameters
-            )
-        }
     }
 
     override fun identify(userId: String?, traits: Map<String, Any>) {
@@ -193,7 +133,6 @@ internal class SDKControllerImpl : SDKController, LifecycleObserver {
         }
     }
 
-
     override fun addCustomActionCallback(callback: CustomActionCallback) {
         if (this::environment.isInitialized) {
             CoroutineScope(environment.mainDispatcher).launch {
@@ -203,13 +142,6 @@ internal class SDKControllerImpl : SDKController, LifecycleObserver {
                     }
                 }
             }
-        }
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-    fun onResume() {
-        CoroutineScope(environment.ioDispatcher).launch {
-            performSync { /* no-op */ }
         }
     }
 }

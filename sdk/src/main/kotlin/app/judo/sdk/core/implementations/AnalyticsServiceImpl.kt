@@ -51,7 +51,6 @@ internal class AnalyticsServiceImpl(
     private val deviceId get() = deviceIdSupplier()
     private val profileService get() = environment.profileService
     private val keyValueCache get() = environment.keyValueCache
-    private val pushToken get() = environment.pushTokenService.pushToken
 
     override fun start() {
         processLifecycleSupplier().lifecycle.addObserver(
@@ -186,7 +185,8 @@ internal class AnalyticsServiceImpl(
         get() = AnalyticsEvent.Context(
             AnalyticsEvent.Context.Device(
                 deviceId,
-                pushToken
+                // We no longer send push tokens.
+                null
             ),
             Locale.getDefault().toString()
         )

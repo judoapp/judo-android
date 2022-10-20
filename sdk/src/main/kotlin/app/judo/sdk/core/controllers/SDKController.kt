@@ -22,11 +22,7 @@ import androidx.annotation.MainThread
 import app.judo.sdk.api.Judo
 import app.judo.sdk.api.android.ExperienceFragmentFactory
 import app.judo.sdk.api.events.CustomActionCallback
-import app.judo.sdk.api.events.Event
 import app.judo.sdk.api.events.ScreenViewedCallback
-import app.judo.sdk.api.models.Authorizer
-import app.judo.sdk.api.models.Experience
-import app.judo.sdk.api.models.URLRequest
 import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.log.Logger
 
@@ -45,14 +41,6 @@ internal interface SDKController {
         application: Application,
         configuration: Judo.Configuration
     )
-
-    suspend fun performSync(onComplete: () -> Unit = {})
-
-    suspend fun onFirebaseRemoteMessageReceived(data: Map<String, String>)
-
-    fun setPushToken(fcmToken: String)
-
-    fun loadExperienceIntoMemory(experience: Experience, authorizers: List<Authorizer>, urlQueryParameters: Map<String, String>)
 
     fun identify(userId: String?, traits: Map<String, Any>)
 

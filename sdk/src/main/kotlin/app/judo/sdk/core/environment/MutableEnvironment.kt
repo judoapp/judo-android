@@ -21,15 +21,13 @@ import app.judo.sdk.api.Judo
 import app.judo.sdk.api.android.ExperienceFragmentFactory
 import app.judo.sdk.core.cache.KeyValueCache
 import app.judo.sdk.core.events.EventBus
-import app.judo.sdk.core.interpolation.ProtoInterpolator
 import app.judo.sdk.core.log.Logger
-import app.judo.sdk.core.repositories.ExperienceRepository
-import app.judo.sdk.core.repositories.ExperienceTreeRepository
-import app.judo.sdk.core.repositories.SyncRepository
-import app.judo.sdk.core.services.*
+import app.judo.sdk.core.services.AnalyticsServiceScope
+import app.judo.sdk.core.services.IngestService
+import app.judo.sdk.core.services.ProfileService
 import kotlinx.coroutines.CoroutineDispatcher
 
-internal interface MutableEnvironment: Environment {
+internal interface MutableEnvironment : Environment {
 
     override var configuration: Judo.Configuration
 
@@ -49,29 +47,9 @@ internal interface MutableEnvironment: Environment {
 
     override var keyValueCache: KeyValueCache
 
-    override var interpolator: ProtoInterpolator
-
-    override var imageService: ImageService
-
-    override var experienceService: ExperienceService
-
-    override var fontResourceService: FontResourceService
-
-    override var syncService: SyncService
-
-    override var pushTokenService: PushTokenService
-
-    override var dataSourceService: DataSourceService
+    override var experienceFragmentFactory: ExperienceFragmentFactory
 
     override var ingestService: IngestService
-
-    override var experienceRepository: ExperienceRepository
-
-    override var experienceTreeRepository: ExperienceTreeRepository
-
-    override var syncRepository: SyncRepository
-
-    override var experienceFragmentFactory: ExperienceFragmentFactory
 
     override var eventQueue: AnalyticsServiceScope
 

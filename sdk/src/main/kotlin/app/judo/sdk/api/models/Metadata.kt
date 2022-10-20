@@ -17,16 +17,10 @@
 
 package app.judo.sdk.api.models
 
-import app.judo.sdk.core.lang.Interpolator
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class Metadata(
     val tags: Set<String> = emptySet(),
     val properties: Map<String, String> = emptyMap()
-) : SupportsInterpolation {
-
-    @Transient
-    override var interpolator: Interpolator? = null
-
-}
+)

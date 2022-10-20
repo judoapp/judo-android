@@ -21,12 +21,10 @@ import app.judo.sdk.api.Judo
 import app.judo.sdk.api.android.ExperienceFragmentFactory
 import app.judo.sdk.core.cache.KeyValueCache
 import app.judo.sdk.core.events.EventBus
-import app.judo.sdk.core.interpolation.ProtoInterpolator
 import app.judo.sdk.core.log.Logger
-import app.judo.sdk.core.repositories.ExperienceRepository
-import app.judo.sdk.core.repositories.ExperienceTreeRepository
-import app.judo.sdk.core.repositories.SyncRepository
-import app.judo.sdk.core.services.*
+import app.judo.sdk.core.services.AnalyticsServiceScope
+import app.judo.sdk.core.services.IngestService
+import app.judo.sdk.core.services.ProfileService
 import kotlinx.coroutines.CoroutineDispatcher
 
 internal interface Environment {
@@ -80,27 +78,7 @@ internal interface Environment {
 
     val keyValueCache: KeyValueCache
 
-    val interpolator: ProtoInterpolator
-
-    val imageService: ImageService
-
-    val experienceService: ExperienceService
-
-    val fontResourceService: FontResourceService
-
-    val syncService: SyncService
-
-    val pushTokenService: PushTokenService
-
-    val dataSourceService: DataSourceService
-
     val ingestService: IngestService
-
-    val experienceRepository: ExperienceRepository
-
-    val experienceTreeRepository: ExperienceTreeRepository
-
-    val syncRepository: SyncRepository
 
     val experienceFragmentFactory: ExperienceFragmentFactory
 
