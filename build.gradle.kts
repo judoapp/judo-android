@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
-val judoVersion by extra("1.13.3")
-val judoComposeVersion by extra("1.0.4")
+val judoVersion by extra("1.13.4")
+val judoComposeVersion by extra("1.0.5")
 
 buildscript {
     repositories {
