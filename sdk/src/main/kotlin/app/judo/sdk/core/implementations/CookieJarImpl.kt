@@ -86,15 +86,15 @@ internal class CookieJarImpl(
     private fun cookieDTO(cookie: Cookie): CookieDTO {
         return with(cookie) {
             CookieDTO(
-                name = name(),
-                value = value(),
-                expiresAt = expiresAt(),
-                domain = domain(),
-                path = path(),
-                secure = secure(),
-                httpOnly = httpOnly(),
-                persistent = persistent(),
-                hostOnly = hostOnly()
+                name = name,
+                value = value,
+                expiresAt = expiresAt,
+                domain = domain,
+                path = path,
+                secure = secure,
+                httpOnly = httpOnly,
+                persistent = persistent,
+                hostOnly = hostOnly
             )
         }
     }

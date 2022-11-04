@@ -14,10 +14,10 @@ val judoApiVersion = "2"
 val useRenderTree = false
 
 android {
-    compileSdkVersion(30)
+    compileSdkVersion(31)
 
     defaultConfig {
-        minSdkVersion(19)
+        minSdkVersion(21)
         multiDexEnabled = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("int", "API_VERSION", judoApiVersion)
@@ -82,8 +82,8 @@ dependencies {
     // endregion AndroidX
 
     // region Coil
-    implementation("io.coil-kt:coil-base:1.0.0")
-    implementation("io.coil-kt:coil-gif:1.0.0")
+    implementation("io.coil-kt:coil-base:2.1.0")
+    implementation("io.coil-kt:coil-gif:2.1.0")
     // endregion Coil
 
     // region Square
@@ -140,7 +140,10 @@ afterEvaluate {
 
         repositories {
             maven {
-                url = uri(layout.projectDirectory.dir("maven"))
+                url = uri(
+                    System.getenv("JUDO_M2_REPO")
+                        ?: layout.projectDirectory.dir("maven")
+                )
             }
         }
     }

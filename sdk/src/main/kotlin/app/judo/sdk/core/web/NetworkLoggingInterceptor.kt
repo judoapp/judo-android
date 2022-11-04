@@ -39,8 +39,8 @@ internal class NetworkLoggingInterceptor(
             TAG, """
                 REQUEST SENT:
                     $request
-                    BODY: ${request.body()}
-                    URL: ${request.url()}
+                    BODY: ${request.body}
+                    URL: ${request.url}
                     USER AGENT: ${request.header("User-Agent")}
                 """.trimIndent()
         )
@@ -51,10 +51,10 @@ internal class NetworkLoggingInterceptor(
             TAG, """
             |RESPONSE RECEIVED:
             |   $response
-            |   CODE: ${response.code()}
-            |   HEADERS:${response.headers()}
-            |   NETWORK RESPONSE: ${response.networkResponse()}
-            |   CACHE RESPONSE: ${response.cacheResponse()}
+            |   CODE: ${response.code}
+            |   HEADERS:${response.headers}
+            |   NETWORK RESPONSE: ${response.networkResponse}
+            |   CACHE RESPONSE: ${response.cacheResponse}
 """.trimMargin()
         )
 

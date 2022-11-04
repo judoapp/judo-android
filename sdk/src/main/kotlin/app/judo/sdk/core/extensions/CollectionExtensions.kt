@@ -22,6 +22,7 @@ import app.judo.sdk.core.data.dataContextOf
 import app.judo.sdk.core.data.fromKeyPath
 import app.judo.sdk.core.implementations.InterpolatorImpl
 import app.judo.sdk.core.lang.Keyword
+import java.util.Date
 
 internal fun Collection.limit() {
 
@@ -71,20 +72,25 @@ internal fun Collection.sort(
                 Keyword.USER.value to urlParams
             ).fromKeyPath(sortDescriptor.keyPath)
 
-            if (sortDescriptor.ascending) {
-                when (v1) {
-                    v2 -> 0
-                    null -> 1
-                    else -> -1
-                }
+            var compare: Int = -1
 
-            } else {
-                when (v1) {
-                    v2 -> 0
-                    null -> -1
-                    else -> 1
-                }
+            if (v1 is Int && v2 is Int) {
+                compare = v1.compareTo(v2)
+            } else if (v1 is Double && v2 is Double) {
+                compare = v1.compareTo(v2)
+            } else if (v1 is String && v2 is String) {
+                compare = v1.compareTo(v2)
+            } else if (v1 is Boolean && v2 is Boolean) {
+                compare = v1.compareTo(v2)
+            } else if (v1 is Date && v2 is Date) {
+                compare = v1.compareTo(v2)
             }
+
+            if (!sortDescriptor.ascending) {
+                compare *= -1
+            }
+
+            compare
         }
     }
 }

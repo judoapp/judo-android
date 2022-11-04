@@ -25,6 +25,7 @@ import coil.ImageLoader
 import coil.decode.DataSource
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
+import coil.memory.MemoryCache
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import kotlinx.coroutines.CompletableDeferred
@@ -61,19 +62,23 @@ internal class ImageServiceImpl(
     private val loader: ImageLoader by lazy {
         ImageLoader.Builder(context)
             .okHttpClient(imageClient)
-            .availableMemoryPercentage(1.0)
-            .componentRegistry {
+            .memoryCache {
+                MemoryCache.Builder(context)
+                    .maxSizePercent(1.0)
+                    .build()
+            }
+            .components {
                 if (Build.VERSION.SDK_INT >= 28)
-                    add(ImageDecoderDecoder())
+                    add(ImageDecoderDecoder.Factory())
                 else
-                    add(GifDecoder())
+                    add(GifDecoder.Factory())
             }
             .crossfade(true)
             .build()
     }
 
     override fun isImageCached(imageUrl: String): Boolean {
-        val urlIterator = imageClient.cache()?.urls()
+        val urlIterator = imageClient.cache?.urls()
         urlIterator?.let {
             while (it.hasNext()) {
                 if (urlIterator.next() == imageUrl) {
@@ -109,7 +114,7 @@ internal class ImageServiceImpl(
                                 ImageService.Result.Error(
                                     request = request,
                                     drawable = null,
-                                    error = error
+                                    error = error.throwable
                                 )
                             )
                         },

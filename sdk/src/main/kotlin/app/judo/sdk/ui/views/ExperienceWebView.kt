@@ -62,6 +62,8 @@ internal class ExperienceWebView @JvmOverloads constructor(
             mediaPlaybackRequiresUserGesture = false
             setBackgroundColor(Color.TRANSPARENT)
         }
+        isFocusable = true
+        isFocusableInTouchMode = true
     }
 
     override fun onDraw(canvas: Canvas) {

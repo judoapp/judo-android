@@ -88,10 +88,10 @@ internal class JudoCallInterceptor(
             """
                 |Response received:
                 |   $response
-                |   Code: ${response.code()}
-                |   Headers:${response.headers()}
-                |   Network response: ${response.networkResponse()?.body()}
-                |   Cache response: ${response.cacheResponse()?.body()}
+                |   Code: ${response.code}
+                |   Headers:${response.headers}
+                |   Network response: ${response.networkResponse?.body}
+                |   Cache response: ${response.cacheResponse?.body}
 """.trimMargin()
         )
 
