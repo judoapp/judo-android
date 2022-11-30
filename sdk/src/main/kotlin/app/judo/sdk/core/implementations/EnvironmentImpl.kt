@@ -29,7 +29,6 @@ import app.judo.sdk.core.interpolation.ProtoInterpolator
 import app.judo.sdk.core.log.Logger
 import app.judo.sdk.core.repositories.ExperienceRepository
 import app.judo.sdk.core.repositories.ExperienceTreeRepository
-import app.judo.sdk.core.repositories.SyncRepository
 import app.judo.sdk.core.services.*
 import app.judo.sdk.core.web.Http
 import app.judo.sdk.core.web.JudoCallInterceptor
@@ -51,8 +50,6 @@ internal class EnvironmentImpl(
     override var baseURL: String? = null
 
     override var cachePath: String = context.cacheDir.path
-
-    override var experienceCacheSize: Long = Environment.Sizes.EXPERIENCE_CACHE_SIZE
 
     override var imageCacheSize: Long = Environment.Sizes.IMAGE_CACHE_SIZE
 
@@ -116,28 +113,14 @@ internal class EnvironmentImpl(
         cacheSizeSupplier = { imageCacheSize }
     )
 
-    override var pushTokenService: PushTokenService = PushTokenServiceImpl(
-        baseClientSupplier = { judoClient },
-        keyValueCacheSupplier = { keyValueCache },
-        ioDispatcherSupplier = { ioDispatcher },
-        eventBusSupplier = { eventBus }
-    )
-
     override var experienceService: ExperienceService = ExperienceServiceImpl(
-        cachePathSupplier = { cachePath },
         clientSupplier = { judoClient },
         baseURLSupplier = { baseURL },
-        cacheSizeSupplier = { experienceCacheSize }
     )
 
     override var fontResourceService: FontResourceService = FontResourceServiceImpl(
         cachePathSupplier = { cachePath },
         clientSupplier = { judoClient },
-        baseURLSupplier = { baseURL }
-    )
-
-    override var syncService: SyncService = SyncServiceImpl(
-        baseClientSupplier = { judoClient },
         baseURLSupplier = { baseURL }
     )
 
@@ -163,12 +146,6 @@ internal class EnvironmentImpl(
     override var experienceRepository: ExperienceRepository = experienceRepositoryImpl
 
     override var experienceTreeRepository: ExperienceTreeRepository = experienceRepositoryImpl
-
-    override var syncRepository: SyncRepository = SyncRepositoryImpl(
-        syncServiceSupplier = { syncService },
-        keyValueCacheSupplier = { keyValueCache },
-        ioDispatcherSupplier = { ioDispatcher }
-    )
 
     override var experienceFragmentFactory = ExperienceFragmentFactory { intent ->
         ExperienceFragment().applyArguments(intent)

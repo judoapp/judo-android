@@ -46,12 +46,6 @@ internal interface SDKController {
         configuration: Judo.Configuration
     )
 
-    suspend fun performSync(onComplete: () -> Unit = {})
-
-    suspend fun onFirebaseRemoteMessageReceived(data: Map<String, String>)
-
-    fun setPushToken(fcmToken: String)
-
     fun loadExperienceIntoMemory(experience: Experience, authorizers: List<Authorizer>, urlQueryParameters: Map<String, String>)
 
     fun identify(userId: String?, traits: Map<String, Any>)

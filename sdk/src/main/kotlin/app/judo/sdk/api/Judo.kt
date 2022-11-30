@@ -185,39 +185,33 @@ object Judo {
     }
 
     @JvmStatic
-    @Deprecated(
-        message = "Manually pre-fetching assets is no longer supported",
-        replaceWith = ReplaceWith("Judo.performSync {}"),
-    )
+    @Deprecated("Manually pre-fetching assets is no longer supported.")
     fun performSync(
         @Suppress("unused")
         prefetchAssets: Boolean = false,
         onComplete: () -> Unit = {}
     ) {
-        CoroutineScope(Dispatchers.IO).launch {
-            controller.performSync(onComplete)
-        }
+        //NO-OP: Manually pre-fetching assets is no longer supported.
+        onComplete()
     }
 
     @JvmStatic
+    @Deprecated("Experience syncing is no longer supported.")
     fun performSync(
         onComplete: () -> Unit = {}
     ) {
-        CoroutineScope(Dispatchers.IO).launch {
-            controller.performSync(onComplete = onComplete)
-        }
+        //NO-OP: Sync is no longer supported.
+        onComplete()
     }
 
+    @Deprecated("The Judo SDK no longer requires notification of FCM messages, as background sync is no longer supported.")
     fun onFirebaseRemoteMessageReceived(data: Map<String, String>) {
-        CoroutineScope(Dispatchers.IO).launch {
-            controller.onFirebaseRemoteMessageReceived(data)
-        }
+        //NO-OP: Remote syncing is no longer supported.
     }
 
+    @Deprecated("The Judo SDK no longer requires an FCM token, as background sync is no longer supported.")
     fun setPushToken(fcmToken: String) {
-        CoroutineScope(Dispatchers.IO).launch {
-            controller.setPushToken(fcmToken)
-        }
+        //NO-OP: Remote syncing is no longer supported.
     }
 
     /**
@@ -308,7 +302,6 @@ object Judo {
          */
         val analyticsMode: AnalyticsMode = AnalyticsMode.DEFAULT,
 
-        val experienceCacheSize: Long = Environment.Sizes.EXPERIENCE_CACHE_SIZE,
         val imageCacheSize: Long = Environment.Sizes.IMAGE_CACHE_SIZE,
         var authorizers: List<Authorizer> = emptyList()
     ) {
@@ -353,11 +346,6 @@ object Judo {
 
             fun setAllowedEvents(analyticsMode: AnalyticsMode): Builder {
                 results = results.copy(analyticsMode = analyticsMode)
-                return this
-            }
-
-            fun setExperienceCacheSize(experienceCacheSize: Long): Builder {
-                results = results.copy(experienceCacheSize = experienceCacheSize)
                 return this
             }
 

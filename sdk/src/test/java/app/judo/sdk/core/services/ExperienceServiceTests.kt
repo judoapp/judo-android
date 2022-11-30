@@ -192,7 +192,7 @@ class ExperienceServiceTests {
         service.getExperience(experienceURL)
 
         // Act
-        val actual = serverDispatcher.actualRequest?.requestUrl?.query()?.endsWith(expected) ?: false
+        val actual = serverDispatcher.actualRequest?.requestUrl?.query?.endsWith(expected) ?: false
 
         // Assert
         Assert.assertTrue(actual)
@@ -264,7 +264,7 @@ class ExperienceServiceTests {
         val response = service.getExperience(experienceURL)
 
         // Act
-        val actual = response.raw().cacheResponse() != null
+        val actual = response.raw().cacheResponse != null
 
         // Assert
         expected shouldEqual actual

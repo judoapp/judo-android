@@ -35,9 +35,7 @@ import app.judo.sdk.core.environment.MutableEnvironment
 import app.judo.sdk.core.errors.ErrorMessages
 import app.judo.sdk.core.implementations.*
 import app.judo.sdk.core.log.Logger
-import app.judo.sdk.core.sync.Synchronizer
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -61,8 +59,6 @@ internal class SDKControllerImpl : SDKController, LifecycleObserver {
      */
     lateinit var environment: Environment
 
-    private lateinit var synchronizer: Synchronizer
-
     override fun initialize(application: Application, configuration: Judo.Configuration) {
         require(configuration.accessToken.isNotBlank()) {
             ErrorMessages.ACCESS_TOKEN_NOT_BLANK
@@ -83,8 +79,6 @@ internal class SDKControllerImpl : SDKController, LifecycleObserver {
 
         (environment as? MutableEnvironment)?.apply {
 
-            this.experienceCacheSize = experienceCacheSize
-
             this.imageCacheSize = imageCacheSize
 
             if (keyValueCache.retrieveString(Environment.Keys.DEVICE_ID) == null) {
@@ -103,41 +97,6 @@ internal class SDKControllerImpl : SDKController, LifecycleObserver {
             this
         )
 
-    }
-
-    override suspend fun performSync(onComplete: () -> Unit) {
-        if (!this@SDKControllerImpl::synchronizer.isInitialized) {
-
-            synchronizer = LoggingSynchronizer(
-                delegate = QueuingSynchronizer(
-                    ioDispatcher = environment.ioDispatcher,
-                    delegate = SynchronizerImpl(
-                        environment
-                    )
-                ),
-                logger = logger
-            )
-
-        }
-        synchronizer.performSync(onComplete)
-    }
-
-    override suspend fun onFirebaseRemoteMessageReceived(data: Map<String, String>) {
-        if (this::environment.isInitialized) {
-            NotificationHandlerImpl(
-                environment = environment
-            ).handleRemoteMessagingData(data)
-        } else {
-            logger.e(TAG, null, IllegalStateException(ErrorMessages.SDK_NOT_INITIALIZED))
-        }
-    }
-
-    override fun setPushToken(fcmToken: String) {
-        if (this::environment.isInitialized) {
-            environment.pushTokenService.register(fcmToken)
-        } else {
-            logger.e(TAG, null, IllegalStateException(ErrorMessages.SDK_NOT_INITIALIZED))
-        }
     }
 
     override fun loadExperienceIntoMemory(
@@ -202,13 +161,6 @@ internal class SDKControllerImpl : SDKController, LifecycleObserver {
                     }
                 }
             }
-        }
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-    fun onResume() {
-        CoroutineScope(environment.ioDispatcher).launch {
-            performSync { /* no-op */ }
         }
     }
 }

@@ -56,29 +56,6 @@ internal class SDKControllerTestRobot : AbstractTestRobot() {
         responses += responseAndBody
     }
 
-    suspend fun performSync(onComplete: () -> Unit = {}) {
-        controller.performSync(onComplete)
-    }
-
-    fun assertThatASyncResponseAndTwoExperiencesWereRetrieved() {
-
-        val syncResponse = responses.find { it.second.contains("/test") }?.second
-        val experienceResponse = responses.find { it.second.contains(""""id": "3"""") }?.second
-        val experienceResponses = responses.filter { it.second.contains(""""id": "3"""") }
-
-        Assert.assertTrue(syncResponse != null && experienceResponse != null && experienceResponses.size == 1)
-
-    }
-
-    fun assertThatASyncResponseAndAExperienceWereRetrieved() {
-
-        val syncResponse = responses.find { it.second.contains("/test") }?.second
-        val experienceResponse = responses.find { it.second.contains(""""id": "3"""") }?.second
-
-        Assert.assertTrue(syncResponse != null && experienceResponse != null)
-
-    }
-
     fun assertThatTheCacheContainsADeviceID() {
         Assert.assertNotNull(
             UUID.fromString(
@@ -94,17 +71,5 @@ internal class SDKControllerTestRobot : AbstractTestRobot() {
     fun assertThatTheDeviceIDEquals(expected: UUID) {
         val actual = UUID.fromString(environment.keyValueCache.retrieveString(Environment.Keys.DEVICE_ID) ?: "")
         Assert.assertEquals(expected, actual)
-    }
-
-    suspend fun handleRemoteMessagingData(input: Map<String, String>) {
-        controller.onFirebaseRemoteMessageReceived(data = input)
-    }
-
-    fun assertThatASyncWasTriggered() {
-        assertThatASyncResponseAndTwoExperiencesWereRetrieved()
-    }
-
-    fun setPushToken(fcmToken: String) {
-        controller.setPushToken(fcmToken = fcmToken)
     }
 }

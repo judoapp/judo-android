@@ -25,7 +25,6 @@ import app.judo.sdk.core.interpolation.ProtoInterpolator
 import app.judo.sdk.core.log.Logger
 import app.judo.sdk.core.repositories.ExperienceRepository
 import app.judo.sdk.core.repositories.ExperienceTreeRepository
-import app.judo.sdk.core.repositories.SyncRepository
 import app.judo.sdk.core.services.*
 import kotlinx.coroutines.CoroutineDispatcher
 
@@ -51,7 +50,6 @@ internal interface Environment {
     }
 
     object Sizes {
-        const val EXPERIENCE_CACHE_SIZE: Long = 250L * 1024L * 1024L // 256 MB
         const val IMAGE_CACHE_SIZE: Long = 250L * 1024L * 1024L // 256 MB
         const val FONT_CACHE_SIZE: Long = 50L * 1024L * 1024L // 50 MB
     }
@@ -67,8 +65,6 @@ internal interface Environment {
     val baseURL: String?
 
     val cachePath: String
-
-    val experienceCacheSize: Long
 
     val imageCacheSize: Long
 
@@ -88,10 +84,6 @@ internal interface Environment {
 
     val fontResourceService: FontResourceService
 
-    val syncService: SyncService
-
-    val pushTokenService: PushTokenService
-
     val dataSourceService: DataSourceService
 
     val ingestService: IngestService
@@ -99,8 +91,6 @@ internal interface Environment {
     val experienceRepository: ExperienceRepository
 
     val experienceTreeRepository: ExperienceTreeRepository
-
-    val syncRepository: SyncRepository
 
     val experienceFragmentFactory: ExperienceFragmentFactory
 

@@ -15,19 +15,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <service
-            android:name=".core.services.ExampleFirebaseMessagingService"
-            android:exported="false">
-
-            <intent-filter>
-
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-
-            </intent-filter>
-
-        </service>
-
-        <activity android:name=".ExampleMainActivity">
+        <activity
+            android:name=".ExampleMainActivity"
+            android:exported="true">
 
             <intent-filter>
 
@@ -40,7 +30,10 @@
 
         <!-- You'll need to add an Activity element to your manifest for Judo's ExperienceActivity
              (or your own subclass thereof to enable certain customizations) in order to specify the Intent filters -->
-        <activity android:name="app.judo.sdk.ui.ExperienceActivity">
+        <activity
+            android:name="app.judo.sdk.ui.ExperienceActivity"
+            android:exported="true">
+
             <!-- An Example Intent Filter that opens Experience links in Judo's ExperienceActivity -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

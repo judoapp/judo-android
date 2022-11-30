@@ -43,7 +43,7 @@ interface AnalyticsEvent {
             val id: String,
 
             /**
-             * The Firebase FCM push token.
+             * The Firebase FCM push token, which is no longer required.
              */
             val token: String?
         )

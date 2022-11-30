@@ -33,15 +33,11 @@ import retrofit2.http.Url
 import java.io.File
 
 internal class ExperienceServiceImpl(
-    private val cachePathSupplier: () -> String,
     private val baseURLSupplier: () -> String?,
-    private val cacheSizeSupplier: () -> Long,
     clientSupplier: () -> OkHttpClient,
 ) : ExperienceService {
 
     companion object {
-        const val cacheName: String = "judo_experience_cache"
-
         /**
          * Dummy URL for Retrofit purposes, it never gets used.
          */
@@ -57,21 +53,8 @@ internal class ExperienceServiceImpl(
         ): Response<Experience>
     }
 
-    private val cache by lazy {
-
-        Cache(
-            File(File(cachePathSupplier()), cacheName),
-            cacheSizeSupplier()
-        )
-
-    }
-
     private val client: OkHttpClient by lazy {
-        clientSupplier().newBuilder().apply {
-            cache(
-                cache
-            )
-        }.build()
+        clientSupplier().newBuilder().build()
     }
 
     private val api: ExperienceAPI by lazy {
@@ -99,29 +82,6 @@ internal class ExperienceServiceImpl(
     }
 
     override suspend fun delete(aURL: String) {
-
-        @Suppress(
-            "BlockingMethodInNonBlockingContext"
-        )
-        val iterator =
-            cache.urls()
-
-        var notRemoved = true
-
-        while (notRemoved && iterator.hasNext()) {
-
-            val nextURL =
-                iterator.next()
-
-            if (nextURL == aURL) {
-
-                iterator.remove()
-
-                notRemoved = false
-
-            }
-
-        }
 
     }
 

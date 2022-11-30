@@ -24,7 +24,6 @@ import app.judo.sdk.api.events.CustomActionCallback
 import app.judo.sdk.api.events.ScreenViewedCallback
 import app.judo.sdk.api.models.Authorizer
 import app.judo.sdk.api.models.Experience
-import app.judo.sdk.api.models.URLRequest
 import app.judo.sdk.core.implementations.ProductionLoggerImpl
 import app.judo.sdk.core.log.Logger
 
@@ -38,19 +37,6 @@ internal class NoOpSDKController : SDKController {
     ) {
         /* no-op */
     }
-
-    override suspend fun performSync(onComplete: () -> Unit) {
-        onComplete()
-    }
-
-    override suspend fun onFirebaseRemoteMessageReceived(data: Map<String, String>) {
-        /* no-op */
-    }
-
-    override fun setPushToken(fcmToken: String) {
-        /* no-op */
-    }
-
 
     override fun loadExperienceIntoMemory(experience: Experience, authorizers: List<Authorizer>, urlQueryParameters: Map<String, String>) {
         /* no-op */

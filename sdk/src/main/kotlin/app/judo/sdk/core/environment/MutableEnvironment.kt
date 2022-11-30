@@ -25,7 +25,6 @@ import app.judo.sdk.core.interpolation.ProtoInterpolator
 import app.judo.sdk.core.log.Logger
 import app.judo.sdk.core.repositories.ExperienceRepository
 import app.judo.sdk.core.repositories.ExperienceTreeRepository
-import app.judo.sdk.core.repositories.SyncRepository
 import app.judo.sdk.core.services.*
 import kotlinx.coroutines.CoroutineDispatcher
 
@@ -36,8 +35,6 @@ internal interface MutableEnvironment: Environment {
     override var baseURL: String?
 
     override var cachePath: String
-
-    override var experienceCacheSize: Long
 
     override var imageCacheSize: Long
 
@@ -57,10 +54,6 @@ internal interface MutableEnvironment: Environment {
 
     override var fontResourceService: FontResourceService
 
-    override var syncService: SyncService
-
-    override var pushTokenService: PushTokenService
-
     override var dataSourceService: DataSourceService
 
     override var ingestService: IngestService
@@ -68,8 +61,6 @@ internal interface MutableEnvironment: Environment {
     override var experienceRepository: ExperienceRepository
 
     override var experienceTreeRepository: ExperienceTreeRepository
-
-    override var syncRepository: SyncRepository
 
     override var experienceFragmentFactory: ExperienceFragmentFactory
 

@@ -14,10 +14,10 @@ val judoApiVersion = "2"
 val useRenderTree = false
 
 android {
-    compileSdkVersion(31)
+    compileSdk = 31
 
     defaultConfig {
-        minSdkVersion(21)
+        minSdk = 21
         multiDexEnabled = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("int", "API_VERSION", judoApiVersion)
