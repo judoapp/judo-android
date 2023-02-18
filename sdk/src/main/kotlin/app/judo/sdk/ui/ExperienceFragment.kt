@@ -30,7 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import app.judo.compose.ui.*
+import app.judo.sdk.compose.ui.*
 import app.judo.sdk.core.controllers.current
 import app.judo.sdk.core.environment.Environment
 import app.judo.sdk.core.environment.Environment.Keys.EXPERIENCE_INTENT

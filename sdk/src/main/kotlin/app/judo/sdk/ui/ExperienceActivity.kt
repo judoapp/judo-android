@@ -25,7 +25,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.material.Text
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
-import app.judo.compose.ui.*
+import app.judo.sdk.compose.ui.*
 import app.judo.sdk.api.models.*
 import app.judo.sdk.core.controllers.current
 import app.judo.sdk.core.environment.Environment

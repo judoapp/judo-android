@@ -1,7 +1,6 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
-val judoVersion by extra("1.13.5")
-val judoComposeVersion by extra("1.0.6")
+val judoVersion by extra("1.13.6")
 
 buildscript {
     repositories {
@@ -10,7 +9,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:7.3.0")
+        classpath("com.android.tools.build:gradle:7.3.1")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10")
 
         // NOTE: Do not place your application dependencies here; they belong
@@ -20,8 +19,8 @@ buildscript {
 
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
-    id("com.android.application") version "7.1.1" apply false
-    id("com.android.library") version "7.1.1" apply false
+    id("com.android.application") version "7.3.1" apply false
+    id("com.android.library") version "7.3.1" apply false
     id("org.jetbrains.kotlin.android") version "1.7.0" apply false
 }
 

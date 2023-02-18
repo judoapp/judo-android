@@ -18,9 +18,9 @@
 package app.judo.sdk.ui
 
 import android.app.Activity
-import app.judo.compose.model.values.HttpMethod
-import app.judo.compose.ui.CustomActionActivation
-import app.judo.compose.ui.TrackScreenEvent
+import app.judo.sdk.compose.model.values.HttpMethod
+import app.judo.sdk.compose.ui.CustomActionActivation
+import app.judo.sdk.compose.ui.TrackScreenEvent
 import app.judo.sdk.api.events.Event
 import app.judo.sdk.api.models.*
 import app.judo.sdk.core.controllers.current
@@ -132,7 +132,7 @@ internal object JudoComposeHelpers {
     /**
      * Convert a Judo-Compose URLRequest to this SDK's URLRequest.
      */
-    internal fun app.judo.compose.ui.URLRequest.toAndroidUrlRequest(): URLRequest = URLRequest(
+    internal fun app.judo.sdk.compose.ui.URLRequest.toAndroidUrlRequest(): URLRequest = URLRequest(
         url = url,
         method = when (method) {
             HttpMethod.GET -> app.judo.sdk.api.models.HttpMethod.GET
@@ -146,7 +146,7 @@ internal object JudoComposeHelpers {
     /**
      * Update a Compose SDK's URLRequest with values from this SDK's URLRequest.
      */
-    internal fun app.judo.compose.ui.URLRequest.updateFrom(urlRequest: URLRequest) {
+    internal fun app.judo.sdk.compose.ui.URLRequest.updateFrom(urlRequest: URLRequest) {
         url = urlRequest.url
         method = when (urlRequest.method) {
             app.judo.sdk.api.models.HttpMethod.GET -> HttpMethod.GET

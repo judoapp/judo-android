@@ -11,12 +11,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven {
-            url = java.net.URI.create("https://judoapp.github.io/judo-maven/maven")
-        }
     }
 }
 
-include(":example", ":sdk", ":judo-compose")
+include(":example", ":sdk")
 rootProject.name = "Judo Android"
 include(":testbench")

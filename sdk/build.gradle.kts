@@ -11,7 +11,7 @@ val judoVersion: String by rootProject.extra
 val judoGroupId = "app.judo"
 val judoArtifactId = "judo-sdk"
 val judoApiVersion = "2"
-val judoComposeVersion: String by rootProject.extra
+val coilVersion = "2.1.0"
 
 android {
     compileSdk = 32
@@ -30,11 +30,6 @@ android {
             isMinifyEnabled = false
             proguardFiles("proguard-rules.pro")
         }
-    }
-
-    sourceSets.getByName("main") {
-        java.srcDir("src/main/java")
-        java.srcDir("src/main/kotlin")
     }
 
     compileOptions {
@@ -65,18 +60,36 @@ android {
 
 dependencies {
     // region Jetbrains
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.7.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1")
+    implementation("androidx.core:core-ktx:1.8.0")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.7.10")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
     // endregion Jetbrains
 
     // region AndroidX
-    implementation("androidx.appcompat:appcompat:1.4.2")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.0")
-    implementation("androidx.lifecycle:lifecycle-process:2.5.0")
+    implementation("androidx.appcompat:appcompat:1.5.1")
+    implementation("com.google.android.material:material:1.6.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.1")
+    implementation("androidx.lifecycle:lifecycle-process:2.5.1")
     implementation("androidx.browser:browser:1.4.0")
     implementation("androidx.viewpager2:viewpager2:1.0.0")
     // endregion AndroidX
+
+    // region Compose
+    implementation("androidx.compose.ui:ui:1.2.1")
+    implementation("androidx.compose.foundation:foundation:1.2.1")
+    implementation("androidx.compose.material:material:1.2.1")
+    implementation("androidx.activity:activity-compose:1.5.1")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1")
+    implementation("androidx.navigation:navigation-compose:2.5.2")
+    debugImplementation("androidx.compose.ui:ui-tooling:1.2.1")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.2.1")
+    // endregion Compose
+
+    // region Test
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.3")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    // endregion Test
 
     // region Square
     kapt("com.squareup.moshi:moshi-kotlin-codegen:1.13.0")
@@ -89,15 +102,15 @@ dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.2.0")
     // endregion Sugar
 
+    // Coil
+    implementation("io.coil-kt:coil-compose:$coilVersion")
+    implementation("io.coil-kt:coil-gif:$coilVersion")
 
-
-    // region Compose
-    implementation("androidx.compose.ui:ui:1.2.1")
-    implementation("androidx.compose.foundation:foundation:1.2.1")
-    implementation("androidx.compose.material:material:1.2.1")
-    implementation("androidx.activity:activity-compose:1.6.0")
-    implementation("app.judo:compose:$judoComposeVersion")
-    // endregion Compose
+    // Exoplayer
+    implementation("com.google.android.exoplayer:exoplayer-core:2.18.1")
+    implementation("com.google.android.exoplayer:exoplayer-dash:2.18.1")
+    implementation("com.google.android.exoplayer:exoplayer-ui:2.18.1")
+    implementation("com.google.android.exoplayer:exoplayer-hls:2.18.1")
 }
 
 // region Deployment
